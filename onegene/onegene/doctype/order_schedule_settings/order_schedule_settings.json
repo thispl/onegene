@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-10-11 12:26:59.608783",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "attach",
+  "download",
+  "column_break_nuztg",
+  "upload",
+  "update",
+  "section_break_bom8n",
+  "html"
+ ],
+ "fields": [
+  {
+   "fieldname": "attach",
+   "fieldtype": "Attach",
+   "label": "Attach"
+  },
+  {
+   "fieldname": "column_break_nuztg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "upload",
+   "fieldtype": "Button",
+   "label": "Upload"
+  },
+  {
+   "fieldname": "update",
+   "fieldtype": "Button",
+   "label": "Update"
+  },
+  {
+   "fieldname": "download",
+   "fieldtype": "Button",
+   "label": "Download"
+  },
+  {
+   "fieldname": "section_break_bom8n",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "html",
+   "fieldtype": "HTML",
+   "label": "HTML"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-10-14 12:23:45.503576",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Order Schedule Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

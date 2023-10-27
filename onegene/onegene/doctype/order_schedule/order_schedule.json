@@ -1,0 +1,120 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "ORD-SCH-.#####",
+ "creation": "2023-10-11 12:39:18.324840",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer_code",
+  "customer_name",
+  "sales_order_number",
+  "item_code",
+  "item_name",
+  "item_group",
+  "schedule_date",
+  "column_break_n7cvb",
+  "qty",
+  "tentative_plan_1",
+  "tentative_plan_2",
+  "tentative_plan_3"
+ ],
+ "fields": [
+  {
+   "fieldname": "schedule_date",
+   "fieldtype": "Date",
+   "label": "Schedule Date"
+  },
+  {
+   "fetch_from": "customer_name.customer_code",
+   "fieldname": "customer_code",
+   "fieldtype": "Data",
+   "label": "Customer Code"
+  },
+  {
+   "fieldname": "sales_order_number",
+   "fieldtype": "Link",
+   "label": "Sales Order Number",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Schedule Qty"
+  },
+  {
+   "fieldname": "tentative_plan_1",
+   "fieldtype": "Float",
+   "label": "Tentative Plan 1"
+  },
+  {
+   "fieldname": "tentative_plan_2",
+   "fieldtype": "Float",
+   "label": "Tentative Plan 2"
+  },
+  {
+   "fieldname": "tentative_plan_3",
+   "fieldtype": "Float",
+   "label": "Tentative Plan 3"
+  },
+  {
+   "fieldname": "column_break_n7cvb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "sales_order_number.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Customer Name",
+   "options": "Customer"
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-10-18 16:54:43.977379",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Order Schedule",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

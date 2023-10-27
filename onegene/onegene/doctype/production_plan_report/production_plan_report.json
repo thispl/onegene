@@ -1,0 +1,210 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "PRO-PLAN-.YYYY.-.######",
+ "creation": "2023-10-18 15:52:48.654786",
+ "default_view": "Report",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item",
+  "item_name",
+  "item_group",
+  "date",
+  "column_break_lspqy",
+  "rej_allowance",
+  "monthly_schedule",
+  "bin_qty",
+  "tent_prod_plan_1",
+  "column_break_nozwd",
+  "per_day_plan",
+  "fg_kanban_qty",
+  "sfg_days",
+  "tent_prod_plan_2",
+  "column_break_m9fsf",
+  "stock_qty",
+  "delivered_qty",
+  "del_as_on_yes",
+  "column_break_84jw7",
+  "produced_qty",
+  "pro_as_on_yes",
+  "monthly_balance",
+  "column_break_nucrn",
+  "today_prod_plan",
+  "today_balance",
+  "required_plan"
+ ],
+ "fields": [
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "monthly_schedule",
+   "fieldtype": "Int",
+   "label": "Monthly Schedule",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bin_qty",
+   "fieldtype": "Int",
+   "label": "Bin Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "per_day_plan",
+   "fieldtype": "Int",
+   "label": "Per Day Plan",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fg_kanban_qty",
+   "fieldtype": "Int",
+   "label": "FG Kanban Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sfg_days",
+   "fieldtype": "Int",
+   "label": "SFG Days",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stock_qty",
+   "fieldtype": "Int",
+   "label": "Stock Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivered_qty",
+   "fieldtype": "Int",
+   "label": "Delivered Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "produced_qty",
+   "fieldtype": "Int",
+   "label": "Produced Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "today_balance",
+   "fieldtype": "Int",
+   "label": "Today Balance"
+  },
+  {
+   "fieldname": "required_plan",
+   "fieldtype": "Int",
+   "label": "Required Plan"
+  },
+  {
+   "fieldname": "pro_as_on_yes",
+   "fieldtype": "Int",
+   "label": "Produced Qty as on Yesterday",
+   "read_only": 1
+  },
+  {
+   "fieldname": "monthly_balance",
+   "fieldtype": "Int",
+   "label": "Monthly Balance to Produce",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tent_prod_plan_1",
+   "fieldtype": "Int",
+   "label": "Tentative Production Plan 1"
+  },
+  {
+   "fieldname": "tent_prod_plan_2",
+   "fieldtype": "Int",
+   "label": "Tentative Production Plan 2"
+  },
+  {
+   "fieldname": "today_prod_plan",
+   "fieldtype": "Int",
+   "label": "Today Production Plan"
+  },
+  {
+   "fieldname": "rej_allowance",
+   "fieldtype": "Percent",
+   "label": "Rejection Allowance",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_lspqy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_nozwd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_nucrn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "del_as_on_yes",
+   "fieldtype": "Int",
+   "label": "Delivered Qty as on Yesterday",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_m9fsf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_84jw7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date",
+   "read_only": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-10-21 12:58:09.244085",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Production Plan Report",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,110 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "FG.#####",
+ "creation": "2023-08-25 15:04:09.871527",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_group",
+  "column_break_vqhe5",
+  "item_name",
+  "fg_kanban_qty",
+  "column_break_isvoa",
+  "sfg_days",
+  "today_production_plan",
+  "column_break_hgd7m",
+  "tentative_plan_i",
+  "tentative_plan_ii"
+ ],
+ "fields": [
+  {
+   "fetch_from": "item_code.item_group",
+   "fetch_if_empty": 1,
+   "fieldname": "item_group",
+   "fieldtype": "Data",
+   "label": "Item Group"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fetch_if_empty": 1,
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name"
+  },
+  {
+   "fieldname": "fg_kanban_qty",
+   "fieldtype": "Data",
+   "label": "FG Kanban Qty"
+  },
+  {
+   "fieldname": "sfg_days",
+   "fieldtype": "Data",
+   "label": "SFG Days"
+  },
+  {
+   "fieldname": "today_production_plan",
+   "fieldtype": "Data",
+   "label": "Today Production Plan"
+  },
+  {
+   "fieldname": "tentative_plan_i",
+   "fieldtype": "Data",
+   "label": "Tentative Plan I"
+  },
+  {
+   "fieldname": "tentative_plan_ii",
+   "fieldtype": "Data",
+   "label": "Tentative Plan II"
+  },
+  {
+   "fieldname": "column_break_vqhe5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_hgd7m",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_isvoa",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-10-19 12:16:07.560684",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "FG Plan",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

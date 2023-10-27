@@ -129,23 +129,24 @@ app_license = "MIT"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-#	"all": [
-#		"onegene.tasks.all"
-#	],
-#	"daily": [
-#		"onegene.tasks.daily"
-#	],
-#	"hourly": [
-#		"onegene.tasks.hourly"
-#	],
-#	"weekly": [
-#		"onegene.tasks.weekly"
-#	],
-#	"monthly": [
-#		"onegene.tasks.monthly"
-#	],
-# }
+scheduler_events = {
+	# "all": [
+	# 	"onegene.tasks.all"
+	# ],
+	"daily": [
+		"onegene.tasks.daily",
+        "onegene.onegene.custom.generate_production_plan"
+	],
+	# "hourly": [
+	# 	"onegene.tasks.hourly"
+	# ],
+	# "weekly": [
+	# 	"onegene.tasks.weekly"
+	# ],
+	# "monthly": [
+	# 	"onegene.tasks.monthly"
+	# ],
+}
 
 # Testing
 # -------
@@ -215,3 +216,12 @@ app_license = "MIT"
 # auth_hooks = [
 #	"onegene.auth.validate"
 # ]
+
+doc_events = {
+    "Sales Order":{
+		"on_submit": "onegene.onegene.custom.get_open_order",
+	},
+	# "Order Schedule":{
+	# 	"on_update": "onegene.onegene.custom.get_customer_name.",
+	# },
+}
