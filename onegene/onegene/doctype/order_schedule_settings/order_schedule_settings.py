@@ -56,7 +56,7 @@ def enqueue_upload(file):
                         sales_order = frappe.get_all("Sales Order Item",{"parent": so_number, "item_code": item},["qty"])
                         if sales_order and len(sales_order) > 0:
                             sales_order_qty = sales_order[0].get("qty")
-                            if sales_order_qty > s_qty:
+                            if sales_order_qty >= s_qty:
                                 new_doc = frappe.new_doc('Order Schedule')  
                                 new_doc.customer_code = pp[0]
                                 new_doc.sales_order_number = pp[1]
@@ -168,7 +168,8 @@ def get_data(file):
             so_number = pp[1]
             item = pp[2]
             # sch_date = pp[3]
-            sch_date = pp[3].strftime("%d-%m-%Y")
+            # sch_date = pp[3].strftime("%d-%m-%Y")
+            sch_date = pp[3].strftime("%d-%m-%Y") if pp[3] else ''
             s_qty = pp[4]
             tent_plan_1 = pp[5]
             tent_plan_2 = pp[6]

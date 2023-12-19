@@ -4,5 +4,6 @@
 # import frappe
 from frappe.model.document import Document
 
-class FGPlan(Document):
+
+class MaterialPlanningItem(Document):
 	pass

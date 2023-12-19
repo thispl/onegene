@@ -1,0 +1,43 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-08 11:37:21.961445",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "generate_mrp"
+ ],
+ "fields": [
+  {
+   "description": "Click this button to generate the Material Requirements Planning Manually",
+   "fieldname": "generate_mrp",
+   "fieldtype": "Button",
+   "label": "Generate MRP"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-11-08 11:38:46.896480",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Material Requirements Planning Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

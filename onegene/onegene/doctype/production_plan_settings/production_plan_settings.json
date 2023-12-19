@@ -9,8 +9,7 @@
   "working_days",
   "section_break_n5yoi",
   "generate",
-  "column_break_eexg1",
-  "generate_mr"
+  "column_break_eexg1"
  ],
  "fields": [
   {
@@ -31,19 +30,13 @@
   {
    "fieldname": "column_break_eexg1",
    "fieldtype": "Column Break"
-  },
-  {
-   "description": "To generate the Material Request Manually",
-   "fieldname": "generate_mr",
-   "fieldtype": "Button",
-   "label": "Generate Material Request"
   }
  ],
  "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-10-21 12:27:56.174538",
+ "modified": "2023-11-11 12:19:10.819032",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Production Plan Settings",

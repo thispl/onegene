@@ -130,22 +130,22 @@ app_license = "MIT"
 # ---------------
 
 scheduler_events = {
-	# "all": [
-	# 	"onegene.tasks.all"
-	# ],
-	"daily": [
-		"onegene.tasks.daily",
+    # "all": [
+    # 	"onegene.tasks.all"
+    # ],
+    "daily": [
+        "onegene.tasks.daily",
         "onegene.onegene.custom.generate_production_plan"
-	],
-	# "hourly": [
-	# 	"onegene.tasks.hourly"
-	# ],
-	# "weekly": [
-	# 	"onegene.tasks.weekly"
-	# ],
-	# "monthly": [
-	# 	"onegene.tasks.monthly"
-	# ],
+    ],
+    # "hourly": [
+    # 	"onegene.tasks.hourly"
+    # ],
+    # "weekly": [
+    # 	"onegene.tasks.weekly"
+    # ],
+    # "monthly": [
+    # 	"onegene.tasks.monthly"
+    # ],
 }
 
 # Testing
@@ -219,9 +219,23 @@ scheduler_events = {
 
 doc_events = {
     "Sales Order":{
-		"on_submit": "onegene.onegene.custom.get_open_order",
-	},
-	# "Order Schedule":{
-	# 	"on_update": "onegene.onegene.custom.get_customer_name.",
-	# },
+        "on_submit": ["onegene.onegene.custom.get_open_order","onegene.onegene.custom.create_order_schedule_from_so"],
+        "on_cancel": ["onegene.onegene.custom.cancel_order_schedule_on_so_cancel"],
+        "on_update": "onegene.onegene.custom.return_total_schedule",
+        "on_update_after_submit":"onegene.onegene.utils.update_child_item"
+    },
+    "Employee":{
+        "validate": "onegene.onegene.custom.inactive_employee"
+    },
+    "Order Schedule":{
+        "on_update": ["onegene.onegene.utils.open_qty_so","onegene.onegene.utils.update_order_sch_qty"]
+    },
+    "Delivery Note":{
+        "on_submit": "onegene.onegene.utils.update_order_schedule_table",
+        "on_cancel": "onegene.onegene.utils.revert_order_schedule_table"
+    }
+    # "Order Schedule":{
+    # 	"on_update": "onegene.onegene.custom.get_pending_qty"
+    # # 	"on_update": "onegene.onegene.custom.get_customer_name.",
+    # },
 }

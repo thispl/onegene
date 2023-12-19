@@ -1,0 +1,113 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-18 13:02:11.412284",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_gzqy",
+  "sales_order",
+  "item_code",
+  "column_break_yzbi",
+  "customer",
+  "order_schedule",
+  "column_break_rpdz",
+  "schedule_qty",
+  "customer_code",
+  "column_break_zqzh",
+  "stock_qty",
+  "to_order"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "order_schedule",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Order Schedule",
+   "options": "Order Schedule"
+  },
+  {
+   "columns": 2,
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sales Order",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "column_break_yzbi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fetch_from": "customer.customer_code",
+   "fieldname": "customer_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer Code"
+  },
+  {
+   "columns": 2,
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "column_break_rpdz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "schedule_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Schedule Qty"
+  },
+  {
+   "fieldname": "section_break_gzqy",
+   "fieldtype": "Section Break"
+  },
+  {
+   "columns": 2,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "column_break_zqzh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "stock_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Stock Qty"
+  },
+  {
+   "columns": 1,
+   "fieldname": "to_order",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "To Order"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-11-20 15:07:25.463038",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Material Planning Order Schedule",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -60,3 +60,4 @@ class OrderSchedule(Document):
                                 frappe.throw(f"Validation failed: Quantity <b>{s_qty}</b> exceeds Sales Order quantity <b>{sales_order_qty}</b> in Line Item <b>{item_cde}</b>.")
                         else:
                             frappe.throw(f"Item <b>{self.item_code}</b> not found in the Sales Order - <b>{self.sales_order_number}</b>")
+

@@ -1,45 +1,38 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2023-10-11 12:26:59.608783",
+ "creation": "2023-11-15 20:45:25.908760",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "attach",
   "download",
   "column_break_nuztg",
+  "attach",
   "upload",
-  "update",
   "section_break_bom8n",
   "html"
  ],
  "fields": [
   {
-   "fieldname": "attach",
-   "fieldtype": "Attach",
-   "label": "Attach"
+   "fieldname": "download",
+   "fieldtype": "Button",
+   "label": "Download"
   },
   {
    "fieldname": "column_break_nuztg",
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "attach",
+   "fieldtype": "Attach",
+   "label": "Attach"
+  },
+  {
    "fieldname": "upload",
    "fieldtype": "Button",
    "label": "Upload"
-  },
-  {
-   "fieldname": "update",
-   "fieldtype": "Button",
-   "hidden": 1,
-   "label": "Update"
-  },
-  {
-   "fieldname": "download",
-   "fieldtype": "Button",
-   "label": "Download"
   },
   {
    "fieldname": "section_break_bom8n",
@@ -55,10 +48,10 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-12 10:21:19.087347",
+ "modified": "2023-11-15 20:45:25.908760",
  "modified_by": "Administrator",
  "module": "ONEGENE",
- "name": "Order Schedule Settings",
+ "name": "Kanban Quantity Settings",
  "owner": "Administrator",
  "permissions": [
   {

@@ -1,0 +1,174 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "INS-.#####",
+ "creation": "2023-11-20 11:39:15.583400",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "description",
+  "purchase_order_number",
+  "purchase_receipt_number",
+  "delivery_note_number",
+  "sales_order_number",
+  "received_qty",
+  "id",
+  "inspection_date",
+  "column_break_jth0",
+  "company_name",
+  "warehouse",
+  "inspected_by",
+  "no_of_samples",
+  "sample_reference",
+  "accepted_qty",
+  "accepted_warehouse",
+  "rejected_qty",
+  "rejected_warehouse",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "fieldname": "purchase_order_number",
+   "fieldtype": "Link",
+   "label": "Purchase Order Number",
+   "options": "Purchase Order"
+  },
+  {
+   "fieldname": "purchase_receipt_number",
+   "fieldtype": "Link",
+   "label": "Purchase Receipt Number",
+   "options": "Purchase Receipt"
+  },
+  {
+   "fieldname": "delivery_note_number",
+   "fieldtype": "Link",
+   "label": "Delivery Note Number",
+   "options": "Delivery Note"
+  },
+  {
+   "fieldname": "sales_order_number",
+   "fieldtype": "Link",
+   "label": "Sales Order Number",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "received_qty",
+   "fieldtype": "Float",
+   "label": "Received Qty"
+  },
+  {
+   "fieldname": "id",
+   "fieldtype": "Data",
+   "label": "ID"
+  },
+  {
+   "fieldname": "inspection_date",
+   "fieldtype": "Date",
+   "label": "Inspection Date"
+  },
+  {
+   "fieldname": "company_name",
+   "fieldtype": "Link",
+   "label": "Company Name",
+   "options": "Company"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "inspected_by",
+   "fieldtype": "Link",
+   "label": "Inspected by",
+   "options": "User"
+  },
+  {
+   "fieldname": "no_of_samples",
+   "fieldtype": "Int",
+   "label": "No of Samples"
+  },
+  {
+   "fieldname": "sample_reference",
+   "fieldtype": "Int",
+   "label": "Sample Reference"
+  },
+  {
+   "fieldname": "accepted_qty",
+   "fieldtype": "Int",
+   "label": "Accepted Qty"
+  },
+  {
+   "fieldname": "accepted_warehouse",
+   "fieldtype": "Link",
+   "label": "Accepted Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "rejected_qty",
+   "fieldtype": "Int",
+   "label": "Rejected Qty"
+  },
+  {
+   "fieldname": "rejected_warehouse",
+   "fieldtype": "Link",
+   "label": "Rejected Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "column_break_jth0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Item Inspection",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-11-20 15:05:30.147725",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Item Inspection",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -8,18 +8,35 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "section_break_ibif",
+  "order_type",
+  "sales_order_number",
   "customer_code",
   "customer_name",
-  "sales_order_number",
+  "column_break_n7cvb",
   "item_code",
   "item_name",
   "item_group",
+  "column_break_woiq",
   "schedule_date",
-  "column_break_n7cvb",
-  "qty",
+  "order_rate",
   "tentative_plan_1",
+  "column_break_dtfp",
+  "qty",
+  "schedule_amount",
   "tentative_plan_2",
-  "tentative_plan_3"
+  "column_break_kbvn",
+  "delivered_qty",
+  "delivered_amount",
+  "tentative_plan_3",
+  "column_break_rmly",
+  "pending_qty",
+  "pending_amount",
+  "child_name",
+  "section_break_ucqs",
+  "created_by",
+  "column_break_nsxl",
+  "remarks"
  ],
  "fields": [
   {
@@ -90,11 +107,97 @@
    "fieldname": "item_name",
    "fieldtype": "Data",
    "label": "Item Name"
+  },
+  {
+   "fetch_from": "sales_order_number.customer_order_type",
+   "fieldname": "order_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Order Type",
+   "options": "\nFixed\nOpen"
+  },
+  {
+   "fieldname": "column_break_woiq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_dtfp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_ibif",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_kbvn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_rmly",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "delivered_qty",
+   "fieldtype": "Float",
+   "label": "Delivered Qty"
+  },
+  {
+   "fieldname": "pending_qty",
+   "fieldtype": "Float",
+   "label": "Pending Qty"
+  },
+  {
+   "fieldname": "pending_amount",
+   "fieldtype": "Currency",
+   "label": "Pending Amount"
+  },
+  {
+   "fieldname": "order_rate",
+   "fieldtype": "Currency",
+   "label": "Order Rate"
+  },
+  {
+   "fieldname": "schedule_amount",
+   "fieldtype": "Currency",
+   "label": "Schedule Amount"
+  },
+  {
+   "fieldname": "delivered_amount",
+   "fieldtype": "Currency",
+   "label": "Delivered Amount"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Read Only",
+   "label": "Created By"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "column_break_nsxl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_ucqs",
+   "fieldtype": "Section Break",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "child_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Child Name",
+   "set_only_once": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-10-18 16:54:43.977379",
+ "modified": "2023-11-30 14:40:18.235477",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Order Schedule",

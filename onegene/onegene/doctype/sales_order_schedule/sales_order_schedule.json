@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-17 12:26:19.410650",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "schedule_date",
+  "schedule_qty",
+  "column_break_jano",
+  "delivery_qty",
+  "pending_qty",
+  "order_schedule"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "schedule_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Schedule Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "schedule_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Schedule Qty"
+  },
+  {
+   "fieldname": "column_break_jano",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Delivery Qty"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pending_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Pending Qty"
+  },
+  {
+   "fieldname": "order_schedule",
+   "fieldtype": "Data",
+   "label": "Order Schedule"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-11-23 14:16:39.901858",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Sales Order Schedule",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

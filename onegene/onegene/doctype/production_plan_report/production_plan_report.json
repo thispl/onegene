@@ -181,10 +181,9 @@
    "read_only": 1
   }
  ],
- "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-10-21 12:58:09.244085",
+ "modified": "2023-10-31 10:17:18.960591",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Production Plan Report",
@@ -206,5 +205,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }

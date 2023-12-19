@@ -1,0 +1,144 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-18 12:48:26.764456",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "from_date",
+  "shop_floor_stock",
+  "billing_item_stock",
+  "column_break_qvqn",
+  "to_date",
+  "supplier_stock",
+  "non_billing_item_stock",
+  "column_break_haut",
+  "customer",
+  "rework_stock",
+  "wip_stock",
+  "column_break_ikar",
+  "section_break_vptn",
+  "order_schedule",
+  "materials_section",
+  "material_request"
+ ],
+ "fields": [
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date"
+  },
+  {
+   "fieldname": "column_break_qvqn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date"
+  },
+  {
+   "fieldname": "column_break_haut",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_vptn",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "order_schedule",
+   "fieldtype": "Table",
+   "label": "Order Schedule Table",
+   "options": "Material Planning Order Schedule",
+   "read_only": 1
+  },
+  {
+   "fieldname": "materials_section",
+   "fieldtype": "Section Break",
+   "label": "Materials"
+  },
+  {
+   "fieldname": "material_request",
+   "fieldtype": "Table",
+   "label": "Material Request",
+   "options": "Material Planning Item"
+  },
+  {
+   "fieldname": "column_break_ikar",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "shop_floor_stock",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Shop Floor Stock"
+  },
+  {
+   "default": "0",
+   "fieldname": "wip_stock",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "WIP Stock"
+  },
+  {
+   "default": "0",
+   "fieldname": "supplier_stock",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Supplier Stock"
+  },
+  {
+   "default": "0",
+   "fieldname": "rework_stock",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Rework Stock"
+  },
+  {
+   "default": "0",
+   "fieldname": "billing_item_stock",
+   "fieldtype": "Check",
+   "label": "Billing Item Stock"
+  },
+  {
+   "default": "0",
+   "fieldname": "non_billing_item_stock",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Non Billing Item Stock"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-11-23 13:29:08.275554",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Material Planning",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

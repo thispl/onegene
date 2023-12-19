@@ -1,0 +1,425 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"kb3XPLg8lb\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Shortcuts</span>\",\"col\":12}},{\"id\":\"nWd2KJPW8l\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item\",\"col\":3}},{\"id\":\"0RuMgnACNo\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"BOM\",\"col\":3}},{\"id\":\"UMkCugq_8B\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Order\",\"col\":3}},{\"id\":\"CPxEyhaf3G\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Invoice\",\"col\":3}},{\"id\":\"hbpiG1kVNO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Supplier\",\"col\":3}},{\"id\":\"snrzfbFr5Y\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer\",\"col\":3}},{\"id\":\"Fbgco7zyBq\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Work Order\",\"col\":3}},{\"id\":\"z6MZACH842\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Entry\",\"col\":3}},{\"id\":\"6W7DYUPsTQ\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Material Request\",\"col\":3}},{\"id\":\"GAzpHWZpOW\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item Group\",\"col\":3}},{\"id\":\"uHaQLdUaHq\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item Type\",\"col\":3}},{\"id\":\"P0cLS7XFWN\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Supplier Group\",\"col\":3}},{\"id\":\"ND5gZWFNGG\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer Group\",\"col\":3}},{\"id\":\"QrXk2rzud4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"UOM\",\"col\":3}},{\"id\":\"EWk_WA4O2H\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Warehouse\",\"col\":3}},{\"id\":\"AtTVh_HeTF\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Operation\",\"col\":3}},{\"id\":\"gCto8GZEHm\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Kanban Quantity\",\"col\":3}},{\"id\":\"IzS66kVNce\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Kanban Quantity Settings\",\"col\":3}},{\"id\":\"8leecfuWI0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Rejection Reason\",\"col\":3}},{\"id\":\"uV1tb4PiIx\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Rework Reason\",\"col\":3}},{\"id\":\"n9OgXaSEAg\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Order Schedule Settings\",\"col\":3}},{\"id\":\"b6EfifCe-z\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Order Schedule\",\"col\":3}},{\"id\":\"qPDnRKZfqb\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Production Plan Settings\",\"col\":3}},{\"id\":\"NjeGF5952y\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Production Plan\",\"col\":3}},{\"id\":\"Xg9x4GvNrP\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Production Plan Report\",\"col\":3}},{\"id\":\"xneR8O5ri_\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Material Requirements Planning\",\"col\":3}},{\"id\":\"XhaTsDbCBK\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Requested Items To Be Transferred\",\"col\":3}},{\"id\":\"TLYsmLqr0n\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Requested Items to Order and Receive\",\"col\":3}},{\"id\":\"mrli46LQp1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Schedule Settings\",\"col\":3}},{\"id\":\"d_KVM1gsf9\",\"type\":\"spacer\",\"data\":{\"col\":12}}]",
+ "creation": "2020-01-23 13:46:38.833076",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "getting-started",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Home",
+ "links": [
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Chart of Accounts",
+   "link_count": 0,
+   "link_to": "Account",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Company",
+   "link_count": 0,
+   "link_to": "Company",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customer",
+   "link_count": 0,
+   "link_to": "Customer",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Supplier",
+   "link_count": 0,
+   "link_to": "Supplier",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Item",
+   "link_count": 0,
+   "link_to": "Item",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Warehouse",
+   "link_count": 0,
+   "link_to": "Warehouse",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Brand",
+   "link_count": 0,
+   "link_to": "Brand",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Unit of Measure (UOM)",
+   "link_count": 0,
+   "link_to": "UOM",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Reconciliation",
+   "link_count": 0,
+   "link_to": "Stock Reconciliation",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Lead",
+   "link_count": 0,
+   "link_to": "Lead",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customer Group",
+   "link_count": 0,
+   "link_to": "Customer Group",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Territory",
+   "link_count": 0,
+   "link_to": "Territory",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Import Data",
+   "link_count": 0,
+   "link_to": "Data Import",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Opening Invoice Creation Tool",
+   "link_count": 0,
+   "link_to": "Opening Invoice Creation Tool",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Chart of Accounts Importer",
+   "link_count": 0,
+   "link_to": "Chart of Accounts Importer",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Letter Head",
+   "link_count": 0,
+   "link_to": "Letter Head",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Email Account",
+   "link_count": 0,
+   "link_to": "Email Account",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  }
+ ],
+ "modified": "2023-12-13 09:59:02.670161",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Home",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Red",
+   "doc_view": "Report Builder",
+   "label": "Production Plan Report",
+   "link_to": "Production Plan Report",
+   "stats_filter": "[[\"Production Plan Report\",\"date\",\"Timespan\",\"today\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Order Schedule",
+   "link_to": "Order Schedule",
+   "stats_filter": "[[\"Order Schedule\",\"schedule_date\",\"Timespan\",\"this month\",false]]",
+   "type": "DocType"
+  },
+  {
+   "label": "Sales Invoice",
+   "link_to": "Sales Invoice",
+   "stats_filter": "[[\"Sales Invoice\",\"posting_date\",\"Timespan\",\"this month\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Order Schedule Settings",
+   "link_to": "Order Schedule Settings",
+   "type": "DocType"
+  },
+  {
+   "label": "Item",
+   "link_to": "Item",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Production Plan Settings",
+   "link_to": "Production Plan Settings",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Production Plan",
+   "link_to": "Production Plan",
+   "stats_filter": "[[\"Production Plan\",\"posting_date\",\"Timespan\",\"this month\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Sales Order",
+   "link_to": "Sales Order",
+   "stats_filter": "[[\"Sales Order\",\"transaction_date\",\"Timespan\",\"this month\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Item Group",
+   "link_to": "Item Group",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Requested Items To Be Transferred",
+   "link_to": "Requested Items To Be Transferred",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "BOM",
+   "link_to": "BOM",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Kanban Quantity Settings",
+   "link_to": "Kanban Quantity Settings",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Material Request",
+   "link_to": "Material Request",
+   "stats_filter": "[[\"Material Request\",\"transaction_date\",\"Timespan\",\"this month\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Work Order",
+   "link_to": "Work Order",
+   "stats_filter": "[[\"Work Order\",\"actual_start_date\",\"Timespan\",\"this month\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "UOM",
+   "link_to": "UOM",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Item Type",
+   "link_to": "Item Type",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Kanban Quantity",
+   "link_to": "Kanban Quantity",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Schedule Settings",
+   "link_to": "Schedule Settings",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Material Requirements Planning",
+   "link_to": "Material Requirements Planning",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Requested Items to Order and Receive",
+   "link_to": "Requested Items to Order and Receive",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Supplier Group",
+   "link_to": "Supplier Group",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Stock Entry",
+   "link_to": "Stock Entry",
+   "stats_filter": "[[\"Stock Entry\",\"posting_date\",\"Timespan\",\"this month\",false]]",
+   "type": "DocType"
+  },
+  {
+   "label": "Customer",
+   "link_to": "Customer",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Warehouse",
+   "link_to": "Warehouse",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Customer Group",
+   "link_to": "Customer Group",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Supplier",
+   "link_to": "Supplier",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Operation",
+   "link_to": "Operation",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Rejection Reason",
+   "link_to": "Rejection Reason",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Rework Reason",
+   "link_to": "Rework Reason",
+   "type": "DocType"
+  }
+ ],
+ "title": "Home"
+}
