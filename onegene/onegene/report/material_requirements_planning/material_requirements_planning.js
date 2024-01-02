@@ -32,6 +32,17 @@ frappe.query_reports["Material Requirements Planning"] = {
 		if ((column.fieldname == "item_code"|| column.fieldname == "item_type"|| column.fieldname == "item_name"|| column.fieldname == "uom") && data.safety_stock > data.actual_stock_qty) {
 			value = "<span style='color:red'>" + value + "</span>";
 		}
+
+		if (column.fieldname == "item_billing_type") {
+			switch (data.item_billing_type) {
+				case "Billing":
+					value = "<span style='color:blue'>" + value + "</span>";
+					break;
+				case "Non Billing":
+					value = "<span style='color:green'>" + value + "</span>";
+					break;
+			}
+		}
 		if (column.fieldname == "expected_date" && data ) {
 			value = data["expected_date"];			
 			column.link_onclick = "frappe.query_reports['Material Requirements Planning'].set_route_to_allocation(" + JSON.stringify(data) + ")";
