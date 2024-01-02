@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "UREC.#####",
+ "creation": "2024-01-02 13:07:06.874901",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "time",
+  "column_break_redu",
+  "location__device_id",
+  "log_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Data",
+   "label": "Employee"
+  },
+  {
+   "fieldname": "time",
+   "fieldtype": "Datetime",
+   "label": "Time"
+  },
+  {
+   "fieldname": "column_break_redu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "location__device_id",
+   "fieldtype": "Data",
+   "label": "Location / Device ID"
+  },
+  {
+   "fieldname": "log_type",
+   "fieldtype": "Select",
+   "label": "Log Type",
+   "options": "\nIN\nOUT"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-02 13:14:26.082726",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Unregistered Employee Checkin",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
