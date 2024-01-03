@@ -2,7 +2,6 @@ import frappe
 
 @frappe.whitelist(allow_guest=True)
 def mark_checkin(**args):
-	frappe.log_error(args['employee'])
 	if frappe.db.exists('Employee',{'name':args['employee'],'status':'Active'}):
 		if not frappe.db.exists('Employee Checkin',{'employee':args['employee'],'time':args['time']}):
 			if args['device_id'] == 'IN':
