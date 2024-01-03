@@ -25,21 +25,21 @@ def cron_job1():
 @frappe.whitelist()
 def mark_att():
 	from_date = '2023-12-01'
-	to_date = '2023-12-05'
-	from_date = add_days(today(),-40)  
-	to_date = today()
-	dates = get_dates(from_date,to_date)
-	for date in dates:
-		from_date = add_days(date,0)
-		to_date = date
-		checkins = frappe.db.sql(
-			"""select * from `tabEmployee Checkin` where skip_auto_attendance = 0 and date(time) between '%s' and '%s' order by time """%(from_date,to_date),as_dict=1)
-		for c in checkins:
-			employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
-			if employee:  
-				print(c.name)
-				mark_attendance_from_checkin(c.name,c.employee,c.time,c.log_type)
-	mark_absent(from_date,to_date) 
+	to_date = '2023-12-31'
+	# from_date = add_days(today(),-40)  
+	# to_date = today()
+	# dates = get_dates(from_date,to_date)
+	# for date in dates:
+	# 	from_date = add_days(date,0)
+	# 	to_date = date
+	# 	checkins = frappe.db.sql(
+	# 		"""select * from `tabEmployee Checkin` where skip_auto_attendance = 0 and date(time) between '%s' and '%s' order by time """%(from_date,to_date),as_dict=1)
+	# 	for c in checkins:
+	# 		employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
+	# 		if employee:  
+	# 			print(c.name)
+	# 			mark_attendance_from_checkin(c.name,c.employee,c.time,c.log_type)
+	# mark_absent(from_date,to_date) 
 	mark_wh_ot(from_date,to_date)                             
 
 def mark_attendance_from_checkin(checkin,employee,time,log_type):
@@ -282,6 +282,7 @@ def check_holiday(date,emp):
 				status = "WW"     
 			else:
 				status = "HH"
+
 
 def mark_wh_ot(from_date,to_date):
 	attendance = frappe.db.get_all('Attendance',{'attendance_date':('between',(from_date,to_date)),'docstatus':('!=','2')},['*'])
