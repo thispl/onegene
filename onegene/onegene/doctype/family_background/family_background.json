@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-12-30 14:27:49.833178",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "name1",
+  "age",
+  "relationship",
+  "whether_dependent",
+  "occupation",
+  "income"
+ ],
+ "fields": [
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name"
+  },
+  {
+   "fieldname": "age",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Age"
+  },
+  {
+   "fieldname": "relationship",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Relationship",
+   "options": "\nMother\nFather\nBrother\nSister\nSon\nDaughter"
+  },
+  {
+   "fieldname": "whether_dependent",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Whether Dependent?",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "occupation",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Occupation"
+  },
+  {
+   "fieldname": "income",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Income (per month)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-01-03 09:33:13.448458",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Family Background",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

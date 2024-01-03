@@ -1,0 +1,64 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-12-30 12:16:27.382816",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "language",
+  "mother_tongue",
+  "speak",
+  "read",
+  "write"
+ ],
+ "fields": [
+  {
+   "fieldname": "language",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Language",
+   "options": "Languages"
+  },
+  {
+   "default": "0",
+   "fieldname": "mother_tongue",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Mother Tongue"
+  },
+  {
+   "default": "0",
+   "fieldname": "speak",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Speak"
+  },
+  {
+   "default": "0",
+   "fieldname": "read",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Read"
+  },
+  {
+   "default": "0",
+   "fieldname": "write",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Write"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-01-03 09:33:31.420350",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Languages known",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
