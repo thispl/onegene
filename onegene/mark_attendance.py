@@ -18,7 +18,7 @@ def cron_job1():
 		sjt.update({
 			"method" : 'onegene.mark_attendance.mark_att',
 			"frequency" : 'Cron',
-			"cron_format" : '*/15 * * * *'
+			"cron_format" : '*/20 * * * *'
 		})
 		sjt.save(ignore_permissions=True)
 
