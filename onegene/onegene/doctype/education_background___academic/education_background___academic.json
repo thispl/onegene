@@ -1,0 +1,72 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-12-30 20:51:16.658710",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "examination",
+  "institution",
+  "year",
+  "age",
+  "division",
+  "major_subjects",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "examination",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Examination"
+  },
+  {
+   "fieldname": "institution",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Institution"
+  },
+  {
+   "fieldname": "year",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Year"
+  },
+  {
+   "fieldname": "age",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Age"
+  },
+  {
+   "fieldname": "division",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Division"
+  },
+  {
+   "fieldname": "major_subjects",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Major Subjects"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-01-03 09:32:59.497176",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Education Background - Academic",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-12-30 14:15:46.639848",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "name11",
+  "designation",
+  "nature_of_duties",
+  "from_period",
+  "to_period",
+  "years",
+  "salary",
+  "main_product_of_company",
+  "reason_for_leaving"
+ ],
+ "fields": [
+  {
+   "fieldname": "name11",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name & Address of Company"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Designation",
+   "options": "Designation"
+  },
+  {
+   "fieldname": "nature_of_duties",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nature of Duties"
+  },
+  {
+   "fieldname": "from_period",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "From Period"
+  },
+  {
+   "fieldname": "to_period",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "To Period"
+  },
+  {
+   "fieldname": "years",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Years"
+  },
+  {
+   "fieldname": "salary",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Salary (Gross)"
+  },
+  {
+   "fieldname": "main_product_of_company",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Main Product of Company"
+  },
+  {
+   "fieldname": "reason_for_leaving",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Reason for Leaving"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-01-03 09:32:48.579388",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Employment History",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
