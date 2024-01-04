@@ -144,11 +144,11 @@ def get_data(filters):
 							row1.append("-")
 				
 				if in_time is not None:
-					in_tim = in_time.strftime('%H:%M')
+					in_tim = in_time.strftime('%H:%M:%S')
 				else:
 					in_tim = '-'
 				if out_time is not None:
-					out_tim = out_time.strftime('%H:%M')
+					out_tim = out_time.strftime('%H:%M:%S')
 				else:
 					out_tim = ''
 				row2.append(in_tim)
@@ -158,7 +158,7 @@ def get_data(filters):
 				else:
 					row4.append("-")
 				if working_hours is not None:
-					w_hrs = working_hours.strftime('%H:%M')
+					w_hrs = working_hours.strftime('%H:%M:%S')
 					row5.append(w_hrs)
 				else:
 					row5.append("-")
