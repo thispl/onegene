@@ -26,15 +26,13 @@ frappe.query_reports["Material Requirements Planning"] = {
 			"options": "Customer",
 		},
 	],
-	formatter: (value, row, column, data, default_formatter) => {
-		// value = default_formatter(value, row, column, data);
-		
+	formatter: function(value, row, column, data, default_formatter) {
 		if ((column.fieldname == "item_code"|| column.fieldname == "item_type"|| column.fieldname == "item_name"|| column.fieldname == "uom") && data.safety_stock > data.actual_stock_qty) {
 			value = "<span style='color:red'>" + value + "</span>";
 		}
 
 		if (column.fieldname == "item_billing_type") {
-			switch (data.item_billing_type) {
+			switch (data && data.item_billing_type) {
 				case "Billing":
 					value = "<span style='color:blue'>" + value + "</span>";
 					break;
@@ -43,23 +41,23 @@ frappe.query_reports["Material Requirements Planning"] = {
 					break;
 			}
 		}
-		if (column.fieldname == "expected_date" && data ) {
+		if (column.fieldname == "expected_date") {
 			value = data["expected_date"];			
-			column.link_onclick = "frappe.query_reports['Material Requirements Planning'].set_route_to_allocation(" + JSON.stringify(data) + ")";
+			column.link_onclick = "frappe.query_reports['Material Requirements Planning'].supplier_forecast_popup(" + JSON.stringify(data) + ")";
 		}
-		if (column.fieldname == "actual_stock_qty" && data ) {
+		if (column.fieldname == "actual_stock_qty") {
 			value = data["actual_stock_qty"];			
-			column.link_onclick = "frappe.query_reports['Material Requirements Planning'].set_route(" + JSON.stringify(data) + ")";
+			column.link_onclick = "frappe.query_reports['Material Requirements Planning'].actual_stock_popup(" + JSON.stringify(data) + ")";
 		}
-		if (column.fieldname == "required_qty" && data ) {
+		if (column.fieldname == "required_qty") {
 			value = data["required_qty"];			
-			column.link_onclick = "frappe.query_reports['Material Requirements Planning'].set_route_to_req(" + JSON.stringify(data) + ")";
+			column.link_onclick = "frappe.query_reports['Material Requirements Planning'].required_qty_popup(" + JSON.stringify(data) + ")";
 		}
 		
 		value = default_formatter(value, row, column, data);
 		return value;
 	},
-	"set_route_to_allocation": function (data) {
+	"supplier_forecast_popup": function (data) {
 		frappe.route_options = {
 			"item_code": data["expected_date"],
 		}
@@ -117,7 +115,7 @@ frappe.query_reports["Material Requirements Planning"] = {
 		// }
 			
 	},
-	"set_route_to_req": function (data) {
+	"required_qty_popup": function (data) {
 		frappe.route_options = {
 			"required_qty": data["required_qty"],
 		}
@@ -149,7 +147,7 @@ frappe.query_reports["Material Requirements Planning"] = {
 		});
 		
 	},
-	"set_route": function (data) {
+	"actual_stock_popup": function (data) {
 		frappe.route_options = {
 			"item_code": data["item_code"],
 		}

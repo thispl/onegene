@@ -23,6 +23,7 @@ def execute(filters=None):
     return columns, data
 
 def get_data(filters):
+    last_list = []
     dat = []
     list = []
     da = []
@@ -37,11 +38,37 @@ def get_data(filters):
     consolidated_items = {}
     consolidated_dict = {}
     bom_list = []
+    count_consolidated_items = {}
+    count_bom_list = []
+    count_list = []
     
     if filters.customer:
         os = frappe.get_list("Order Schedule", filters={"schedule_date": ["between", (filters.from_date, filters.to_date)],"customer_name":filters.customer},fields=['name', 'item_code', 'qty','schedule_date'])
     else:
         os = frappe.get_list("Order Schedule", filters={"schedule_date": ["between", (filters.from_date, filters.to_date)]},fields=['name', 'item_code', 'qty','schedule_date'])
+
+    count = 1
+    for s in os:
+        count_bom = frappe.db.get_value("BOM", {'item': s.item_code}, ['name'])
+        count_bom_list.append({"bom": count_bom, "qty": s.qty,'sch_date':s.schedule_date, 'order_schedule':s.name})
+
+    for k in count_bom_list:
+        exploded_count_list = []
+        
+        get_count_exploded_items(k["bom"], exploded_count_list, k["qty"], count_bom_list)
+
+        for item in exploded_count_list:
+            item_code = item['item_code']
+            qty = item['qty']
+
+            if item_code in count_consolidated_items:
+                count_consolidated_items[item_code] += qty
+            else:
+                count_consolidated_items[item_code] = qty
+    for item_code, qty in count_consolidated_items.items():
+        count_list.append(frappe._dict({'item_code': item_code,'order':count}))
+        count = count+1
+    frappe.errprint(count_list)
 
     for s in os:
         bom = frappe.db.get_value("Item", {'name': s.item_code}, ['default_bom'])
@@ -239,7 +266,6 @@ def get_data(filters):
                 'po_qty':ppoc_total,
                 'to_order':order_qty
             }))
-
 
     for id in da:
         exploded_data = []       
@@ -662,9 +688,33 @@ def get_data(filters):
                 'to_order':order_qty
             }))
     
+    # list = dat + da
     list = dat + da +dic + dict + ict + final
+    for corrected in count_list:
+        for updated in list:
+            if corrected['item_code'] == updated['item_code'] :
+                last_list.append(frappe._dict({
+                    'item_code': updated['item_code'],
+                    'item_name': updated['item_name'],
+                    'item_type': updated['item_type'],
+                    'item_billing_type': updated['item_billing_type'],
+                    'uom': updated['uom'],
+                    'required_qty': updated['required_qty'],
+                    'qty_with_rejection_allowance': updated['qty_with_rejection_allowance'],
+                    'sfs_qty': updated['sfs_qty'],
+                    'actual_stock_qty': updated['actual_stock_qty'],
+                    'safety_stock': updated['safety_stock'],
+                    'pack_size': updated['pack_size'],
+                    'qty': updated['qty'],
+                    'po_qty': updated['po_qty'],
+                    'moq': updated['moq'],
+                    'to_order': updated['to_order'],
+                    'lead_time_days': updated['lead_time_days'],
+                    'expected_date': updated['expected_date'],
+                }))
+        # frappe.errprint(corrected['item_code'])
 
-    return list
+    return last_list
 
 def get_exploded_items(bom, data, qty, skip_list):
     exploded_items = frappe.get_all("BOM Item", filters={"parent": bom},fields=["qty", "bom_no as bom", "item_code", "item_name", "description", "uom"])
@@ -691,7 +741,6 @@ def get_bom_exploded_items(bom, data, qty, skip_list):
         #     get_exploded_items(item['bom'], data, qty=item_qty, skip_list=skip_list)
 
 def get_sub_bom_exploded_items(bom, data_list, qty, skip_list):
-    frappe.errprint(qty)
     exploded_items = frappe.get_all("BOM Item", filters={"parent": bom},fields=["qty", "bom_no as bom", "item_code", "item_name", "description", "uom"])
     for item in exploded_items:
         item_code = item['item_code']
@@ -700,6 +749,20 @@ def get_sub_bom_exploded_items(bom, data_list, qty, skip_list):
         # if item['bom']:
         #     get_exploded_items(item['bom'], data, qty=item_qty, skip_list=skip_list)
 
+def get_count_exploded_items(bom, count_list, qty, skip_list):
+    bomitem = frappe.db.get_value("Item", {'default_bom': bom}, ['name'])
+    count_list.append({
+            "item_code": bomitem,
+            "qty": qty,
+        })
+    exploded_items = frappe.get_all("BOM Item", filters={"parent": bom},fields=["qty", "bom_no as bom", "item_code", "item_name", "description", "uom"])
+
+    for item in exploded_items:
+        item_code = item['item_code']
+        item_qty = flt(item['qty']) * qty
+        count_list.append({"item_code": item_code,"item_name": item['item_name'],"bom": item['bom'],"uom": item['uom'],"qty": item_qty,"description": item['description']})
+        if item['bom']:
+            get_count_exploded_items(item['bom'], count_list, qty=item_qty, skip_list=skip_list)
 
 
 def get_columns():
@@ -710,15 +773,15 @@ def get_columns():
         {"label": _("Item Billing Type"), "fieldtype": "Data", "fieldname": "item_billing_type", "width": 150},
         {"label": _("UOM"), "fieldtype": "Data", "fieldname": "uom", "width": 100},
         {"label": _("Required Qty"), "fieldtype": "Link", "fieldname": "required_qty", "width": 100, "options": "Material Planning Details"},
-        # {"label": _("Qty with Rejection Allowance"), "fieldtype": "Float", "fieldname": "qty_with_rejection_allowance", "width": 100},
-        # {"label": _("SFS Qty"), "fieldtype": "Float", "fieldname": "sfs_qty", "width": 100},
-        # {"label": _("Actual Stock Qty"), "fieldtype": "Link", "fieldname": "actual_stock_qty", "width": 100, "options": "Material Planning Details"},
-        # {"label": _("Safety Stock"), "fieldtype": "Float", "fieldname": "safety_stock", "width": 100},
-        # {"label": _("Pack Size"), "fieldtype": "Data", "fieldname": "pack_size", "width": 100},
-        # {"label": _("Order Qty"), "fieldtype": "Float", "fieldname": "qty", "width": 100},
-        # {"label": _("PO Qty"), "fieldtype": "Float", "fieldname": "po_qty", "width": 100},
-        # {"label": _("MOQ"), "fieldtype": "Float", "fieldname": "moq", "width": 100},
+        {"label": _("Qty with Rejection Allowance"), "fieldtype": "Float", "fieldname": "qty_with_rejection_allowance", "width": 100},
+        {"label": _("SFS Qty"), "fieldtype": "Float", "fieldname": "sfs_qty", "width": 100},
+        {"label": _("Actual Stock Qty"), "fieldtype": "Link", "fieldname": "actual_stock_qty", "width": 100, "options": "Material Planning Details"},
+        {"label": _("Safety Stock"), "fieldtype": "Float", "fieldname": "safety_stock", "width": 100},
+        {"label": _("Pack Size"), "fieldtype": "Data", "fieldname": "pack_size", "width": 100},
+        {"label": _("Order Qty"), "fieldtype": "Float", "fieldname": "qty", "width": 100},
+        {"label": _("PO Qty"), "fieldtype": "Float", "fieldname": "po_qty", "width": 100},
+        {"label": _("MOQ"), "fieldtype": "Float", "fieldname": "moq", "width": 100},
         {"label": _("Qty to Order"), "fieldtype": "Float", "fieldname": "to_order", "width": 100},
-        # {"label": _("Lead Time Days"), "fieldtype": "Data", "fieldname": "lead_time_days", "width": 100},
-        # {"label": _("Expected Date"), "fieldtype": "Link", "fieldname": "expected_date", "width": 130, "options": "Material Planning Details"},
+        {"label": _("Lead Time Days"), "fieldtype": "Data", "fieldname": "lead_time_days", "width": 100},
+        {"label": _("Expected Date"), "fieldtype": "Link", "fieldname": "expected_date", "width": 130, "options": "Material Planning Details"},
     ]

@@ -22,21 +22,30 @@ def cron_job1():
 		})
 		sjt.save(ignore_permissions=True)
 
-# @frappe.whitelist()
-# def mark_att1():
-# 	checkins = frappe.db.sql("""update `tabEmployee Checkin` set skip_auto_attendance = 0 """,as_dict=1)
-# 	print(checkins)
-# 	checkins = frappe.db.sql("""update `tabEmployee Checkin` set attendance = 0 """,as_dict=1)
-# 	print(checkins)
-# 	checkins = frappe.db.sql("""delete from `tabAttendance` """,as_dict=1)
-# 	print(checkins)
+@frappe.whitelist()
+def mark_att1():
+	# checkins = frappe.db.sql("""update `tabEmployee Checkin` set skip_auto_attendance = 0 """,as_dict=1)
+	# print(checkins)
+	# checkins = frappe.db.sql("""update `tabEmployee Checkin` set attendance = 0 """,as_dict=1)
+	# print(checkins)
+	checkins = frappe.db.sql("""update `tabAttendance` set docstatus = 1 where attendance_date between "2023-12-01" and "2023-12-31" and status = "Present" """,as_dict=1)
+	print(checkins)
+
+@frappe.whitelist()
+def m_mark_wh_ot():
+	from_date = '2023-11-01'
+	to_date = '2023-11-30'
+	mark_wh_ot(from_date,to_date)
+	mark_absent(from_date,to_date) 
+
+
 
 @frappe.whitelist()
 def mark_att():
-	from_date = '2024-01-01'
-	to_date = '2024-01-04'
-	from_date = add_days(today(),-40)  
-	to_date = today()
+	from_date = '2023-11-01'
+	to_date = '2023-11-30'
+	# from_date = add_days(today(),-40)  
+	# to_date = today()
 	dates = get_dates(from_date,to_date)
 	for date in dates:
 		from_date = add_days(date,0)
@@ -48,8 +57,8 @@ def mark_att():
 			if employee:  
 				print(c.name)
 				mark_attendance_from_checkin(c.name,c.employee,c.time,c.log_type)
-	mark_absent(from_date,to_date) 
-	mark_wh_ot(from_date,to_date)                             
+	# mark_absent(from_date,to_date) 
+	# mark_wh_ot(from_date,to_date)                             
 
 def mark_attendance_from_checkin(checkin,employee,time,log_type):
 	att_date = time.date()

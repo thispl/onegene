@@ -158,7 +158,7 @@ def get_data(filters):
 				else:
 					row4.append("-")
 				if working_hours is not None:
-					w_hrs = working_hours.strftime('%H:%M:%S')
+					w_hrs = working_hours
 					row5.append(w_hrs)
 				else:
 					row5.append("-")
@@ -295,3 +295,8 @@ def check_holiday(date,emp):
 		else:
 			status = '*'
 	return status
+
+
+@frappe.whitelist()
+def get_to_date(from_date):
+	return get_last_day(from_date)

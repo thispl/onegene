@@ -8,7 +8,19 @@ frappe.query_reports["Attendance Register"] = {
 			"label": __("From Date"),
 			"fieldtype": "Date",
 			"reqd": 1,
-			"default": frappe.datetime.month_start()
+			on_change: function () {
+				var from_date = frappe.query_report.get_filter_value('from_date')
+				frappe.call({
+					method: "onegene.onegene.report.attendance_register.attendance_register.get_to_date",
+					args: {
+						from_date: from_date
+					},
+					callback(r) {
+						frappe.query_report.set_filter_value('to_date', r.message);
+						frappe.query_report.refresh();
+					}
+				})
+			}
 		},
 		{
 			"fieldname": "to_date",
