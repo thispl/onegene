@@ -1121,3 +1121,18 @@ def fixed_salary(doc,method):
 		doc.custom_leave_travel_allowance = lta
 		doc.custocustom_medical_conveyance_allowancem_basic = mnc
 		doc.custom_special_pay = sp
+
+@frappe.whitelist()
+def total_value(permission_hours,employee,permission_date):
+		total_hours = 0
+		from_date=get_first_day(permission_date)
+		to_date=get_last_day(permission_date)
+		employees = frappe.get_all('Attendance Permission', {'employee': employee,'permission_date':['between', (from_date, to_date)] ,'docstatus':1}, ['*'])
+
+		for emp in employees:
+			permission_hour_str = emp.get('permission_hours', '')
+			if permission_hour_str and permission_hour_str.strip().isdigit():
+				kl = int(permission_hour_str)
+				total_hours += kl
+
+		return total_hours
