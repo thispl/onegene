@@ -1032,3 +1032,18 @@ def list_raw_mat():
         item_qty = flt(item['qty']) * qty
         data.append({"item_code": item_code,"item_name": item['item_name'],"bom": item['bom'],"uom": item['uom'],"qty": item_qty,"description": item['description']})
     frappe.errprint(data)
+
+@frappe.whitelist()
+def total_value(permission_hours,employee,permission_date):
+		total_hours = 0
+		from_date=get_first_day(permission_date)
+		to_date=get_last_day(permission_date)
+		employees = frappe.get_all('Attendance Permission', {'employee': employee,'permission_date':['between', (from_date, to_date)] ,'docstatus':1}, ['*'])
+
+		for emp in employees:
+			permission_hour_str = emp.get('permission_hours', '')
+			if permission_hour_str and permission_hour_str.strip().isdigit():
+				kl = int(permission_hour_str)
+				total_hours += kl
+
+		return total_hours

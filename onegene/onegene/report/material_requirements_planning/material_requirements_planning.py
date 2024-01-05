@@ -36,17 +36,6 @@ def get_data(filters):
 
     for s in os:
         bom = frappe.db.get_value("BOM", {'item': s.item_code}, ['name'])
-        # bom_qty = frappe.db.sql(""" select item_code,sum(actual_qty) as qty from `tabBin` where item_code = '%s' """%(s.item_code),as_dict = 1)[0]
-        # if bom_qty['qty']:
-        #     bom_qty = bom_qty['qty']
-        # else:
-        #     bom_qty = 0
-        # bom_qty_check = 0
-        # if s.qty > bom_qty:
-        #     bom_qty_check = s.qty - bom_qty
-        # else:
-        #     bom_qty_check = bom_qty - s.qty
-        # bom_list.append({"bom": bom, "qty": bom_qty_check,'sch_date':s.schedule_date})
         bom_list.append({"bom": bom, "qty": s.qty,'sch_date':s.schedule_date, 'order_schedule':s.name})
 
     for k in bom_list:

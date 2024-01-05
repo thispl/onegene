@@ -1,27 +1,24 @@
 {
  "add_total_row": 0,
  "columns": [],
- "creation": "2023-11-27 14:23:27.448873",
+ "creation": "2024-01-05 18:22:36.701526",
  "disabled": 0,
  "docstatus": 0,
  "doctype": "Report",
  "filters": [],
- "idx": 5,
+ "idx": 0,
  "is_standard": "Yes",
  "letterhead": null,
- "modified": "2024-01-04 16:21:33.703433",
+ "modified": "2024-01-05 18:22:36.701526",
  "modified_by": "Administrator",
  "module": "ONEGENE",
- "name": "Material Requirements Planning",
+ "name": "BOM Count",
  "owner": "Administrator",
  "prepared_report": 0,
- "ref_doctype": "Order Schedule",
- "report_name": "Material Requirements Planning",
+ "ref_doctype": "BOM",
+ "report_name": "BOM Count",
  "report_type": "Script Report",
  "roles": [
-  {
-   "role": "System Manager"
-  },
   {
    "role": "Manufacturing Manager"
   },
