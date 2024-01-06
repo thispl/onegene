@@ -233,6 +233,9 @@ doc_events = {
     "Delivery Note":{
         "on_submit": "onegene.onegene.utils.update_order_schedule_table",
         "on_cancel": "onegene.onegene.utils.revert_order_schedule_table"
+    },
+    "Salary Slip":{
+        "after_save":["onegene.onegene.custom.weekly_off","onegene.onegene.custom.weekly_off","onegene.onegene.custom.fixed_salary"],
     }
     # "Order Schedule":{
     # 	"on_update": "onegene.onegene.custom.get_pending_qty"
