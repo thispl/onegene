@@ -1032,3 +1032,65 @@ def list_raw_mat():
         item_qty = flt(item['qty']) * qty
         data.append({"item_code": item_code,"item_name": item['item_name'],"bom": item['bom'],"uom": item['uom'],"qty": item_qty,"description": item['description']})
     frappe.errprint(data)
+    
+@frappe.whitelist()
+def get_bom_details(bo, child):
+    dict_list = []
+    seen_items = set()
+
+    so = frappe.get_doc("BOM", bo)
+    op = frappe.db.get_all("Operation Item List", {"operation_name": child, "document_name": bo}, ["*"])
+
+    if op:
+        checked_row = 0
+        for j in op:
+            checked_row = j.selected_field
+            if j.item not in seen_items:
+                dict_list.append(frappe._dict({"check_box": 1, "name": checked_row, "item_code": j.item, "req_tot_qty": j.req_tot_qty, "uom": j.uom}))
+                seen_items.add(j.item)
+
+    for i in so.items:
+        if i.item_code not in seen_items:
+            dict_list.append(frappe._dict({"item_code": i.item_code, "req_tot_qty": i.qty, "uom": i.uom}))
+            seen_items.add(i.item_code)
+
+    return dict_list
+
+
+# def get_bom_details(bo,child):
+#     dict_list = []
+#     so = frappe.get_doc("BOM",bo)
+#     op = frappe.db.get_all("Operation Item List",{"operation_name":child,"document_name":bo},["*"])
+#     if op:
+#         for j in op:
+#             checked_row = j.selected_field 
+#             dict_list.append(frappe._dict({"check_box":1,"name":checked_row,"item_code":j.item,"req_tot_qty":j.req_tot_qty,"uom":j.uom}))
+            
+#     for i in so.items:
+#         dict_list.append(frappe._dict({"item_code":i.item_code,"req_tot_qty":i.qty,"uom":i.uom}))
+#     return (dict_list)
+
+
+@frappe.whitelist()
+def update_checkbox(selected_items):
+    # dict_list = []
+    
+    # for item in selected_items:
+    #     dict_list.append(frappe._dict({"check_box":1}))
+    #     item_code = item.get("item_code")
+    #     frappe.errprint(item_code)
+    return "ok"
+
+@frappe.whitelist()
+def table_multiselect(docs,item,item_code,child,uom,req_tot_qty):
+    op = frappe.db.get_value("Operation Item List",{"document_name":docs,"item":item_code,"operation_name":child},["name"])
+    if not op:
+        bom_child = frappe.new_doc("Operation Item List")
+        bom_child.document_name = docs
+        bom_child.item = item_code
+        bom_child.operation_name = child
+        bom_child.selected_field = item
+        bom_child.req_tot_qty = req_tot_qty
+        bom_child.uom = uom
+        bom_child.save()
+        
