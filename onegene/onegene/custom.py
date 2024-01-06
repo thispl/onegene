@@ -1136,3 +1136,76 @@ def total_value(permission_hours,employee,permission_date):
 				total_hours += kl
 
 		return total_hours
+
+@frappe.whitelist()
+def weekly_off(doc,method):
+	no_of_days = date_diff(add_days(doc.end_date, 1), doc.start_date)
+	dates = [add_days(doc.start_date, i) for i in range(0, no_of_days)]
+	weekly_off=0
+	for date in dates:
+		holiday_list = frappe.db.get_value('Employee',{'name':doc.employee},'holiday_list')
+		holiday = frappe.db.sql("""select `tabHoliday`.holiday_date,`tabHoliday`.weekly_off from `tabHoliday List` 
+		left join `tabHoliday` on `tabHoliday`.parent = `tabHoliday List`.name where `tabHoliday List`.name = '%s' and holiday_date = '%s' """%(holiday_list,date),as_dict=True)
+		doj= frappe.db.get_value("Employee",{'name':doc.employee},"date_of_joining")
+		if holiday :
+			if doj < holiday[0].holiday_date:
+				if holiday[0].weekly_off == 1:
+					weekly_off+=1
+			else:
+				weekly_off=0
+	doc.custom_weekly_off=weekly_off
+
+
+@frappe.whitelist()
+def overtime_hours(doc,method):
+	ot_hours=frappe.db.sql("""select sum(custom_overtime_hours) from `tabAttendance` where employee = '%s' and attendance_date between '%s' and '%s'""",(doc.employee,doc.start_date,doc.end_date),as_dict=True)
+	doc.custom_overtime_hours=ot_hours
+
+@frappe.whitelist()
+def fixed_salary(doc,method):
+	earned_basic=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Basic"},["amount"]) or 0
+	da=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Dearness Allowance"},["amount"]) or 0
+	hra=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"House Rent Allowance"},["amount"]) or 0
+	wa=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Washing Allowance"},["amount"]) or 0
+	ca=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Conveyance Allowance"},["amount"]) or 0
+	ea=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Education Allowance"},["amount"]) or 0
+	pa=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Performance Allowance"},["amount"]) or 0
+	sa=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Special Allowance"},["amount"]) or 0
+	stipend=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Stipend"},["amount"]) or 0
+	att_inc=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Attendance Incentive"},["amount"]) or 0
+	basic_da=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Basic & DA"},["amount"]) or 0
+	lta=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Leave Travel Allowance"},["amount"]) or 0
+	mnc=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Medical & Conveyance Allowance"},["amount"]) or 0
+	sp=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Special Pay"},["amount"]) or 0
+
+	no_of_days = date_diff(add_days(doc.end_date, 1), doc.start_date)
+	if doc.payment_days<no_of_days:
+		doc.custom_basic = (earned_basic/doc.payment_days)*no_of_days
+		doc.custom_dearness_allowance = (da/doc.payment_days)*no_of_days
+		doc.custom_house_rent_allowance = (hra/doc.payment_days)*no_of_days
+		doc.custom_washing_allowance = (wa/doc.payment_days)*no_of_days
+		doc.custom_conveyance_allowance = (ca/doc.payment_days)*no_of_days
+		doc.custom_education_allowance = (ea/doc.payment_days)*no_of_days
+		doc.custom_performance_allowance = (pa/doc.payment_days)*no_of_days
+		doc.custom_special_allowance = (sa/doc.payment_days)*no_of_days
+		doc.custom_stipend = (stipend/doc.payment_days)*no_of_days
+		doc.custom_attendance_incentive = (att_inc/doc.payment_days)*no_of_days
+		doc.custom_basic_da = (basic_da/doc.payment_days)*no_of_days
+		doc.custom_leave_travel_allowance = (lta/doc.payment_days)*no_of_days
+		doc.custocustom_medical_conveyance_allowancem_basic = (mnc/doc.payment_days)*no_of_days
+		doc.custom_special_pay = (sp/doc.payment_days)*no_of_days
+	else:
+		doc.custom_basic = earned_basic
+		doc.custom_dearness_allowance = da
+		doc.custom_house_rent_allowance = hra
+		doc.custom_washing_allowance = wa
+		doc.custom_conveyance_allowance = ca
+		doc.custom_education_allowance = ea
+		doc.custom_performance_allowance = pa
+		doc.custom_special_allowance = sa
+		doc.custom_stipend = stipend
+		doc.custom_attendance_incentive = att_inc
+		doc.custom_basic_da = basic_da
+		doc.custom_leave_travel_allowance = lta
+		doc.custocustom_medical_conveyance_allowancem_basic = mnc
+		doc.custom_special_pay = sp
