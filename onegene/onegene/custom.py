@@ -1033,179 +1033,66 @@ def list_raw_mat():
         item_qty = flt(item['qty']) * qty
         data.append({"item_code": item_code,"item_name": item['item_name'],"bom": item['bom'],"uom": item['uom'],"qty": item_qty,"description": item['description']})
     frappe.errprint(data)
-
+    
+    
 @frappe.whitelist()
-def total_value(permission_hours,employee,permission_date):
-		total_hours = 0
-		from_date=get_first_day(permission_date)
-		to_date=get_last_day(permission_date)
-		employees = frappe.get_all('Attendance Permission', {'employee': employee,'permission_date':['between', (from_date, to_date)] ,'docstatus':1}, ['*'])
+def get_bom_details(bo, child):
+    dict_list = []
+    seen_items = set()
 
-		for emp in employees:
-			permission_hour_str = emp.get('permission_hours', '')
-			if permission_hour_str and permission_hour_str.strip().isdigit():
-				kl = int(permission_hour_str)
-				total_hours += kl
+    so = frappe.get_doc("BOM", bo)
+    op = frappe.db.get_all("Operation Item List", {"operation_name": child, "document_name": bo}, ["*"])
 
-		return total_hours
+    if op:
+        checked_row = 0
+        for j in op:
+            checked_row = j.selected_field
+            if j.item not in seen_items:
+                dict_list.append(frappe._dict({"check_box": 1, "name": checked_row, "item_code": j.item, "req_tot_qty": j.req_tot_qty, "uom": j.uom}))
+                seen_items.add(j.item)
 
-@frappe.whitelist()
-def weekly_off(doc,method):
-	no_of_days = date_diff(add_days(doc.end_date, 1), doc.start_date)
-	dates = [add_days(doc.start_date, i) for i in range(0, no_of_days)]
-	weekly_off=0
-	for date in dates:
-		holiday_list = frappe.db.get_value('Employee',{'name':doc.employee},'holiday_list')
-		holiday = frappe.db.sql("""select `tabHoliday`.holiday_date,`tabHoliday`.weekly_off from `tabHoliday List` 
-		left join `tabHoliday` on `tabHoliday`.parent = `tabHoliday List`.name where `tabHoliday List`.name = '%s' and holiday_date = '%s' """%(holiday_list,date),as_dict=True)
-		doj= frappe.db.get_value("Employee",{'name':doc.employee},"date_of_joining")
-		if holiday :
-			if doj < holiday[0].holiday_date:
-				if holiday[0].weekly_off == 1:
-					weekly_off+=1
-			else:
-				weekly_off=0
-	doc.custom_weekly_off=weekly_off
+    for i in so.items:
+        if i.item_code not in seen_items:
+            dict_list.append(frappe._dict({"item_code": i.item_code, "req_tot_qty": i.qty, "uom": i.uom}))
+            seen_items.add(i.item_code)
+
+    return dict_list
 
 
-@frappe.whitelist()
-def overtime_hours(doc,method):
-	ot_hours=frappe.db.sql("""select sum(custom_overtime_hours) from `tabAttendance` where employee = '%s' and attendance_date between '%s' and '%s'""",(doc.employee,doc.start_date,doc.end_date),as_dict=True)
-	doc.custom_overtime_hours=ot_hours
-
-@frappe.whitelist()
-def fixed_salary(doc,method):
-	earned_basic=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Basic"},["amount"]) or 0
-	da=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Dearness Allowance"},["amount"]) or 0
-	hra=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"House Rent Allowance"},["amount"]) or 0
-	wa=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Washing Allowance"},["amount"]) or 0
-	ca=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Conveyance Allowance"},["amount"]) or 0
-	ea=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Education Allowance"},["amount"]) or 0
-	pa=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Performance Allowance"},["amount"]) or 0
-	sa=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Special Allowance"},["amount"]) or 0
-	stipend=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Stipend"},["amount"]) or 0
-	att_inc=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Attendance Incentive"},["amount"]) or 0
-	basic_da=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Basic & DA"},["amount"]) or 0
-	lta=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Leave Travel Allowance"},["amount"]) or 0
-	mnc=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Medical & Conveyance Allowance"},["amount"]) or 0
-	sp=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Special Pay"},["amount"]) or 0
-
-	no_of_days = date_diff(add_days(doc.end_date, 1), doc.start_date)
-	if doc.payment_days<no_of_days:
-		doc.custom_basic = (earned_basic/doc.payment_days)*no_of_days
-		doc.custom_dearness_allowance = (da/doc.payment_days)*no_of_days
-		doc.custom_house_rent_allowance = (hra/doc.payment_days)*no_of_days
-		doc.custom_washing_allowance = (wa/doc.payment_days)*no_of_days
-		doc.custom_conveyance_allowance = (ca/doc.payment_days)*no_of_days
-		doc.custom_education_allowance = (ea/doc.payment_days)*no_of_days
-		doc.custom_performance_allowance = (pa/doc.payment_days)*no_of_days
-		doc.custom_special_allowance = (sa/doc.payment_days)*no_of_days
-		doc.custom_stipend = (stipend/doc.payment_days)*no_of_days
-		doc.custom_attendance_incentive = (att_inc/doc.payment_days)*no_of_days
-		doc.custom_basic_da = (basic_da/doc.payment_days)*no_of_days
-		doc.custom_leave_travel_allowance = (lta/doc.payment_days)*no_of_days
-		doc.custocustom_medical_conveyance_allowancem_basic = (mnc/doc.payment_days)*no_of_days
-		doc.custom_special_pay = (sp/doc.payment_days)*no_of_days
-	else:
-		doc.custom_basic = earned_basic
-		doc.custom_dearness_allowance = da
-		doc.custom_house_rent_allowance = hra
-		doc.custom_washing_allowance = wa
-		doc.custom_conveyance_allowance = ca
-		doc.custom_education_allowance = ea
-		doc.custom_performance_allowance = pa
-		doc.custom_special_allowance = sa
-		doc.custom_stipend = stipend
-		doc.custom_attendance_incentive = att_inc
-		doc.custom_basic_da = basic_da
-		doc.custom_leave_travel_allowance = lta
-		doc.custocustom_medical_conveyance_allowancem_basic = mnc
-		doc.custom_special_pay = sp
-
-@frappe.whitelist()
-def total_value(permission_hours,employee,permission_date):
-		total_hours = 0
-		from_date=get_first_day(permission_date)
-		to_date=get_last_day(permission_date)
-		employees = frappe.get_all('Attendance Permission', {'employee': employee,'permission_date':['between', (from_date, to_date)] ,'docstatus':1}, ['*'])
-
-		for emp in employees:
-			permission_hour_str = emp.get('permission_hours', '')
-			if permission_hour_str and permission_hour_str.strip().isdigit():
-				kl = int(permission_hour_str)
-				total_hours += kl
-
-		return total_hours
-
-@frappe.whitelist()
-def weekly_off(doc,method):
-	no_of_days = date_diff(add_days(doc.end_date, 1), doc.start_date)
-	dates = [add_days(doc.start_date, i) for i in range(0, no_of_days)]
-	weekly_off=0
-	for date in dates:
-		holiday_list = frappe.db.get_value('Employee',{'name':doc.employee},'holiday_list')
-		holiday = frappe.db.sql("""select `tabHoliday`.holiday_date,`tabHoliday`.weekly_off from `tabHoliday List` 
-		left join `tabHoliday` on `tabHoliday`.parent = `tabHoliday List`.name where `tabHoliday List`.name = '%s' and holiday_date = '%s' """%(holiday_list,date),as_dict=True)
-		doj= frappe.db.get_value("Employee",{'name':doc.employee},"date_of_joining")
-		if holiday :
-			if doj < holiday[0].holiday_date:
-				if holiday[0].weekly_off == 1:
-					weekly_off+=1
-			else:
-				weekly_off=0
-	doc.custom_weekly_off=weekly_off
+# def get_bom_details(bo,child):
+#     dict_list = []
+#     so = frappe.get_doc("BOM",bo)
+#     op = frappe.db.get_all("Operation Item List",{"operation_name":child,"document_name":bo},["*"])
+#     if op:
+#         for j in op:
+#             checked_row = j.selected_field 
+#             dict_list.append(frappe._dict({"check_box":1,"name":checked_row,"item_code":j.item,"req_tot_qty":j.req_tot_qty,"uom":j.uom}))
+            
+#     for i in so.items:
+#         dict_list.append(frappe._dict({"item_code":i.item_code,"req_tot_qty":i.qty,"uom":i.uom}))
+#     return (dict_list)
 
 
 @frappe.whitelist()
-def overtime_hours(doc,method):
-	ot_hours=frappe.db.sql("""select sum(custom_overtime_hours) from `tabAttendance` where employee = '%s' and attendance_date between '%s' and '%s'""",(doc.employee,doc.start_date,doc.end_date),as_dict=True)
-	doc.custom_overtime_hours=ot_hours
+def update_checkbox(selected_items):
+    # dict_list = []
+    
+    # for item in selected_items:
+    #     dict_list.append(frappe._dict({"check_box":1}))
+    #     item_code = item.get("item_code")
+    #     frappe.errprint(item_code)
+    return "ok"
 
 @frappe.whitelist()
-def fixed_salary(doc,method):
-	earned_basic=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Basic"},["amount"]) or 0
-	da=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Dearness Allowance"},["amount"]) or 0
-	hra=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"House Rent Allowance"},["amount"]) or 0
-	wa=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Washing Allowance"},["amount"]) or 0
-	ca=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Conveyance Allowance"},["amount"]) or 0
-	ea=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Education Allowance"},["amount"]) or 0
-	pa=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Performance Allowance"},["amount"]) or 0
-	sa=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Special Allowance"},["amount"]) or 0
-	stipend=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Stipend"},["amount"]) or 0
-	att_inc=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Attendance Incentive"},["amount"]) or 0
-	basic_da=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Basic & DA"},["amount"]) or 0
-	lta=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Leave Travel Allowance"},["amount"]) or 0
-	mnc=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Medical & Conveyance Allowance"},["amount"]) or 0
-	sp=frappe.db.get_value("Salary Detail",{"parent":doc.name,"salary_component":"Special Pay"},["amount"]) or 0
-
-	no_of_days = date_diff(add_days(doc.end_date, 1), doc.start_date)
-	if doc.payment_days<no_of_days:
-		doc.custom_basic = (earned_basic/doc.payment_days)*no_of_days
-		doc.custom_dearness_allowance = (da/doc.payment_days)*no_of_days
-		doc.custom_house_rent_allowance = (hra/doc.payment_days)*no_of_days
-		doc.custom_washing_allowance = (wa/doc.payment_days)*no_of_days
-		doc.custom_conveyance_allowance = (ca/doc.payment_days)*no_of_days
-		doc.custom_education_allowance = (ea/doc.payment_days)*no_of_days
-		doc.custom_performance_allowance = (pa/doc.payment_days)*no_of_days
-		doc.custom_special_allowance = (sa/doc.payment_days)*no_of_days
-		doc.custom_stipend = (stipend/doc.payment_days)*no_of_days
-		doc.custom_attendance_incentive = (att_inc/doc.payment_days)*no_of_days
-		doc.custom_basic_da = (basic_da/doc.payment_days)*no_of_days
-		doc.custom_leave_travel_allowance = (lta/doc.payment_days)*no_of_days
-		doc.custocustom_medical_conveyance_allowancem_basic = (mnc/doc.payment_days)*no_of_days
-		doc.custom_special_pay = (sp/doc.payment_days)*no_of_days
-	else:
-		doc.custom_basic = earned_basic
-		doc.custom_dearness_allowance = da
-		doc.custom_house_rent_allowance = hra
-		doc.custom_washing_allowance = wa
-		doc.custom_conveyance_allowance = ca
-		doc.custom_education_allowance = ea
-		doc.custom_performance_allowance = pa
-		doc.custom_special_allowance = sa
-		doc.custom_stipend = stipend
-		doc.custom_attendance_incentive = att_inc
-		doc.custom_basic_da = basic_da
-		doc.custom_leave_travel_allowance = lta
-		doc.custocustom_medical_conveyance_allowancem_basic = mnc
-		doc.custom_special_pay = sp
+def table_multiselect(docs,item,item_code,child,uom,req_tot_qty):
+    op = frappe.db.get_value("Operation Item List",{"document_name":docs,"item":item_code,"operation_name":child},["name"])
+    if not op:
+        bom_child = frappe.new_doc("Operation Item List")
+        bom_child.document_name = docs
+        bom_child.item = item_code
+        bom_child.operation_name = child
+        bom_child.selected_field = item
+        bom_child.req_tot_qty = req_tot_qty
+        bom_child.uom = uom
+        bom_child.save()
+        
