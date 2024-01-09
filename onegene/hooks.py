@@ -137,6 +137,11 @@ scheduler_events = {
         "onegene.tasks.daily",
         "onegene.onegene.custom.generate_production_plan"
     ],
+    "cron": {
+		"0 0 26 * *" : [
+			"onegene.onegene.custom.bday_allocate"
+		],
+	}
     # "hourly": [
     # 	"onegene.tasks.hourly"
     # ],
