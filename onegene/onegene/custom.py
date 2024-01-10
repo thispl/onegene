@@ -19,6 +19,7 @@ from frappe.utils import (
 	today,
 )
 from frappe.utils import cstr, cint, getdate, get_last_day, get_first_day, add_days,date_diff
+from datetime import date, datetime, timedelta
 
 @frappe.whitelist()
 def get_all_stock(item):
@@ -1209,3 +1210,40 @@ def fixed_salary(doc,method):
 		doc.custom_leave_travel_allowance = lta
 		doc.custocustom_medical_conveyance_allowancem_basic = mnc
 		doc.custom_special_pay = sp
+
+@frappe.whitelist()
+def sick_leave_allocation():
+	today = date.today()
+	three_months_ago = today - timedelta(days=30 * 3)
+	print(three_months_ago)
+	year_start_date = datetime(today.year, 1, 1).date()
+	year_end_date = datetime(today.year, 12, 31).date()
+	employees=frappe.db.get_all("Employee",{"Status":"Active"},['*'])
+	for emp in employees:
+		la=frappe.db.exists("Leave Allocation",{"employee":emp.name,"leave_type":"Sick Leave","from_date":year_start_date,"to_date":year_end_date})
+		if la:
+			leave_all=frappe.get_doc("Leave Allocation",la)
+			if leave_all.total_leaves_allocated >=1.5:
+				lde=frappe.get_doc("Leave Ledger Entry",{"employee":emp.name,"leave_type":"Sick Leave","from_date":year_start_date,"to_date":year_end_date,"custom_posting_date":three_months_ago})
+				lde.leaves =-0.5
+				lde.is_expired = 1
+				lde.save(ignore_permissions=True)
+				lde.submit()
+				leave_all.new_leaves_allocated -=0.5
+				leave_all.save(ignore_permissions=True)
+				leave_all.submit()
+			else:
+				leave_all.new_leaves_allocated +=0.5
+				leave_all.save(ignore_permissions=True)
+				leave_all.submit()
+
+		else:
+			leave_all=frappe.new_doc("Leave Allocation")
+			leave_all.employee=emp.name
+			leave_all.leave_type="Sick Leave"
+			leave_all.from_date=year_start_date
+			leave_all.to_date=year_end_date
+			leave_all.new_leaves_allocated=0.5
+			# leave_all.carry_forward=1
+			leave_all.save(ignore_permissions=True)
+			leave_all.submit()
