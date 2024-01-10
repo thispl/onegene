@@ -148,7 +148,20 @@ scheduler_events = {
 	# "weekly": [
 	# 	"onegene.tasks.weekly"
 	# ],
-	"monthly":[
+    # "all": [
+    # 	"onegene.tasks.all"
+    # ],
+    "daily": [
+        "onegene.tasks.daily",
+        "onegene.onegene.custom.generate_production_plan"
+    ],
+    # "hourly": [
+    # 	"onegene.tasks.hourly"
+    # ],
+    # "weekly": [
+    # 	"onegene.tasks.weekly"
+    # ],
+    "monthly":[
 		# "onegene.tasks.monthly",
 		"onegene.onegene.custom.sick_leave_allocation",
 	],
@@ -241,10 +254,11 @@ doc_events = {
 		"on_cancel": "onegene.onegene.utils.revert_order_schedule_table"
 	},
 	"Salary Slip":{
-		"after_save":["onegene.onegene.custom.weekly_off","onegene.onegene.custom.weekly_off","onegene.onegene.custom.fixed_salary"],
+		"after_insert":["onegene.onegene.custom.weekly_off","onegene.onegene.custom.overtime_hours","onegene.onegene.custom.fixed_salary"],
 	}
 	# "Order Schedule":{
 	# 	"on_update": "onegene.onegene.custom.get_pending_qty"
 	# # 	"on_update": "onegene.onegene.custom.get_customer_name.",
 	# },
+
 }

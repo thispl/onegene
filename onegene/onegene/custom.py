@@ -1219,13 +1219,3 @@ def sick_leave_allocation():
 				leave_all.save(ignore_permissions=True)
 				leave_all.submit()
 
-		else:
-			leave_all=frappe.new_doc("Leave Allocation")
-			leave_all.employee=emp.name
-			leave_all.leave_type="Sick Leave"
-			leave_all.from_date=year_start_date
-			leave_all.to_date=year_end_date
-			leave_all.new_leaves_allocated=0.5
-			# leave_all.carry_forward=1
-			leave_all.save(ignore_permissions=True)
-			leave_all.submit()
