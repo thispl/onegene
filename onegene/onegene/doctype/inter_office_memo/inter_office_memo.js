@@ -1,21 +1,210 @@
 // Copyright (c) 2025, TEAMPRO and contributors
 // For license information, please see license.txt
+const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[C]{1}[0-9A-Z]{1}$/;
+const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
 frappe.ui.form.on("Inter Office Memo", {
-   
-    // validate(frm){
-    //     if (frm.doc.owner) {
-    //         frappe.db.get_value('Employee', {frm.doc.owner}, 'reports_to')
-    //             .then(r => {
-    //                 if (r && r.message && r.message.reports_to) {
-    //                     frm.set_value('reports_to', r.message.reports_to);
-    //                 } else {
-    //                     frm.set_value('reports_to', '');
-    //                 }
-    //             });
-    //     } else {
-    //         frm.set_value('reports_to', '');
-    //     }
-    // },
+    supplier_accept_debit_value(frm){
+    frm.set_value("supplier_not_accept_debit_value",frm.doc.tot_short_value-frm.doc.supplier_accept_debit_value)
+    }
+,  
+
+  new_supplier_group(frm){
+        if((frm.doc.iom_type=="Approval for New Supplier Registration")){
+            if(frm.doc.new_supplier_group=="Import- Bought-Out" || frm.doc.new_supplier_group=="Import- Raw Material"){
+                const rows = [
+                    "CEPA Certificate of Origin",
+                    "BIS Certificate / CRS Registration",
+                    "Cancelled Cheque / Bank Letter",
+                    "Company Profile / Product Catalogue"
+                ];
+                $.each(rows, function(i, d) {
+                    frm.add_child("attachments", {
+                        title_of_attachment: d
+                    });
+                });
+                frm.refresh_field("attachments");
+            }
+            else{
+                const rows = [
+                    "GST Certificate",
+                    "PAN Card",
+                    "Cancelled Cheque / Bank Letter",
+                    "Company Profile / Product Catalogue"
+                ];
+                $.each(rows, function(i, d) {
+                    frm.add_child("attachments", {
+                        title_of_attachment: d
+                    });
+                });
+                frm.refresh_field("attachments");
+            }
+        }
+    },
+    gstin_no(frm) {
+        let gstin = frm.doc.gstin_no;
+
+        if (!gstin || gstin.length < 15) return;
+
+        if (gstin.length > 15) {
+            frappe.throw("GSTIN must be exactly 15 characters.");
+        }
+
+        // Standard Frappe validation
+        gstin = india_compliance.validate_gstin(gstin);
+
+        // Extract PAN from GSTIN — characters 3 to 12
+        const pan_from_gstin = gstin.slice(2, 12);
+
+        if (PAN_REGEX.test(pan_from_gstin)) {
+            frm.set_value("pan_no", pan_from_gstin);
+        }
+
+        frm.set_value("gstin_no", gstin);
+
+        // Fetch GSTIN details using Frappe API
+        frappe.call({
+            method: "india_compliance.gst_india.utils.gstin_info.get_gstin_info",
+            args: {
+                gstin: gstin,
+                throw_error: true
+            },
+            callback: function(r) {
+                if (!r.message) return;
+
+                const gst = r.message;
+
+                frm.set_value("gst_category", gst.gst_category);
+
+                if (gst.business_name) {
+                    frm.set_value("new_supplier_name", gst.business_name);
+                }
+
+                if (gst.permanent_address) {
+                    let a = gst.permanent_address;
+                    frm.set_value("address_line_1", a.address_line1);
+                    frm.set_value("address_line_2", a.address_line2);
+                    frm.set_value("city", a.city);
+                    frm.set_value("stateprovince", a.state);
+                    frm.set_value("postal_code", a.pincode);
+                }
+
+                frappe.msgprint("GST details autofilled successfully.");
+            }
+        });
+        if (frm.get_field("gstin_no"))
+            india_compliance.set_gstin_status(frm.get_field("gstin_no"));
+    },
+    customer_gstin(frm) {
+        let gstin = frm.doc.customer_gstin;
+
+        if (!gstin || gstin.length < 15) return;
+
+        if (gstin.length > 15) {
+            frappe.throw("GSTIN must be exactly 15 characters.");
+        }
+
+        // Standard Frappe validation
+        gstin = india_compliance.validate_gstin(gstin);
+
+        // Extract PAN from GSTIN — characters 3 to 12
+        const pan_from_gstin = gstin.slice(2, 12);
+
+        if (PAN_REGEX.test(pan_from_gstin)) {
+            frm.set_value("pan_no", pan_from_gstin);
+        }
+
+        frm.set_value("customer_gstin", gstin);
+
+        // Fetch GSTIN details using Frappe API
+        frappe.call({
+            method: "india_compliance.gst_india.utils.gstin_info.get_gstin_info",
+            args: {
+                gstin: gstin,
+                throw_error: true
+            },
+            callback: function(r) {
+                if (!r.message) return;
+
+                const gst = r.message;
+
+                frm.set_value("gst_category", gst.gst_category);
+
+                if (gst.business_name) {
+                    frm.set_value("new_customer_name", gst.business_name);
+                }
+
+                if (gst.permanent_address) {
+                    let a = gst.permanent_address;
+                    frm.set_value("address_line_1", a.address_line1);
+                    frm.set_value("address_line_2", a.address_line2);
+                    frm.set_value("city", a.city);
+                    frm.set_value("stateprovince", a.state);
+                    frm.set_value("postal_code", a.pincode);
+                }
+
+                frappe.msgprint("GST details autofilled successfully.");
+            }
+        });
+        if (frm.get_field("gstin_no"))
+            india_compliance.set_gstin_status(frm.get_field("gstin_no"));
+        if (frm.get_field("customer_gstin"))
+            india_compliance.set_gstin_status(frm.get_field("customer_gstin"));
+    },
+    // ===========================
+    // 🔹 PAN VALIDATION
+    // ===========================
+    pan_no(frm) {
+        let pan = frm.doc.pan_no;
+
+        if (!pan || pan.length < 10) return;
+
+        if (pan.length > 10) {
+            frappe.throw("PAN must be exactly 10 characters.");
+        }
+
+        pan = pan.trim().toUpperCase();
+
+        if (!PAN_REGEX.test(pan)) {
+            frappe.throw("Invalid PAN format.");
+        }
+
+        frm.set_value("pan_no", pan);
+    },
+
+    advance_amount_new(frm){
+        if(frm.doc.advance_amount_new && frm.doc.estimated_travel_expenses_new && frm.doc.advance_amount_new > frm.doc.estimated_travel_expenses_new){
+
+            frm.set_value("advance_amount_new","")
+            frappe.throw("Advance Amount must be lesser or equal to Estimated Travel Expenses")
+            
+
+        }
+    },
+
+    estimated_travel_expenses_new(frm){
+        if(frm.doc.advance_amount_new && frm.doc.estimated_travel_expenses_new && frm.doc.advance_amount_new > frm.doc.estimated_travel_expenses_new){
+
+            frm.set_value("estimated_travel_expenses_new","")
+            frappe.throw("Advance Amount must be lesser or equal to Estimated Travel Expenses")
+            
+
+        }
+    },
+
+
+     travel_costing_details_add(frm) {
+        calculate_totals(frm);
+    },
+
+    travel_costing_details_remove(frm) {
+        calculate_totals(frm);
+    },
+
+
+
+
+    
     exchange_rate: function(frm) {
         if (!frm.doc.exchange_rate) return;
         if (frm.doc.iom_type == "Approval for Credit Note") {
@@ -176,7 +365,421 @@ frappe.ui.form.on("Inter Office Memo", {
     to_date(frm) {
         calculate_days(frm);
     },
+    toggle_customer_visibility: function(frm) {
+        if ((frm.doc.department_from === "Delivery - WAIP" && frm.doc.iom_type === "Approval for Schedule Revised") || (frm.doc.department_from === "M P L & Purchase - WAIP" && frm.doc.iom_type === "Approval for Schedule Revised")) {
+            frm.set_df_property('customer', 'hidden', 1);
+        }
+    },
     iom_type(frm) {
+         if (frm.doc.iom_type === "Approval for Schedule Revised") {
+                let month_abbr = frappe.datetime.str_to_obj(frappe.datetime.get_today())
+                    .toLocaleString("en-US", { month: "short" })
+                    .toUpperCase();
+
+                frm.set_value("schedule_month",month_abbr);
+                frm.refresh_field("schedule_month")
+        }
+        if (frm.doc.iom_type === "Approval for New Supplier Registration") {
+const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+        let d = new frappe.ui.Dialog({
+            title: "Supplier Details",
+            size: "medium",
+            fields: [
+                { fieldtype: "Section Break" },
+
+                {
+                    label: "Supplier Group",
+                    fieldname: "supplier_group",
+                    fieldtype: "Link",
+                    options: "Supplier Group",
+                    reqd: 1,
+                    onchange: function() {
+                        let group = d.get_value("supplier_group");
+                        let hide_list = ["Import- Bought-Out", "Import- Raw Material"];
+                        let show_gstin = !hide_list.includes(group);
+
+                        let gst_field = d.get_field("gstin");
+                        let gst_cat_field  = d.get_field("gst_category");
+                        // Show / Hide GSTIN field
+                        gst_field.toggle(show_gstin);
+                        // Set mandatory
+                        gst_field.df.reqd = show_gstin;
+                        gst_cat_field.toggle(show_gstin);
+                        gst_cat_field.df.reqd = show_gstin;
+                        d.refresh();
+                    }
+                },
+                //   {
+                //     label: "GST Category",
+                //     fieldname: "gst_category",
+                //     fieldtype: "Select",
+                //     options: ["Registered Regular", "Registered Composition", "Unregistered", "SEZ","Overseas","Deemed Export","UIN Holders","Tax Deductor"],
+                //     default: "Unregistered",
+                //     reqd: 1
+                // },
+                {
+    label: "GST Category",
+    fieldname: "gst_category",
+    fieldtype: "Select",
+    options: [
+        "Registered Regular",
+        "Registered Composition",
+        "Unregistered",
+        "SEZ",
+        "Overseas",
+        "Deemed Export",
+        "UIN Holders",
+        "Tax Deductor"
+    ],
+    default: "Unregistered",
+    reqd: 1,
+    onchange: function () {
+        let gst_cat = d.get_value("gst_category");
+        let supplier_group = d.get_value("supplier_group");
+
+        let gst_field = d.get_field("gstin");
+        let gst_cat_field = d.get_field("gst_category");
+
+        // List for supplier groups where GSTIN is normally hidden
+        let hide_list = ["Import- Bought-Out", "Import- Raw Material"];
+        let group_requires_gstin = !hide_list.includes(supplier_group);
+
+        let show_gstin = group_requires_gstin && gst_cat !== "Unregistered";
+
+        gst_field.toggle(show_gstin);
+        gst_field.df.reqd = show_gstin;
+        d.refresh();
+    }
+},
+
+
+          {
+    label: "GSTIN / UIN",
+    fieldname: "gstin",
+    fieldtype: "Data",
+    reqd: 0,
+    onchange: function () {
+        let gstin = d.get_value("gstin");
+
+        if (!gstin || gstin.length !== 15) {
+            return; // DO NOT validate early
+        }
+
+        if (!TCS_REGEX.test(gstin)) {
+            frappe.throw("Invalid GSTIN format.");
+        }
+
+        const pan_from_gstin = gstin.slice(2, 12);
+        if (PAN_REGEX.test(pan_from_gstin)) {
+            d.set_value("pan_no", pan_from_gstin);
+        }
+         if (india_compliance && india_compliance.set_gstin_status) {
+        india_compliance.set_gstin_status(d.get_field("gstin"));
+    }
+        frappe.call({
+            method: "india_compliance.gst_india.utils.gstin_info.get_gstin_info",
+            args: { gstin: gstin, throw_error: true },
+            callback: function (r) {
+                if (!r.message) return;
+
+                const gst = r.message;
+
+                d.set_value("supplier_name", gst.business_name || "");
+                if (gst.permanent_address) {
+                    let a = gst.permanent_address;
+                    d.set_value("address_1", a.address_line1);
+                    d.set_value("address_2", a.address_line2);
+                    d.set_value("city", a.city);
+                    d.set_value("state", a.state);
+                    d.set_value("postal_code", a.pincode);
+                }
+            }
+        });
+    }
+},
+
+
+
+                
+
+                { label: "Supplier Code", fieldname: "supplier_code", fieldtype: "Data", reqd: 1 },
+                { label: "Supplier Name", fieldname: "supplier_name", fieldtype: "Data", reqd: 1 },
+
+                { fieldtype: "Section Break" },
+                {
+                    label: "Supplier Type",
+                    fieldname: "supplier_type",
+                    fieldtype: "Select",
+                    options: ["Company", "Individual","Proprietorship","Partnership"],
+                    default: "Company",
+                    reqd: 1
+                },
+
+              
+
+                { fieldtype: "Section Break", label: "Primary Contact Details" },
+                { label: "Email ID", fieldname: "email_id", fieldtype: "Data" },
+                { fieldtype: "Column Break" },
+                { label: "Mobile Number", fieldname: "mobile", fieldtype: "Data" },
+
+                { fieldtype: "Section Break", label: "Primary Address Details" },
+                { label: "Postal Code", fieldname: "postal_code", fieldtype: "Data" },
+                
+                { label: "Address Line 1", fieldname: "address_1", fieldtype: "Data" },
+                 { label: "Address Line 2", fieldname: "address_2", fieldtype: "Data" },
+                { fieldtype: "Column Break" },
+                { label: "City/Town", fieldname: "city", fieldtype: "Data" },
+                { label: "State/Province", fieldname: "state", fieldtype: "Data" },
+               
+                { label: "Country", fieldname: "country", fieldtype: "Link", default: "India",options:"Country" },
+            ],
+
+            primary_action_label: "Set Details",
+            primary_action(values) {
+
+                frm.set_value("new_supplier_group", values.supplier_group);
+
+                let hide_list = ["Import- Bought-Out", "Import- Raw Material"];
+                if (!hide_list.includes(values.supplier_group)) {
+                    frm.set_value("gstin_no", values.gstin);
+                } else {
+                    frm.set_value("gstin_no", "");
+                }
+                if (frm.get_field("gstin_no") && india_compliance.set_gstin_status) {
+        india_compliance.set_gstin_status(frm.get_field("gstin_no"));
+    }
+       frm.refresh_field("gstin_no");
+
+
+                frm.set_value("new_supplier_code", values.supplier_code);
+                frm.set_value("new_supplier_name", values.supplier_name);
+                frm.set_value("supplier_type", values.supplier_type);
+                frm.set_value("gst_category", values.gst_category);
+
+                frm.set_value("email", values.email_id);
+                frm.set_value("phone_no", values.mobile);
+
+                frm.set_value("postal_code", values.postal_code);
+                frm.set_value("city", values.city);
+                frm.set_value("address_line_1", values.address_1);
+                frm.set_value("address_line_2", values.address_2);
+                frm.set_value("stateprovince", values.state);
+                frm.set_value("country", values.country);
+
+                frm.refresh_fields();
+                d.hide();
+            }
+        });
+
+        d.show();
+
+        // Hide GSTIN initially
+        let gst_field = d.get_field("gstin");
+        gst_field.toggle(false);
+        gst_field.df.reqd = 0;
+        d.refresh();
+    }
+      if (frm.doc.iom_type === "Approval for New Customer Registration") {
+        const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+        const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+        let d = new frappe.ui.Dialog({
+            title: "Customer Details",
+            size: "medium",
+            fields: [
+                { fieldtype: "Section Break" },
+
+                {
+                    label: "Customer Group",
+                    fieldname: "customer_group",
+                    fieldtype: "Link",
+                    options: "Customer Group",
+                    reqd: 1,
+                    onchange: function() {
+                        let group = d.get_value("customer_group");
+                        let hide_list = ["Export","All Customer Groups"];
+                        let show_gstin = !hide_list.includes(group);
+
+                        let gst_field = d.get_field("gstin");
+
+                        // Show / Hide GSTIN field
+                        gst_field.toggle(show_gstin);
+
+                        // Set mandatory
+                        gst_field.df.reqd = show_gstin;
+                        let gst_cat_field  = d.get_field("gst_category");
+                        // Set mandatory
+                        gst_cat_field.toggle(show_gstin);
+                        gst_cat_field.df.reqd = show_gstin;
+                        d.refresh();
+                    }
+                },
+                {
+                    label: "GST Category",
+                    fieldname: "gst_category",
+                    fieldtype: "Select",
+                    options: ["Registered Regular", "Registered Composition", "Unregistered", "SEZ","Overseas","Deemed Export","UIN Holders","Tax Deductor"],
+                    default: "Unregistered",
+                    reqd: 1
+                },
+                
+
+          {
+    label: "GSTIN / UIN",
+    fieldname: "gstin",
+    fieldtype: "Data",
+    reqd: 0,
+    onchange: function () {
+        let gstin = d.get_value("gstin");
+
+        if (!gstin || gstin.length !== 15) {
+            return; // DO NOT validate early
+        }
+
+        if (!TCS_REGEX.test(gstin)) {
+            frappe.throw("Invalid GSTIN format.");
+        }
+
+        const pan_from_gstin = gstin.slice(2, 12);
+        if (PAN_REGEX.test(pan_from_gstin)) {
+            d.set_value("pan_no", pan_from_gstin);
+        }
+         if (india_compliance && india_compliance.set_gstin_status) {
+        india_compliance.set_gstin_status(d.get_field("gstin"));
+    }
+        frappe.call({
+            method: "india_compliance.gst_india.utils.gstin_info.get_gstin_info",
+            args: { gstin: gstin, throw_error: true },
+            callback: function (r) {
+                if (!r.message) return;
+
+                const gst = r.message;
+
+                d.set_value("customer_name", gst.business_name || "");
+                if (gst.permanent_address) {
+                    let a = gst.permanent_address;
+                    d.set_value("address_1", a.address_line1);
+                    d.set_value("address_2", a.address_line2);
+                    d.set_value("city", a.city);
+                    d.set_value("state", a.state);
+                    d.set_value("postal_code", a.pincode);
+                }
+            }
+        });
+    }
+},
+
+
+
+                
+
+                { label: "Customer Code", fieldname: "customer_code", fieldtype: "Data", reqd: 1 },
+                { label: "Customer Name", fieldname: "customer_name", fieldtype: "Data", reqd: 1 },
+
+                { fieldtype: "Section Break" },
+                {
+                    label: "Customer Type",
+                    fieldname: "customer_type",
+                    fieldtype: "Select",
+                    options: ["Company", "Individual","Proprietorship","Partnership"],
+                    default: "Company",
+                    reqd: 1
+                },
+
+                
+
+                { fieldtype: "Section Break", label: "Primary Contact Details" },
+                { label: "Email ID", fieldname: "email_id", fieldtype: "Data" },
+                { fieldtype: "Column Break" },
+                { label: "Mobile Number", fieldname: "mobile", fieldtype: "Data" },
+
+                { fieldtype: "Section Break", label: "Primary Address Details" },
+                { label: "Postal Code", fieldname: "postal_code", fieldtype: "Data" },
+                
+                { label: "Address Line 1", fieldname: "address_1", fieldtype: "Data" },
+                 { label: "Address Line 2", fieldname: "address_2", fieldtype: "Data" },
+                { fieldtype: "Column Break" },
+                { label: "City/Town", fieldname: "city", fieldtype: "Data" },
+                { label: "State/Province", fieldname: "state", fieldtype: "Data" },
+               
+                { label: "Country", fieldname: "country", fieldtype: "Link", default: "India",options:"Country" },
+            ],
+
+            primary_action_label: "Set Details",
+            primary_action(values) {
+
+                frm.set_value("customer_group_new", values.customer_group);
+
+                let hide_list = ["Export","All Customer Groups"];
+                if (!hide_list.includes(values.supplier_group)) {
+                    frm.set_value("customer_gstin", values.gstin);
+                } else {
+                    frm.set_value("customer_gstin", "");
+                }
+                if (frm.get_field("customer_gstin") && india_compliance.set_gstin_status) {
+        india_compliance.set_gstin_status(frm.get_field("customer_gstin"));
+    }
+       frm.refresh_field("customer_gstin");
+
+
+                frm.set_value("customer_code", values.customer_code);
+                frm.set_value("new_customer_name", values.customer_name);
+                frm.set_value("customer_type", values.customer_type);
+                frm.set_value("gst_category", values.gst_category);
+
+                frm.set_value("email", values.email_id);
+                frm.set_value("phone_no", values.mobile);
+
+                frm.set_value("postal_code", values.postal_code);
+                frm.set_value("city", values.city);
+                frm.set_value("address_line_1", values.address_1);
+                frm.set_value("address_line_2", values.address_2);
+                frm.set_value("stateprovince", values.state);
+                frm.set_value("country", values.country);
+
+                frm.refresh_fields();
+                d.hide();
+            }
+        });
+
+        d.show();
+
+        // Hide GSTIN initially
+        let gst_field = d.get_field("customer_gstin");
+        gst_field.toggle(false);
+        gst_field.df.reqd = 0;
+        d.refresh();
+    }
+        $.each(frm.fields_dict, function(fieldname, field) {
+            if (fieldname!="schedule_month" && fieldname !== 'department_from' &&fieldname!= 'currency' &&fieldname!='company' && fieldname !== 'iom_type' && fieldname!="department_to" && fieldname!="reports_to") {
+                if (frm.doc[fieldname]) {
+                    frm.set_value(fieldname, null);
+                }
+            }
+        });
+        frm.set_value("date_time", frappe.datetime.now_datetime());
+        frm.trigger('toggle_customer_visibility');
+    if (frm.doc.iom_type === "Approval for New Customer Registration") {
+
+
+        const rows = [
+            "GST Certificate",
+            "PAN Card",
+            "Cancelled Cheque / Bank Letter",
+            "Company Profile / Product Catalogue"
+        ];
+        $.each(rows, function(i, d) {
+            frm.add_child("attachments", {
+                title_of_attachment: d
+            });
+        });
+        frm.refresh_field("attachments");
+
+    }
 if (frm.doc.department_from == "Delivery - WAIP" 
     && frm.doc.iom_type == "Approval for Air Shipment") {
 
@@ -186,6 +789,11 @@ if (frm.doc.department_from == "Delivery - WAIP"
            && frm.doc.iom_type != "Approval for Air Shipment") {
 
     frm.set_value("department_to", "");
+}
+
+if(frm.doc.iom_type ==="Approval for New Customer Registration"){
+
+    frm.set_value("department_to", "Finance - WAIP");
 }
 
 
@@ -213,7 +821,8 @@ let finance_types = [
     "Approval for Debit Note",
     "Approval for Price Revision JO",
     "Approval for New Business JO",
-    "Approval for Invoice Cancel"
+    "Approval for Invoice Cancel",
+    "Approval for New Supplier Registration"
 ];
 
 if (finance_types.includes(frm.doc.iom_type)) {
@@ -222,7 +831,9 @@ if (finance_types.includes(frm.doc.iom_type)) {
 
 } else if (
     frm.doc.iom_type != "Approval for Air Shipment" &&
-    frm.doc.iom_type != "Approval for Business Visit"
+    frm.doc.iom_type != "Approval for Business Visit"&&
+    frm.doc.iom_type != "Approval for Travel Request" &&
+    frm.doc.iom_type != "Approval for New Customer Registration"
 ) {
     frm.set_value("department_to", "");
 }
@@ -230,16 +841,16 @@ if (finance_types.includes(frm.doc.iom_type)) {
 
         frm.clear_table("taxes")
         frm.refresh_field("taxes")
-        if (frm.doc.iom_type == "Approval for Stock Change Request" || frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Business Visit") {
+        if (frm.doc.iom_type == "Approval for Stock Change Request - Stock Reconciliation" || frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Business Visit" || frm.doc.iom_type=="Approval for New Supplier Registration") {
             frm.set_df_property("customer", "hidden", 1)
             frm.set_df_property("subject", "reqd", 1)
             frm.set_df_property("customer", "reqd", 0)
         } else {
-            if ((frm.doc.department_from == "NPD - WAIP" || (frm.doc.department_from == "Marketing - WAIP") || (frm.doc.department_from == "Delivery - WAIP") && frm.doc.iom_type != "Approval for Stock Change Request" && frm.doc.iom_type != "Approval for Manpower Request" && frm.doc.iom_type != "Approval for Business Visit"))
+            if ((frm.doc.department_from == "NPD - WAIP" || (frm.doc.department_from == "Marketing - WAIP") || (frm.doc.department_from == "Delivery - WAIP") && frm.doc.iom_type != "Approval for Stock Change Request - Stock Reconciliation" && frm.doc.iom_type != "Approval for Manpower Request" && frm.doc.iom_type != "Approval for Business Visit" && frm.doc.iom_type!="Approval for New Supplier Registration"))
                 frm.set_df_property("customer", "hidden", 0)
             frm.set_df_property("customer", "reqd", 1)
         }
-        if (frm.doc.iom_type == "Approval for Manpower Request") {
+        if (frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type =="Approval for Travel Request") {
             frm.set_value("department_to", "HR - WAIP")
         }
         if (frm.doc.iom_type == 'Approval for Air Shipment' && frm.doc.department_from == "M P L & Purchase - WAIP") {
@@ -337,18 +948,23 @@ if (finance_types.includes(frm.doc.iom_type)) {
 
                         frm.set_value("primary_address", address_with_gstin);
                         frm.refresh_field("primary_address");
+                        
 
 
                     } else {
                         frm.set_value("primary_address", "");
+                        
                         frm.refresh_field("primary_address");
+                        
 
                     }
                 }
             });
         } else {
             frm.set_value("primary_address", "");
+            
             frm.refresh_field("primary_address");
+            
         }
     },
 
@@ -361,7 +977,7 @@ if (finance_types.includes(frm.doc.iom_type)) {
         //         callback: function(r) {
         //             frappe.msgprint("Notification email sent to HOD.");
         //         }
-        //     });
+           //     });
         // }
         if (frm.selected_workflow_action === "Reject") {
             frappe.validated = false; // stop workflow temporarily
@@ -405,6 +1021,7 @@ if (finance_types.includes(frm.doc.iom_type)) {
             });
 
             d.show();
+             
 
             // Handle user closing dialog without entering remarks
             d.$wrapper.on('hidden.bs.modal', function() {
@@ -423,6 +1040,7 @@ if (finance_types.includes(frm.doc.iom_type)) {
                     });
                 }
             });
+            return false;
         }
 
 
@@ -490,7 +1108,9 @@ if (finance_types.includes(frm.doc.iom_type)) {
                 });
             }
         }
-    },
+    }
+    
+    ,
 
     supplier(frm) {
 
@@ -546,19 +1166,24 @@ if (finance_types.includes(frm.doc.iom_type)) {
                         }
 
                         frm.set_value("primary_address", address_with_gstin);
+                        
                         frm.refresh_field("primary_address");
-
+                        
 
                     } else {
+                        
                         frm.set_value("primary_address", "");
                         frm.refresh_field("primary_address");
+                         
 
                     }
                 }
             });
         } else {
+            
             frm.set_value("primary_address", "");
             frm.refresh_field("primary_address");
+            
         }
         frappe.db.get_value("Customer", frm.doc.customer, "tax_category", function(r) {
             if (r && r.tax_category) {
@@ -595,7 +1220,115 @@ if (finance_types.includes(frm.doc.iom_type)) {
         }
 
     },
+
+
     onload(frm) {
+
+
+           
+            // setTimeout(function() {
+
+                
+            //     $('.dropdown-menu a').each(function() {
+            //         if ($(this).text().trim() === 'Reject') {
+            //             $(this).hide();
+            //         }
+            //     });
+
+                
+            //     let approveExists = $('.dropdown-menu a').filter(function() {
+            //         return $(this).text().trim() === 'Approve';
+            //     }).length > 0;
+
+                
+            //     let reopenExists = $('.dropdown-menu a').filter(function() {
+            //         return $(this).text().trim() === 'Reopen';
+            //     }).length > 0;
+
+                
+            //     if (approveExists && !reopenExists) {
+
+                    
+            //         if ($('.dropdown-menu a.reject-with-remarks').length === 0) {
+
+            //             let approveBtn = $('.dropdown-menu a').filter(function() {
+            //                 return $(this).text().trim() === 'Approve';
+            //             });
+
+            //             let customBtn = $('<a style="margin-top:10px;" class="dropdown-item reject-with-remarks" href="#">Reject</a>');
+
+                        
+            //             if (approveBtn.length) {
+            //                 approveBtn.after(customBtn);
+            //             } else {
+            //                 $('.dropdown-menu').append(customBtn);
+            //             }
+
+                        
+            //             customBtn.on('click', function(e) {
+            //                 e.preventDefault();
+
+            //                 let previous_state = cur_frm.doc.workflow_state;
+
+            //                 let d = new frappe.ui.Dialog({
+            //                     title: "Provide Rejection Remarks",
+            //                     fields: [
+            //                         {
+            //                             fieldname: "rejection_remarks",
+            //                             label: "Rejection Remarks",
+            //                             fieldtype: "Small Text",
+            //                             reqd: 1
+            //                         }
+            //                     ],
+            //                     primary_action_label: "Submit",
+            //                     primary_action(values) {
+            //                         let remarks = values.rejection_remarks?.trim();
+            //                         if (!remarks) {
+            //                             frappe.msgprint("Rejection remarks are required.");
+            //                             return;
+            //                         }
+
+            //                         d.hide();
+
+            //                         frappe.call({
+            //                             method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.set_rejection_remarks",
+            //                             args: {
+            //                                 doctype: cur_frm.doc.doctype,
+            //                                 docname: cur_frm.doc.name,
+            //                                 remarks: remarks,
+            //                                 previous_state: previous_state
+            //                             },
+            //                             callback(r) {
+            //                                 if (!r.exc) {
+            //                                     frappe.msgprint("Document has been rejected successfully.");
+            //                                     frm.reload_doc();
+            //                                     location.reload();
+            //                                 }
+            //                             }
+            //                         });
+            //                     }
+            //                 });
+
+            //                 d.show();
+            //             });
+            //         }
+            //     } else {
+                    
+            //         $('.dropdown-menu a.reject-with-remarks').remove();
+            //     }
+
+            // }, 250); 
+
+
+            
+
+     
+
+
+
+
+
+
 
         if (frm.doc.department_from == "Marketing - WAIP") {
             if (!frm.doc.attachments || frm.doc.attachments.length === 0 ||
@@ -613,6 +1346,8 @@ if (finance_types.includes(frm.doc.iom_type)) {
         }
 
     },
+
+
     instructed_by(frm) {
         if (frm.doc.instructed_by) {
             frappe.db.get_value("Employee", {
@@ -622,13 +1357,138 @@ if (finance_types.includes(frm.doc.iom_type)) {
                     frm.set_value("employee_name", r.message.employee_name)
                 } else {
                     frm.set_value("employee_name", "")
-                    // frappe.msgprint("No Department for the current user")
+                    
                 }
             });
+
+            // frappe.db.get_value("Employee", {
+            //     "name": frm.doc.instructed_by
+            // }, "reports_to").then(r => {
+            //     if (r && r.message && r.message.reports_to) {
+            //         frm.set_value("reports_to", r.message.reports_to)
+            //         console.log("work")
+            //         console.log(r.message.reports_to)
+            //         console.log(frm.doc.reports_to)
+            //     } else {
+            //         frm.set_value("reports_to", "")
+                    
+            //     }
+            // });
+
+
         }
     },
+
+
     refresh(frm) {
-        if (frm.doc.iom_type == "Approval for Stock Change Request" || frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Business Visit") {
+
+        
+
+          
+            setTimeout(function() {
+
+                
+                $('.dropdown-menu a').each(function() {
+                    if ($(this).text().trim() === 'Reject') {
+                        $(this).hide();
+                    }
+                });
+
+                
+                let approveExists = $('.dropdown-menu a').filter(function() {
+                    return $(this).text().trim() === 'Approve';
+                }).length > 0;
+
+                
+                let reopenExists = $('.dropdown-menu a').filter(function() {
+                    return $(this).text().trim() === 'Reopen';
+                }).length > 0;
+
+                
+                if (approveExists && !reopenExists) {
+
+                    
+                    if ($('.dropdown-menu a.reject-with-remarks').length === 0) {
+
+                        let approveBtn = $('.dropdown-menu a').filter(function() {
+                            return $(this).text().trim() === 'Approve';
+                        });
+
+                        let customBtn = $('<a style="margin-top:10px;" class="dropdown-item reject-with-remarks" href="#">Reject</a>');
+
+                        
+                        if (approveBtn.length) {
+                            approveBtn.after(customBtn);
+                        } else {
+                            $('.dropdown-menu').append(customBtn);
+                        }
+
+                        
+                        customBtn.on('click', function(e) {
+                            e.preventDefault();
+
+                            let previous_state = cur_frm.doc.workflow_state;
+
+                            let d = new frappe.ui.Dialog({
+                                title: "Provide Rejection Remarks",
+                                fields: [
+                                    {
+                                        fieldname: "rejection_remarks",
+                                        label: "Rejection Remarks",
+                                        fieldtype: "Small Text",
+                                        reqd: 1
+                                    }
+                                ],
+                                primary_action_label: "Submit",
+                                primary_action(values) {
+                                    let remarks = values.rejection_remarks?.trim();
+                                    if (!remarks) {
+                                        frappe.msgprint("Rejection remarks are required.");
+                                        return;
+                                    }
+
+                                    d.hide();
+
+                                    frappe.call({
+                                        method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.set_rejection_remarks",
+                                        args: {
+                                            doctype: cur_frm.doc.doctype,
+                                            docname: cur_frm.doc.name,
+                                            remarks: remarks,
+                                            previous_state: previous_state
+                                        },
+                                        callback(r) {
+                                            if (!r.exc) {
+                                                frappe.msgprint("Document has been rejected successfully.");
+                                                frm.reload_doc();
+                                                location.reload();
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+
+                            d.show();
+                        });
+                    }
+                } else {
+                    
+                    $('.dropdown-menu a.reject-with-remarks').remove();
+                }
+
+            }, 250); 
+
+
+            toggle_funded_amount(frm);
+       
+        if (frm.get_field("customer_gstin"))
+            india_compliance.set_gstin_status(frm.get_field("customer_gstin"));
+        if(frm.doc.gstin_no){
+        if (frm.get_field("gstin_no"))
+            india_compliance.set_gstin_status(frm.get_field("gstin_no"));
+    }
+        // update_gstin_no_status(frm);
+        if (frm.doc.iom_type == "Approval for Stock Change Request - Stock Reconciliation" || frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Business Visit"||frm.doc.iom_type=="Approval for New Supplier Registration") {
             frm.set_df_property("customer", "hidden", 1)
             frm.refresh_field("customer");
             frm.set_df_property("subject", "reqd", 1)
@@ -707,22 +1567,29 @@ if (finance_types.includes(frm.doc.iom_type)) {
                     frm.set_value("department_from", r.message.department)
                 } else {
                     frm.set_value("department_from", "")
-                    // frappe.msgprint("No Department for the current user")
+                    
                 }
             });
         }
-        if (!frm.doc.reports_to) {
+        if ( frappe.user.has_role("Employee") && !frm.doc.reports_to) {
+            
             frappe.db.get_value("Employee", {
-                "user_id": frappe.session.user
+                "user_id": frm.doc.owner
             }, "reports_to").then(r => {
                 if (r && r.message && r.message.reports_to) {
                     frm.set_value("reports_to", r.message.reports_to)
-                } else {
-                    frm.set_value("reports_to", "")
-                    // frappe.msgprint("No Department for the current user")
                 }
+                // else {
+                //     frm.set_value("reports_to", "")
+                    
+                // }
             });
         }
+
+
+
+      
+
         if (frappe.session.user === frm.doc.owner || frappe.session.user == "divya.p@groupteampro.com" || frappe.session.user == "jothi.m@gruoupteampro.com"||frappe.user.has_role("ERP Team")) {
             $.each(frm.fields_dict, function(fieldname, field) {
                 if (frm.doc.iom_type === "Approval for Schedule Revised") {
@@ -1328,6 +2195,8 @@ if (finance_types.includes(frm.doc.iom_type)) {
         // }
 
     },
+
+    
     currency(frm) {
         if (frm.doc.iom_type == "Approval for Air Shipment") {
             if (frm.doc.currency == "INR") {
@@ -3880,7 +4749,7 @@ frappe.ui.form.on("Approval for Price Revision PO Material", {
 //     });
 // }
 
-frappe.ui.form.on('Approval for Proto Sample PO', { // Child table doctype
+frappe.ui.form.on('Approval for Proto Sample PO', { 
     po_price_new(frm, cdt, cdn) {
         var child = locals[cdt][cdn];
         calculate_total_po_price(frm);
@@ -4224,70 +5093,22 @@ frappe.ui.form.on('Approval for Proto Sample PO', { // Child table doctype
 });
 
 function calculate_proto_tax_and_total(frm) {
-    // if (frm.doc.iom_type === "Approval for Proto Sample PO" 
-    //     && frm.doc.proto_sample_po 
-    //     && frm.doc.department_from === "Marketing - WAIP") {
-
-    //     // Step 1: Calculate CN totals
-    //     let total = 0;
-    //     let total_inr = 0;
-    //     (frm.doc.proto_sample_po || []).forEach(row => {
-    //         if (row.value) {
-    //                     if (row.value) total += row.value;
-    //     if(row.value_inr)total_inr+=row.value_inr;
-
-    //         }
-    //     });
-
-    //     frappe.model.set_value(frm.doc.doctype, frm.doc.name, "total_po_value", total);
-    //     frappe.model.set_value(frm.doc.doctype, frm.doc.name, "total_po_value_inr", total_inr);
-
-    //     // Step 2: If no taxes exist, auto-fetch and apply them
-    //     if (!frm.doc.taxes || frm.doc.taxes.length === 0) {
-    //         frappe.call({
-    //             method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.apply_domestic_taxes",
-    //             args: { doc: frm.doc },
-    //             callback: function(r) {
-    //                 if (r.message) {
-    //                     frm.clear_table("taxes");
-    //                     (r.message.taxes || []).forEach(tax => {
-    //                         let row = frm.add_child("taxes");
-    //                         row.charge_type = tax.charge_type;
-    //                         row.account_head = tax.account_head;
-    //                         row.description = tax.description;
-    //                         row.rate = tax.rate;
-    //                         row.tax_amount = tax.tax_amount;
-    //                     });
-    //                     frm.refresh_field("taxes");
-    //                     calculate_proto_tax_and_total(frm); // ✅ re-run calculation after adding taxes
-    //                 }
-    //             }
-    //         });
-    //         return; // wait for callback to recalc
-    //     }
-
-    //     // Step 3: Calculate taxes
-    //     let total_tax = 0;
-    //     let previous_row_total = total || 0;
-
-    //     (frm.doc.taxes || []).forEach(row => {
-    //         let tax_amount = (total || 0) * (row.rate || 0) / 100;
-    //         frappe.model.set_value(row.doctype, row.name, "tax_amount", tax_amount);
-    //         frappe.model.set_value(row.doctype, row.name, "total", previous_row_total + tax_amount);
-    //         total_tax += tax_amount;
-    //         previous_row_total += tax_amount;
-    //     });
-
-    //     frm.refresh_field("taxes");
-    // }
+    
     if (frm.doc.iom_type === "Approval for Proto Sample SO" &&
-        frm.doc.proto_sample_po &&
+        (frm.doc.proto_sample_po || frm.doc.approval_for_proto_sample_so) &&
         frm.doc.department_from === "Marketing - WAIP") {
 
         // Step 1: Calculate CN totals
         let total = 0;
         let total_inr = 0;
         (frm.doc.proto_sample_po || []).forEach(row => {
+            if (row.value) {
+                if (row.value) total += row.value;
+                if (row.value_inr) total_inr += row.value_inr;
+
+            }
+        });
+         (frm.doc.approval_for_proto_sample_so || []).forEach(row => {
             if (row.value) {
                 if (row.value) total += row.value;
                 if (row.value_inr) total_inr += row.value_inr;
@@ -4344,6 +5165,10 @@ function calculate_total_po_price(frm) {
     let total = 0;
     let total_inr = 0;
     (frm.doc.proto_sample_po || []).forEach(row => {
+        if (row.value) total += row.value;
+        if (row.value_inr) total_inr += row.value_inr;
+    });
+    (frm.doc.approval_for_proto_sample_so || []).forEach(row => {
         if (row.value) total += row.value;
         if (row.value_inr) total_inr += row.value_inr;
     });
@@ -7591,3 +8416,479 @@ frappe.ui.form.on('IOM Approval Remarks', {
 
 
 })
+
+// async function set_gstin_options(frm) {
+//     if (frm.is_new() || frm._gstin_options_set_for === frm.doc.name) return;
+
+//     frm._gstin_options_set_for = frm.doc.name;
+
+//     const field = frm.get_field("gstin_no");
+//     field.df.ignore_validation = true;
+
+//     field.set_data(await india_compliance.get_gstin_options(frm.doc.name, frm.doctype));
+// }
+async function update_gstin_no_status(frm) {
+    let field = frm.get_field("gstin_no");
+
+    // This updates UI and internal attributes
+    india_compliance.set_gstin_status(field);
+
+    setTimeout(() => {
+        // Get status stored internally by ERPNext
+        let status = field.$input_wrapper.attr("data-gstin-status") || "";
+
+        // Save to your doctype field
+        frm.set_value("status", status);
+    }, 200);
+}
+
+
+frappe.ui.form.on('Travel Costing Details', {
+
+   
+    sponsored_amount(frm, cdt, cdn) {
+        calculate_totals(frm);
+    },
+
+    funded_amount(frm, cdt, cdn) {
+        calculate_totals(frm);
+    }
+
+});
+
+
+function calculate_totals(frm) {
+    let total_sponsored = 0;
+    let total_funded = 0;
+
+    (frm.doc.travel_costing_details || []).forEach(row => {
+        total_sponsored += flt(row.sponsored_amount);
+        total_funded += flt(row.funded_amount);
+    });
+
+    frm.set_value("total_sponsored_amount_new", total_sponsored);
+    frm.set_value("total_funded_amount_new", total_funded);
+
+    frm.refresh_field("total_sponsored_amount_new");
+    frm.refresh_field("total_funded_amount_new");
+}
+
+
+
+
+
+function toggle_funded_amount(frm) {
+
+    let is_read_only = frm.doc.workflow_state !== "Pending for Finance";
+    let is_mandatory = frm.doc.workflow_state === "Pending for Finance";  
+    
+    frm.fields_dict["travel_costing_details"].grid.update_docfield_property(
+        "funded_amount", "read_only", is_read_only
+    );
+
+    
+    frm.fields_dict["travel_costing_details"].grid.update_docfield_property(
+        "funded_amount", "reqd", is_mandatory
+    );
+
+    
+    frm.refresh_field("travel_costing_details");
+}
+
+frappe.ui.form.on('Supplier Stock Reconciliation', { 
+    phy_stock: function(frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        frappe.model.set_value(cdt, cdn, "difference", row.phy_stock - row.erp_stock)
+        frappe.model.set_value(cdt, cdn, "value", row.rate * row.difference)
+        cal_shortage_val(frm)
+    },
+    erp_stock: function(frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        frappe.model.set_value(cdt, cdn, "difference", row.phy_stock - row.erp_stock)
+        frappe.model.set_value(cdt, cdn, "value", row.rate * row.difference)
+        cal_shortage_val(frm)
+    },
+    rate: function(frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        frappe.model.set_value(cdt, cdn, "value", row.rate * row.difference)
+        cal_shortage_val(frm)
+    },
+    item_code: function(frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        let duplicate_found = false;
+
+
+        frm.doc.supplier_stock_reconciliation.forEach(other_row => {
+            if (other_row.item_code === row.item_code && other_row.name !== row.name) {
+                duplicate_found = true;
+            }
+        });
+        frappe.db.get_value('Item', row.item_code, 'item_name')
+            .then(r => {
+                    frappe.model.set_value(cdt, cdn, "item_name", r.message.item_name);
+            })
+        frappe.db.get_value('Item', row.item_code, 'stock_uom')
+            .then(r => {
+                    frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+            })
+        if (duplicate_found) {
+            let d = frappe.msgprint({
+                title: __("Removing Duplicate Entry"),
+                message: __("Item Code <b>{0}</b> is already added.", [row.item_code]),
+                indicator: 'red'
+            });
+            frm.get_field('supplier_stock_reconciliation').grid.grid_rows_by_docname[cdn].remove();
+            frm.refresh_field('supplier_stock_reconciliation');
+            setTimeout(() => {
+                if (d?.hide) d.hide();
+            }, 1500);
+            return;
+        }
+
+
+
+    },
+    supplier_stock_reconciliation_add:function(frm, cdt, cdn) {
+       cal_shortage_val(frm)
+    },
+    supplier_stock_reconciliation_remove:function(frm, cdt, cdn) {
+       cal_shortage_val(frm)
+    }
+})
+function cal_shortage_val(frm){
+    let tot_shortage = 0;
+    let total_excess = 0;
+
+    (frm.doc.supplier_stock_reconciliation || []).forEach(row => {
+        if (row.value < 0) {
+            tot_shortage += (row.value);
+        } else {
+            total_excess += (row.value);
+        }
+    });
+
+    frm.set_value("tot_short_value", tot_shortage);
+    frm.set_value("total_shortage_value", tot_shortage);
+    frm.set_value("total_excess_value", total_excess);
+
+    frm.refresh_field("tot_short_value");
+    frm.refresh_field("total_shortage_value");
+    frm.refresh_field("total_excess_value");
+    frm.set_value("supplier_not_accept_debit_value",tot_shortage-frm.doc.supplier_accept_debit_value)
+}
+frappe.ui.form.on('Proto Sample SO IOM', { 
+    
+    
+    po_price_new(frm, cdt, cdn) {
+        var child = locals[cdt][cdn];
+        calculate_total_po_price(frm);
+        calculate_proto_tax_and_total(frm)
+
+        if (frm.doc.currency !== "INR") {
+            frappe.call({
+                method: "frappe.client.get_list",
+                args: {
+                    doctype: "Currency Exchange",
+                    filters: {
+                        from_currency: frm.doc.currency,
+                        to_currency: "INR"
+                    },
+                    fields: ["exchange_rate", "date"],
+                    order_by: "date desc",
+                    limit_page_length: 1
+                },
+                callback: function(r) {
+                    if (r.message && r.message.length > 0) {
+                        const rate = r.message[0].exchange_rate;
+                        frappe.model.set_value(cdt, cdn, 'po_price_inrexisting', child.po_price_new * rate);
+                    } else {
+                        frappe.msgprint("No currency exchange rate found for " + frm.doc.currency + " to INR.");
+                        frappe.model.set_value(cdt, cdn, 'po_price_inrexisting', 0);
+
+                    }
+                    calculate_total_po_price(frm);
+                    calculate_proto_tax_and_total(frm)
+
+                }
+            });
+        }
+        if (frm.doc.currency == "INR") {
+            var child = locals[cdt][cdn];
+            frappe.model.set_value(cdt, cdn, 'po_price_inrexisting', child.po_price_new);
+            calculate_total_po_price(frm);
+            calculate_proto_tax_and_total(frm)
+
+        }
+        frappe.model.set_value(cdt, cdn, "value", child.qty_new * child.po_price_new)
+        if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
+            frappe.call({
+                method: "frappe.client.get_list",
+                args: {
+                    doctype: "Currency Exchange",
+                    filters: {
+                        from_currency: frm.doc.currency,
+                        to_currency: "INR"
+                    },
+                    fields: ["exchange_rate", "date"],
+                    order_by: "date desc",
+                    limit_page_length: 1
+                },
+                callback: function(r) {
+                    if (r.message && r.message.length > 0) {
+                        const rate = r.message[0].exchange_rate;
+                        frappe.model.set_value(cdt, cdn, 'value_inr', child.value * rate);
+                    }
+                    calculate_total_po_price(frm)
+                    calculate_proto_tax_and_total(frm);
+
+                }
+            });
+        } else if (frm.doc.exchange_rate) {
+            frappe.model.set_value(cdt, cdn, 'value_inr', child.value * frm.doc.exchange_rate);
+            calculate_total_po_price(frm)
+            calculate_proto_tax_and_total(frm);
+
+        }
+        if (frm.doc.currency == "INR") {
+            var child = locals[cdt][cdn];
+            frappe.model.set_value(cdt, cdn, 'value_inr', child.value);
+            calculate_total_po_price(frm)
+            calculate_proto_tax_and_total(frm);
+
+        }
+    },
+    part_no: function(frm, cdt, cdn) {
+        console.log("hi")
+        let row = locals[cdt][cdn];
+        let duplicate_found = false;
+
+        if (row.part_no) {
+            frappe.call({
+                method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_item_tax_template_from_hsn",
+                args: {
+                    item_code: row.part_no
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        frappe.model.set_value(cdt, cdn, "item_tax_template", r.message);
+                    } else {
+                        frappe.model.set_value(cdt, cdn, "item_tax_template", "");
+                    }
+                }
+            });
+        } else {
+            frappe.model.set_value(cdt, cdn, "item_tax_template", "");
+        }
+        frm.doc.approval_for_proto_sample_so.forEach(other_row => {
+            if (other_row.part_no === row.part_no && other_row.name !== row.name) {
+                duplicate_found = true;
+            }
+        });
+
+        if (duplicate_found) {
+            let d = frappe.msgprint({
+                title: __("Removing Duplicate Entry"),
+                message: __("Item Code <b>{0}</b> is already added.", [row.part_no]),
+                indicator: 'red'
+            });
+            frm.get_field('approval_for_proto_sample_so').grid.grid_rows_by_docname[cdn].remove();
+            frm.refresh_field('approval_for_proto_sample_so');
+            setTimeout(() => {
+                if (d?.hide) d.hide();
+            }, 1500);
+            return;
+        }
+
+
+        if (row.part_no) {
+            frappe.db.get_value('Item', row.part_no, 'gst_hsn_code')
+                .then(r => {
+                    const hsn_code = r.message.gst_hsn_code;
+                    row.hsn_code = hsn_code;
+                    frm.refresh_field('approval_for_proto_sample_so');
+
+                    // Find index of current row
+                    let current_index = frm.doc.approval_for_proto_sample_so.findIndex(row => row.name === row.name);
+
+                    // get taxes based on template
+                    if (current_index == 0) {
+                        if (row.hsn_code && frm.doc.customer && frm.doc.company) {
+                            frappe.call({
+                                method: "onegene.utils.get_item_tax_and_sales_template",
+                                args: {
+                                    hsn_code: row.hsn_code,
+                                    customer: frm.doc.customer,
+                                    company: frm.doc.company
+                                },
+                                freeze: true,
+                                freeze_message: __("Fetching Tax..."),
+                                callback: function(r) {
+                                    if (r.message) {
+                                        frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
+                                        frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
+                                            .then(() => {
+                                                // ✅ Trigger tax calculation only after taxes table is set
+                                                calculate_proto_tax_and_total(frm);
+                                            });
+
+                                    }
+                                }
+                            });
+                        }
+
+                    }
+                    if (current_index > 0) {
+                        let previous_row = frm.doc.approval_for_proto_sample_so[current_index - 1];
+
+                        if (previous_row.hsn_code && previous_row.hsn_code !== hsn_code) {
+                            let msg = frappe.msgprint({
+                                title: __("Removing Current Row"),
+                                message: __("HSN Code mismatch: <b>{0}</b> (Previous) vs <b>{1}</b> (Current)",
+                                    [previous_row.hsn_code, hsn_code]),
+                                indicator: 'orange'
+                            });
+
+                            frm.get_field('approval_for_proto_sample_so').grid.grid_rows_by_docname[cdn].remove();
+                            frm.refresh_field('approval_for_proto_sample_so');
+                            setTimeout(() => {
+                                if (msg && msg.hide) msg.hide();
+                            }, 1500);
+                        }
+
+                    }
+
+
+                })
+        }
+
+    },
+    
+    po_price(frm, cdt, cdn) {
+        let d = locals[cdt][cdn];
+        calculate_total_po_price(frm);
+        calculate_proto_tax_and_total(frm)
+
+    },
+    approval_for_proto_sample_so_remove: function(frm) {
+        calculate_total_po_price(frm);
+
+        calculate_proto_tax_and_total(frm); // always recalc totals on manual row delete
+    },
+    hsn_code: function(frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        let duplicate_found = false;
+
+        frm.doc.approval_for_proto_sample_so.forEach(other_row => {
+            if (other_row.item_code_new === row.item_code_new && other_row.name !== row.name) {
+                duplicate_found = true;
+            }
+        });
+
+        if (duplicate_found) {
+            let d = frappe.msgprint({
+                title: __("Removing Duplicate Entry"),
+                message: __("Item Code <b>{0}</b> is already added.", [row.item_code_new]),
+                indicator: 'red'
+            });
+            frm.get_field('approval_for_proto_sample_so').grid.grid_rows_by_docname[cdn].remove();
+            frm.refresh_field('approval_for_proto_sample_so');
+            setTimeout(() => {
+                if (d?.hide) d.hide();
+            }, 1500);
+            return;
+        }
+
+
+        if (row.item_code_new) {
+            let current_index = frm.doc.approval_for_proto_sample_so.findIndex(row => row.name === row.name);
+
+            // get taxes based on template
+            if (current_index == 0) {
+                if (row.hsn_code && frm.doc.customer && frm.doc.company) {
+                    frappe.call({
+                        method: "onegene.utils.get_item_tax_and_sales_template",
+                        args: {
+                            hsn_code: row.hsn_code,
+                            customer: frm.doc.customer,
+                            company: frm.doc.company
+                        },
+                        freeze: true,
+                        freeze_message: __("Fetching Tax..."),
+                        callback: function(r) {
+                            if (r.message) {
+                                frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
+                                frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
+                                    .then(() => {
+                                        calculate_proto_tax_and_total(frm);
+                                    });
+
+                            }
+                        }
+                    });
+                }
+
+            }
+            if (current_index > 0) {
+                let previous_row = frm.doc.approval_for_proto_sample_so[current_index - 1];
+
+                if (previous_row.hsn_code && previous_row.hsn_code !== hsn_code) {
+                    let msg = frappe.msgprint({
+                        title: __("Removing Current Row"),
+                        message: __("HSN Code mismatch: <b>{0}</b> (Previous) vs <b>{1}</b> (Current)",
+                            [previous_row.hsn_code, hsn_code]),
+                        indicator: 'orange'
+                    });
+
+                    frm.get_field('approval_for_proto_sample_so').grid.grid_rows_by_docname[cdn].remove();
+                    frm.refresh_field('approval_for_proto_sample_so');
+                    setTimeout(() => {
+                        if (msg && msg.hide) msg.hide();
+                    }, 1500);
+                }
+
+            }
+
+        }
+    },
+    qty_new: function(frm, cdt, cdn) {
+        let d = locals[cdt][cdn];
+        frappe.model.set_value(cdt, cdn, "value", d.qty_new * d.po_price_new)
+        console.log("inside")
+        if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
+            frappe.call({
+                method: "frappe.client.get_list",
+                args: {
+                    doctype: "Currency Exchange",
+                    filters: {
+                        from_currency: frm.doc.currency,
+                        to_currency: "INR"
+                    },
+                    fields: ["exchange_rate", "date"],
+                    order_by: "date desc",
+                    limit_page_length: 1
+                },
+                callback: function(r) {
+                    if (r.message && r.message.length > 0) {
+                        const rate = r.message[0].exchange_rate;
+                        frappe.model.set_value(cdt, cdn, 'value_inr', d.value * rate);
+                    }
+                    calculate_total_po_price(frm)
+                    calculate_proto_tax_and_total(frm);
+
+                }
+            });
+        } else if (frm.doc.exchange_rate) {
+            frappe.model.set_value(cdt, cdn, 'value_inr', d.value * frm.doc.exchange_rate);
+            calculate_total_po_price(frm)
+            calculate_proto_tax_and_total(frm);
+
+        }
+        if (frm.doc.currency == "INR") {
+            var child = locals[cdt][cdn];
+            frappe.model.set_value(cdt, cdn, 'value_inr', child.value);
+            calculate_total_po_price(frm)
+            calculate_proto_tax_and_total(frm);
+
+        }
+    }
+});

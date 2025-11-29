@@ -166,8 +166,7 @@
    "fieldname": "item_table",
    "fieldtype": "Table",
    "label": "Item Table",
-   "options": "Supplier-DN Item",
-   "reqd": 1
+   "options": "Supplier-DN Item"
   },
   {
    "fieldname": "html",
@@ -479,6 +478,7 @@
    "fieldtype": "Link",
    "hidden": 1,
    "label": "Purchase Receipt",
+   "no_copy": 1,
    "options": "Purchase Receipt",
    "read_only": 1
   },
@@ -499,7 +499,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-15 09:54:56.923769",
+ "modified": "2025-11-25 13:11:39.900429",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Advance Shipping Note",

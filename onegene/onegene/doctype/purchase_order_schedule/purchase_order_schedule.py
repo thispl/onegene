@@ -9,6 +9,7 @@ from frappe.utils import cstr, add_days, date_diff, getdate
 from frappe.utils.background_jobs import enqueue
 import datetime
 from datetime import datetime
+import calendar
 
 
 from datetime import date, timedelta, datetime
@@ -587,10 +588,7 @@ def get_schedule_summary_html(supplier_code=None, purchase_order=None, item_code
 		delivered_quantity = indian_format(int(sos.received_qty) or 0)
 		pending_quantity = indian_format(int(sos.pending_qty) or 0)
 		idx += 1
-		if idx %2 == 0:
-			html += """<tr style="background-color: #e5e8eb;">"""
-		else:
-			html += "<tr>"
+		html += f"""<tr class="schedule-row" data-schedule="{sos.name}" style="cursor:pointer;{ 'background-color:#e5e8eb;' if idx%2==0 else ''}">"""
 		html += f"""
 				<td class="pt-2 pb-2 pr-4 text-right">{idx}</td>
 				<td class="pt-2 pb-2 pr-2 pl-5">{schedule_date}</td>
@@ -608,29 +606,67 @@ def get_schedule_summary_html(supplier_code=None, purchase_order=None, item_code
 	return html
 
 def indian_format(n):
-    s = s2 = str(int(n))
-    if len(s) > 3:
-        s2 = s[-3:]
-        s = s[:-3]
-        while len(s) > 2:
-            s2 = s[-2:] + "," + s2
-            s = s[:-2]
-        s2 = s + "," + s2
-    return s2
+	s = s2 = str(int(n))
+	if len(s) > 3:
+		s2 = s[-3:]
+		s = s[:-3]
+		while len(s) > 2:
+			s2 = s[-2:] + "," + s2
+			s = s[:-2]
+		s2 = s + "," + s2
+	return s2
+
+@frappe.whitelist()
+def get_received_breakdown(doctype, docname, party, item_code):
+	start_date = getdate(frappe.db.get_value(doctype, docname, "schedule_date"))
+	end_day = calendar.monthrange(start_date.year, start_date.month)[1]
+	end_date = start_date.replace(day=end_day)
+	if doctype == "Purchase Order Schedule":
+		data = frappe.db.sql("""
+				SELECT asn.name as name, sdni.dis_qty as qty, DATE(asn.datetime) as date
+				FROM `tabAdvance Shipping Note` asn
+				INNER JOIN `tabSupplier-DN Item` sdni
+					ON sdni.parent = asn.name 
+				WHERE asn.supplier = %s AND sdni.item_code = %s AND
+					DATE(asn.datetime) BETWEEN %s AND %s
+				ORDER BY asn.datetime
+				""",(party, item_code, start_date, end_date), as_dict=1)
+
+	return data 
 
 
+def update_received_qty():
+	# correct the received qty
 
-# def update_po_type():
-#     pos = frappe.db.get_all("Purchase Order Schedule",filters={"docstatus":1},fields=["name","purchase_order_number"])
-    
-#     for i in pos:
-        
-        
-#         jo =frappe.db.get_value("Purchase Order",{"name":i.purchase_order_number},"custom_is_jobcard__subcontracted")
-        
-#         if jo:
-#             frappe.db.set_value("Purchase Order Schedule",i.name,"po_type","Job Order")
-#         else:
-#             frappe.db.set_value("Purchase Order Schedule",i.name,"po_type","Purchase Order")
-                
-        
+	purchase_order_schedules = frappe.db.get_all("Purchase Order Schedule", {"docstatus": 1}, ["name", "supplier_name", "item_code", "schedule_date", "exchange_rate", "received_qty", "order_rate", "order_rate_inr", "qty"])
+	for pos in purchase_order_schedules:
+		start_date = pos.schedule_date
+		end_day = calendar.monthrange(start_date.year, start_date.month)[1]
+		end_date = start_date.replace(day=end_day)
+
+		data = frappe.db.sql("""
+				SELECT sum(sdni.dis_qty) as qty
+				FROM `tabAdvance Shipping Note` asn
+				INNER JOIN `tabSupplier-DN Item` sdni
+					ON sdni.parent = asn.name 
+				WHERE asn.supplier = %s AND sdni.item_code = %s AND
+					workflow_state NOT IN ("Cancelled", "Draft") AND
+					DATE(asn.datetime) BETWEEN %s AND %s
+				ORDER BY asn.datetime
+				""",(pos.supplier_name, pos.item_code, start_date, end_date))[0][0] or 0
+
+		print([pos.name, pos.received_qty, data or 0])
+		pending_qty = pos.qty - pos.received_qty
+		
+		update_vals = {
+			"received_qty": data,
+			"received_amount": data * pos.order_rate,
+			"received_amount_inr": data * pos.order_rate_inr,
+			"pending_qty": pending_qty,
+			"pending_amount": pending_qty * pos.order_rate,
+			"pending_amount_inr": pending_qty * pos.order_rate_inr,
+		}
+
+		frappe.db.set_value("Purchase Order Schedule", pos.name, update_vals)
+	return 200    
+		

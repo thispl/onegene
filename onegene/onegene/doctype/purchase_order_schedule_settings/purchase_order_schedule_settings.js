@@ -2,10 +2,8 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Purchase Order Schedule Settings', {
-    refresh(frm) {
+	refresh(frm) {
         
-        frm.fields_dict.response.$wrapper.html(frm.doc.response_data);
-
         frm.fields_dict.html_1.$wrapper.html(`
             <p style="font-size: 15px;">A) Download the template of purchase order schedule</p>
         `);
@@ -18,7 +16,7 @@ frappe.ui.form.on('Purchase Order Schedule Settings', {
         frm.fields_dict.html_4.$wrapper.html(`
             <p style="min-height: 15px; max-height: 15px"></p>
         `);
-
+        
         const fullMonthNames = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
@@ -37,7 +35,7 @@ frappe.ui.form.on('Purchase Order Schedule Settings', {
         `);
 
         frm.disable_save()
-        if (frm.doc.attach) {
+        if(frm.doc.attach) {
             frappe.call({
                 method: 'onegene.onegene.doctype.purchase_order_schedule_settings.purchase_order_schedule_settings.get_data',
                 args: {
@@ -45,72 +43,71 @@ frappe.ui.form.on('Purchase Order Schedule Settings', {
                 },
                 callback(r) {
                     if (r.message) {
-                        frm.fields_dict.html.$wrapper.empty().append(r.message)
-                        frm.set_df_property('upload', 'hidden', 0)
+        				frm.fields_dict.html.$wrapper.empty().append(r.message)
+                        frm.set_df_property('upload','hidden',0)
 
                     }
                 }
             })
-
-        }
-        else {
-            frm.fields_dict.html.$wrapper.empty()
+            
         }
         frappe.realtime.on('purchase_order_upload_progress', function(data) {
+           
             if (!frappe.upload_dialog) {
                 frappe.upload_dialog = new frappe.ui.Dialog({
                     title: __('Uploading'),
                     indicator: 'orange',
-                    fields: [{
-                        fieldtype: 'HTML',
-                        fieldname: 'progress_html'
-                    }],
+                    fields: [
+                        {
+                            fieldtype: 'HTML',
+                            fieldname: 'progress_html'
+                        }
+                    ],
+                    
                     static: true
                 });
-
+        
                 frappe.upload_dialog.show();
                 frappe.upload_dialog.$wrapper.find('.modal').modal({
-                    backdrop: 'static',
-                    keyboard: false
+                    backdrop: 'static',  
+                    keyboard: false     
                 });
             }
-
+        
             let percent = Math.round(data.progress);
             frappe.upload_dialog.set_title(__(data.stage || 'Creating Purchase Order Schedule'));
-
-            let description_html = data.description || '';
-
-            if (data.errors && data.errors.length > 0) {
-                description_html = `<span style="color:black; font-size: 12px;"><b>Errors encountered:</b><br>${data.errors.map(err => frappe.utils.escape_html(err)).join('<br>')}</span>`;
-
-                frappe.upload_dialog.set_primary_action(__('Close'), () => {
-                    frappe.upload_dialog.hide();
-                    frappe.upload_dialog = null;
-                });
-            } else {
-                frappe.upload_dialog.set_primary_action(null);
-            }
-
             frappe.upload_dialog.get_field('progress_html').$wrapper.html(`
                 <div class="progress" style="height: 20px;">
                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
-                        role="progressbar" style="width: ${percent}%">
+                         role="progressbar" style="width: ${percent}%">
                         ${percent}%
                     </div>
                 </div>
-                <p style="margin-top: 10px;">${__(description_html)}</p>
+                <p style="margin-top: 10px;">${__(data.description || '')}</p>
             `);
+        
+            // if (percent >= 100 && data.stage === 'Updating Sales Order') {
+            //     setTimeout(() => {
+            //         frappe.upload_dialog.hide();
+            //         frappe.upload_dialog = null;
+            //     }, 2000);
+            // }
 
-            if (
-                percent >= 100 &&
-                data.stage === 'Completed Successfully' &&
-                !(data.errors && data.errors.length > 0)
-            ) {
+
+            if (percent >= 100 && (data.description === 'Upload Complete' || data.stage === 'Upload Complete')) {
                 setTimeout(() => {
                     frappe.upload_dialog.hide();
                     frappe.upload_dialog = null;
-                }, 2000);
+                }, 1000);
             }
+
+
+            // if (percent >= 100 && data.stage === 'Updating Sales Order') {
+            //     setTimeout(() => {
+            //         frappe.upload_dialog.hide();
+            //         frappe.upload_dialog = null;
+            //     }, 2000);
+            // }
         });
 
         frappe.realtime.on("po_upload_summary", (data) => {
@@ -151,32 +148,35 @@ frappe.ui.form.on('Purchase Order Schedule Settings', {
                 </ul>
             `, "Upload Summary");
         });
-
-    },
-
+	},
+    
     attach(frm) {
         if (frm.doc.attach) {
             frappe.call({
-                method: 'onegene.onegene.doctype.purchase_order_schedule_settings.purchase_order_schedule_settings.enqueue_upload_validate_po',
-                args: {
-                    file: frm.doc.attach
-                },
+                method: 'onegene.onegene.doctype.purchase_order_schedule_settings.updated_po_schedule_settings.enqueue_upload_validate',
+                args: { file: frm.doc.attach },
                 async: false,
                 callback: function(r) {
-                    if (r.message) {
-                        // Display the returned HTML inside your HTML field
+                    if(r.message){
+                    // if(r.message.errors_html){
                         frm.fields_dict.error_data.$wrapper.empty().append(r.message);
+                        frm.set_df_property('upload','hidden',1)
                         frm.fields_dict.html.$wrapper.empty();
                         frm.set_value('attach', null);
-                        frm.set_df_property('upload', 'hidden', 1)
-                    }
+                    // }
+
+                    // if(r.message.warnings_html){
+                    //     frm.fields_dict.warning_data.$wrapper.empty().append(r.message.warnings_html);
+                    // }
+                }
                 },
             });
         }
-        else {
+        else{
             frm.set_value("response_data", "")
         }
     },
+
     upload(frm, done = null) {
         if (frm.doc.attach) {
             frappe.call({
@@ -185,41 +185,49 @@ frappe.ui.form.on('Purchase Order Schedule Settings', {
                     file: frm.doc.attach
                 },
                 freeze: true,
-                // freeze_message: __('Updating Order Schedule Data...')
             }).then((r) => {
                 let result = r.message;
                 if (result) {
+
                     frm.set_value('attach', null);
                     frm.fields_dict.html.$wrapper.empty();
-                    
-                    
-                    
-                    // frappe.msgprint({
-                    //     message: __('Uploaded Successfully'),
-                    //     indicator: 'orange'
-                    // });
-                    if (done) done();
-                    
+
+                        if (frappe.upload_dialog) {
+                            frappe.upload_dialog.hide();
+                            frappe.upload_dialog = null;
+                            
+                        }
+
+
+                        frappe.msgprint({
+                            message: __('Uploaded Successfully'),
+                            indicator: 'orange'
+                        });
+                        
+                        if (done) done();
+
+                        
+                        
                 }
             })
         } else {
             frappe.msgprint(__('Please attach the Excel file before uploading.'));
         }
     },
-
-
-
-    download(frm) {
+    
+    
+    
+    download(frm){
         var path = "onegene.onegene.doctype.purchase_order_schedule_settings.purchase_order_schedule_settings.template_sheet"
-        var args = 'name=%(name)s'
-        if (path) {
-            window.location.href = repl(frappe.request.url +
-                '?cmd=%(cmd)s&%(args)s', {
-                    cmd: path,
-                    args: args,
-                    name: frm.doc.name
-                });
-        }
+		var args = 'name=%(name)s'
+		if (path) {
+			window.location.href = repl(frappe.request.url +
+				'?cmd=%(cmd)s&%(args)s', {
+				cmd: path,
+				args: args,
+				name: frm.doc.name
+			});
+		}
     },
 })
 

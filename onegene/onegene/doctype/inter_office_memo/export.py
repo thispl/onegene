@@ -142,7 +142,7 @@ def export_excel_mpl(name):
 
 
 @frappe.whitelist()
-def process_approval_schedule_sheet(docname, file_url):
+def process_approval_schedule_sheet(docname, file_url,month):
     import pandas as pd
     import frappe
     import math
@@ -229,7 +229,7 @@ def process_approval_schedule_sheet(docname, file_url):
 
         schedule_data = frappe.db.get_value(
             "Sales Order Schedule",
-            {"sales_order_number": sales_order, "item_code": item_code},
+            {"sales_order_number": sales_order, "item_code": item_code,"schedule_month": month},
             ["qty", "schedule_amount", "order_rate"],
             as_dict=True
         )
@@ -311,7 +311,7 @@ def export_empty_excel_mpl():
 
 
 @frappe.whitelist()
-def process_approval_schedule_sheet_supplier(docname, file_url):
+def process_approval_schedule_sheet_supplier(docname, file_url,month):
     import pandas as pd
     import frappe
     from frappe.utils import flt
@@ -407,7 +407,7 @@ def process_approval_schedule_sheet_supplier(docname, file_url):
 
         schedule_data = frappe.db.get_value(
             "Purchase Order Schedule",
-            {"purchase_order_number": purchase_order, "item_code": item_code},
+            {"purchase_order_number": purchase_order, "item_code": item_code,"schedule_month": month},
             ["qty", "schedule_amount", "order_rate"],
             as_dict=True
         )

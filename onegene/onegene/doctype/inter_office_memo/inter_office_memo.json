@@ -13,8 +13,6 @@
   "priority",
   "month",
   "order_type",
-  "subject",
-  "status",
   "company",
   "reports_to",
   "reports_to_name",
@@ -22,11 +20,48 @@
   "customer_primary_address",
   "temporary_employees",
   "regular_employees",
+  "address_line_1",
+  "address_line_2",
+  "city",
+  "country",
+  "stateprovince",
+  "postal_code",
+  "contact_person",
+  "email",
+  "phone_no",
+  "party_type",
+  "party_name",
+  "subject",
+  "supplier_create",
+  "customer_created",
   "column_break_axgr",
+  "response",
   "department_to",
+  "supplier_new_name",
+  "supplier_new_group",
+  "new_month",
+  "customer_group_new",
+  "new_supplier_group",
+  "gst_category",
+  "gst_no",
+  "customer_gstin",
+  "pan_no",
+  "status",
+  "supplier_type",
+  "new_supplier_code",
+  "new_supplier_name",
+  "new_customer_name",
+  "customer_code",
+  "customer_type",
   "select_type",
+  "payment_days",
+  "msme__udyam_no",
+  "msme__udyam_no_attach",
+  "tds_exemption",
+  "tds_exemption_attach",
   "customer",
   "customer_group",
+  "select_request_type",
   "document",
   "supplier",
   "new_customer",
@@ -60,8 +95,10 @@
   "column_break_ygnv",
   "exchange_rate",
   "section_break_ptpu",
+  "current_name",
   "primary_address",
   "column_break_rfyt",
+  "new_name",
   "new_address",
   "section_break_tqvc",
   "approval_for_material_request",
@@ -69,6 +106,8 @@
   "material_request_new",
   "section_break_ixak",
   "proto_sample_existing",
+  "supplier_stock_reconciliation",
+  "supplier_bank_details",
   "travel_itinerary",
   "list_of_employees_for_business_visit",
   "visit_schedule",
@@ -108,6 +147,9 @@
   "table_scdo",
   "approval_address_change",
   "approval_tools_and_dies_invoice",
+  "employee_travel_visit_details",
+  "travel_visit_schedule",
+  "travel_costing_details",
   "section_break_bgyp",
   "cn_value",
   "total_dn_value",
@@ -129,6 +171,13 @@
   "total_new_price_value_inr",
   "total_invoice_priceinr",
   "total_excess_value",
+  "summary_section",
+  "tot_short_value",
+  "remarks",
+  "column_break_smmi",
+  "supplier_accept_debit_value",
+  "column_break_hfjn",
+  "supplier_not_accept_debit_value",
   "section_break_ekbp",
   "forwarder_name",
   "column_break_vfkl",
@@ -154,14 +203,22 @@
   "mode_of_dispatch",
   "igst",
   "column_break_qrzs",
+  "section_break_gale",
+  "total_sponsored_amount",
+  "column_break_mkdv",
+  "total_funded_amount",
   "section_break_icqk",
   "travel_currency",
-  "total_sponsored_amount",
   "column_break_czis",
   "estimated_travel_expenses",
-  "total_funded_amount",
   "column_break_sqrd",
   "advance_amount",
+  "section_break_clgr",
+  "total_sponsored_amount_new",
+  "estimated_travel_expenses_new",
+  "column_break_ywob",
+  "total_funded_amount_new",
+  "advance_amount_new",
   "section_break_rprj",
   "attachments",
   "approvers_tab",
@@ -180,6 +237,8 @@
   "production_manager_approved_on",
   "quality_manager",
   "quality_team_approved_on",
+  "ppc",
+  "ppc_approved_on",
   "column_break_erzt",
   "material_manager",
   "material_manager_approved_on",
@@ -195,6 +254,8 @@
   "smd_approved_on",
   "hr",
   "hr_approved_on",
+  "supplier_user",
+  "supplier_approved_on",
   "section_break_dmgs",
   "approver_remarks",
   "cancellation_remarks",
@@ -204,7 +265,8 @@
   "reference_tab",
   "item_price_revised",
   "column_break_yyyh",
-  "item_schedule_revised"
+  "item_schedule_revised",
+  "response_data"
  ],
  "fields": [
   {
@@ -240,10 +302,12 @@
    "reqd": 1
   },
   {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\") &&(doc.customer_gstin || doc.gstin_no)",
    "fieldname": "status",
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Status",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\") &&(doc.customer_gstin || doc.gstin_no)",
    "no_copy": 1
   },
   {
@@ -267,12 +331,12 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:(\r\n    (doc.department_from==\"NPD - WAIP\")\r\n    || (doc.department_from==\"Marketing - WAIP\")\r\n    || (\r\n        (doc.department_from==\"Delivery - WAIP\")\r\n        && (doc.department_from!=\"M P L & Purchase - WAIP\")\r\n \r\n    )\r\n)\r\n",
+   "depends_on": "eval:(\n    (doc.department_from == \"NPD - WAIP\") || \n    (doc.department_from == \"Marketing - WAIP\") || \n    (\n        (doc.department_from == \"Delivery - WAIP\") && \n        (doc.department_from != \"M P L & Purchase - WAIP\")\n    ) \n) && doc.iom_type != \"Approval for Travel Request\" && doc.iom_type!=\"Approval for New Supplier Registration\" && doc.iom_type!=\"Approval for New Customer Registration\" && doc.iom_type!=\"Approval for Supplier Stock Reconciliation\"\n",
    "fieldname": "customer",
    "fieldtype": "Link",
    "ignore_user_permissions": 1,
    "label": "Customer",
-   "mandatory_depends_on": "eval:(\r\n    (doc.department_from==\"NPD - WAIP\")\r\n    || (doc.department_from==\"Marketing - WAIP\")\r\n    || (\r\n        (doc.department_from==\"Delivery - WAIP\")\r\n        && (doc.department_from!=\"M P L & Purchase - WAIP\")&& (doc.iom_type!=\"Approval for Stock Change Request\")&& (doc.iom_type!=\"Approval for Manpower Request\")\r\n        && (doc.iom_type!=\"Approval for Schedule Revised\")\r\n    )\r\n)\r\n",
+   "mandatory_depends_on": "eval:(\n    (\n        (doc.department_from == \"NPD - WAIP\")\n        || (doc.department_from == \"Marketing - WAIP\" \n            && doc.iom_type != \"Approval for New Supplier Registration\")\n        || (\n            doc.department_from == \"Delivery - WAIP\"\n            && doc.department_from != \"M P L & Purchase - WAIP\"\n            && doc.iom_type != \"Approval for Stock Change Request\"\n            && doc.iom_type != \"Approval for Manpower Request\"\n            && doc.iom_type != \"Approval for Schedule Revised\"\n            && doc.iom_type != \"Approval for New Supplier Registration\"\n        )\n    )\n    && (doc.iom_type != \"Approval for New Customer Registration\")\n    && (doc.iom_type != \"Approval for Travel Request\") && doc.iom_type!=\"Approval for Supplier Stock Reconciliation\"\n)\n",
    "options": "Customer"
   },
   {
@@ -288,7 +352,7 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval: (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from==\"Raw Material - WAIP\" || doc.department_from==\"PPC - WAIP\" || doc.department_from==\"PPS - WAIP\") && doc.iom_type!=\"Approval for Product Conversion\" && doc.iom_type!=\"Approval for Customer Name/Address Change\" && doc.iom_type!=\"Approval for Manpower Request\"&& doc.iom_type!=\"Approval for Stock Change Request\" && doc.iom_type!=\"Approval for Business Visit\"",
+   "depends_on": "eval: (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from==\"Raw Material - WAIP\" || doc.department_from==\"PPC - WAIP\" || doc.department_from==\"PPS - WAIP\") && doc.iom_type!=\"Approval for Product Conversion\" && doc.iom_type!=\"Approval for Customer Name/Address Change\" && doc.iom_type!=\"Approval for Manpower Request\"&& doc.iom_type!=\"Approval for Stock Change Request - Stock Reconciliation\" && doc.iom_type!=\"Approval for Business Visit\"&& doc.iom_type!=\"Approval for New Customer Registration\" && doc.iom_type!=\"Approval for Schedule Revised\" && doc.iom_type!=\"Approval for Supplier Stock Reconciliation\"",
    "fieldname": "supplier",
    "fieldtype": "Link",
    "ignore_user_permissions": 1,
@@ -333,7 +397,7 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval:doc.iom_type!=\"Approval for Stock Change Request\"&& doc.iom_type!=\"Approval for Manpower Request\" && doc.iom_type!=\"Approval for Business Visit\" && doc.iom_type!=\"Approval for Air Shipment\"",
+   "depends_on": "eval:doc.iom_type!=\"Approval for Stock Change Request\"&& doc.iom_type!=\"Approval for Manpower Request\" && doc.iom_type!=\"Approval for Business Visit\" && doc.iom_type!=\"Approval for Air Shipment\" && doc.iom_type !=\"Approval for Travel Request\"",
    "fieldname": "section_break_pogr",
    "fieldtype": "Section Break",
    "label": "Currency and Price List"
@@ -405,6 +469,7 @@
    "depends_on": "eval:doc.iom_type==\"Approval for Credit Note\"",
    "fieldname": "approval_credit_note",
    "fieldtype": "Table",
+   "label": "Approval for Credit Note",
    "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Credit Note\"",
    "options": "Approval for Credit Note"
   },
@@ -473,10 +538,10 @@
    "options": "Approval for Air shipment"
   },
   {
-   "allow_bulk_edit": 1,
    "depends_on": "eval:doc.iom_type==\"Approval for Schedule Revised\" && doc.department_from==\"Delivery - WAIP\"",
    "fieldname": "approval_schdule_increase",
    "fieldtype": "Table",
+   "ignore_user_permissions": 1,
    "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Schedule Revised\" && doc.department_from==\"Delivery - WAIP\"",
    "options": "Approval for Schedule Increase"
   },
@@ -726,23 +791,23 @@
    "fieldtype": "Section Break"
   },
   {
-   "depends_on": "eval:\r\n(\r\n  (doc.iom_type!=\"Approval for Manpower Request\")&&  (doc.iom_type!=\"Approval for Credit Note\")&&(doc.iom_type!=\"Approval for Stock Change Request\")\r\n    && (doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")\r\n    && (doc.iom_type!=\"Approval for Invoice Cancel\")\r\n    && (doc.department_from==\"Delivery - WAIP\" && doc.iom_type!=\"Approval for Schedule Revised\")\r\n)\r\n|| (doc.iom_type==\"Approval for Tools & Dies Invoice\" && doc.department_from==\"M P L & Purchase - WAIP\")\r\n|| (doc.iom_type==\"Approval for Tooling Invoice\" && doc.department_from==\"Marketing - WAIP\")\r\n|| (doc.iom_type==\"Approval for New Business JO\")\r\n|| (doc.iom_type==\"Approval for New Business PO\")\r\n|| (doc.iom_type==\"Approval for New Business SO\")\r\n|| (doc.iom_type==\"Approval for Price Revision JO\")\r\n|| (doc.iom_type==\"Approval for Proto Sample PO\" || doc.iom_type==\"Approval for Proto Sample SO\" && (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from==\"Marketing - WAIP\"))\r\n|| (doc.iom_type==\"Approval for Debit Note\" && doc.department_from==\"M P L & Purchase - WAIP\")\r\n|| (doc.iom_type==\"Approval for Schedule Revised\" && (doc.department_from!=\"M P L & Purchase - WAIP\" && doc.department_from!=\"Delivery - WAIP\"))||(doc.iom_type==\"Approval for Price Revision PO\" || doc.iom_type==\"Approval for Price Revision SO\") ||(doc.iom_type==\"Approval for Debit Note / Supplementary Invoice\")",
+   "depends_on": "eval:\r\n(\r\n  (doc.iom_type!=\"Approval for Manpower Request\")&&  (doc.iom_type!=\"Approval for Credit Note\")&&(doc.iom_type!=\"Approval for Stock Change Request - Stock Reconciliation\")\r\n    && (doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")\r\n    && (doc.iom_type!=\"Approval for Invoice Cancel\")\r\n    && (doc.department_from==\"Delivery - WAIP\" && doc.iom_type!=\"Approval for Schedule Revised\")\r\n)\r\n|| (doc.iom_type==\"Approval for Tools & Dies Invoice\" && doc.department_from==\"M P L & Purchase - WAIP\")\r\n|| (doc.iom_type==\"Approval for Tooling Invoice\" && doc.department_from==\"Marketing - WAIP\")\r\n|| (doc.iom_type==\"Approval for New Business JO\")\r\n|| (doc.iom_type==\"Approval for New Business PO\")\r\n|| (doc.iom_type==\"Approval for New Business SO\")\r\n|| (doc.iom_type==\"Approval for Price Revision JO\")\r\n|| (doc.iom_type==\"Approval for Proto Sample PO\" || doc.iom_type==\"Approval for Proto Sample SO\" && (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from==\"Marketing - WAIP\"))\r\n|| (doc.iom_type==\"Approval for Debit Note\" && doc.department_from==\"M P L & Purchase - WAIP\")\r\n|| (doc.iom_type==\"Approval for Schedule Revised\" && (doc.department_from!=\"M P L & Purchase - WAIP\" && doc.department_from!=\"Delivery - WAIP\"))||(doc.iom_type==\"Approval for Price Revision PO\" || doc.iom_type==\"Approval for Price Revision SO\") ||(doc.iom_type==\"Approval for Debit Note / Supplementary Invoice\")",
    "fieldname": "wonjin_incoterms",
    "fieldtype": "Link",
    "label": "INCOTERMS",
-   "mandatory_depends_on": "eval:\r\n(\r\n  (doc.iom_type!=\"Approval for Manpower Request\")&&  (doc.iom_type!=\"Approval for Credit Note\")&&(doc.iom_type!=\"Approval for Stock Change Request\")\r\n    && (doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")\r\n    && (doc.iom_type!=\"Approval for Invoice Cancel\")\r\n    && (doc.department_from==\"Delivery - WAIP\" && doc.iom_type!=\"Approval for Schedule Revised\")\r\n)\r\n|| (doc.iom_type==\"Approval for Tools & Dies Invoice\" && doc.department_from==\"M P L & Purchase - WAIP\")\r\n|| (doc.iom_type==\"Approval for Tooling Invoice\" && doc.department_from==\"Marketing - WAIP\")\r\n|| (doc.iom_type==\"Approval for New Business JO\")\r\n|| (doc.iom_type==\"Approval for New Business PO\")\r\n|| (doc.iom_type==\"Approval for New Business SO\")\r\n|| (doc.iom_type==\"Approval for Price Revision JO\")\r\n|| (doc.iom_type==\"Approval for Proto Sample PO\" && (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from==\"Marketting - WAIP\"))\r\n|| (doc.iom_type==\"Approval for Debit Note\" && doc.department_from==\"M P L & Purchase - WAIP\")\r\n|| (doc.iom_type==\"Approval for Schedule Revised\" && (doc.department_from!=\"M P L & Purchase - WAIP\" && doc.department_from!=\"Delivery - WAIP\"))||(doc.iom_type==\"Approval for Price Revision PO\" || doc.iom_type==\"Approval for Price Revision SO\") ||(doc.iom_type==\"Approval for Debit Note / Supplementary Invoice\")",
+   "mandatory_depends_on": "eval:\r\n(\r\n  (doc.iom_type!=\"Approval for Manpower Request\")&&  (doc.iom_type!=\"Approval for Credit Note\")&&(doc.iom_type!=\"Approval for Stock Change Request - Stock Reconciliation\")\r\n    && (doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")\r\n    && (doc.iom_type!=\"Approval for Invoice Cancel\")\r\n    && (doc.department_from==\"Delivery - WAIP\" && doc.iom_type!=\"Approval for Schedule Revised\")\r\n)\r\n|| (doc.iom_type==\"Approval for Tools & Dies Invoice\" && doc.department_from==\"M P L & Purchase - WAIP\")\r\n|| (doc.iom_type==\"Approval for Tooling Invoice\" && doc.department_from==\"Marketing - WAIP\")\r\n|| (doc.iom_type==\"Approval for New Business JO\")\r\n|| (doc.iom_type==\"Approval for New Business PO\")\r\n|| (doc.iom_type==\"Approval for New Business SO\")\r\n|| (doc.iom_type==\"Approval for Price Revision JO\")\r\n|| (doc.iom_type==\"Approval for Proto Sample PO\" && (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from==\"Marketting - WAIP\"))\r\n|| (doc.iom_type==\"Approval for Debit Note\" && doc.department_from==\"M P L & Purchase - WAIP\")\r\n|| (doc.iom_type==\"Approval for Schedule Revised\" && (doc.department_from!=\"M P L & Purchase - WAIP\" && doc.department_from!=\"Delivery - WAIP\"))||(doc.iom_type==\"Approval for Price Revision PO\" || doc.iom_type==\"Approval for Price Revision SO\") ||(doc.iom_type==\"Approval for Debit Note / Supplementary Invoice\")",
    "options": "Incoterm"
   },
   {
-   "depends_on": "eval:(doc.iom_type!=\"Approval for Manpower Request\")&&(doc.iom_type!=\"Approval for Credit Note\")&&(doc.iom_type!=\"Approval for Stock Change Request\")&&(doc.department_from==\"Delivery - WAIP\")&&(doc.iom_type!=\"Approval for Schedule Revised\")&&(doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")&& (doc.iom_type!=\"Approval for Invoice Cancel\")|| (doc.iom_type==\"Approval for Tools & Dies Invoice\" && doc.department_from==\"M P L & Purchase - WAIP\")||(doc.iom_type==\"Approval for New Business JO\")||(doc.iom_type==\"Approval for New Business PO\" || doc.iom_type==\"Approval for New Business SO\")||(doc.iom_type==\"Approval for Price Revision JO\")||(doc.iom_type==\"Approval for Proto Sample PO\" || doc.iom_type==\"Approval for Proto Sample SO\" && (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from == \"Marketing - WAIP\"))||(doc.iom_type==\"Approval for Debit Note\" && doc.department_from==\"M P L & Purchase - WAIP\") ||(doc.iom_type==\"Approval for Tooling Invoice\")||(doc.iom_type==\"Approval for Price Revision PO\" || doc.iom_type==\"Approval for Price Revision SO\")||(doc.iom_type==\"Approval for Debit Note / Supplementary Invoice\")",
+   "depends_on": "eval:(doc.iom_type!=\"Approval for Manpower Request\")&&(doc.iom_type!=\"Approval for Credit Note\")&&(doc.iom_type!=\"Approval for Stock Change Request - Stock Reconciliation\")&&(doc.department_from==\"Delivery - WAIP\")&&(doc.iom_type!=\"Approval for Schedule Revised\")&&(doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")&& (doc.iom_type!=\"Approval for Invoice Cancel\")|| (doc.iom_type==\"Approval for Tools & Dies Invoice\" && doc.department_from==\"M P L & Purchase - WAIP\")||(doc.iom_type==\"Approval for New Business JO\")||(doc.iom_type==\"Approval for New Business PO\" || doc.iom_type==\"Approval for New Business SO\")||(doc.iom_type==\"Approval for Price Revision JO\")||(doc.iom_type==\"Approval for Proto Sample PO\" || doc.iom_type==\"Approval for Proto Sample SO\" && (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from == \"Marketing - WAIP\"))||(doc.iom_type==\"Approval for Debit Note\" && doc.department_from==\"M P L & Purchase - WAIP\") ||(doc.iom_type==\"Approval for Tooling Invoice\")||(doc.iom_type==\"Approval for Price Revision PO\" || doc.iom_type==\"Approval for Price Revision SO\")||(doc.iom_type==\"Approval for Debit Note / Supplementary Invoice\")",
    "fieldname": "payment_terms",
    "fieldtype": "Link",
    "label": "Payment Terms",
-   "mandatory_depends_on": "eval:(doc.iom_type!=\"Approval for Manpower Request\")&&(doc.iom_type!=\"Approval for Manpower Request\")&&(doc.iom_type!=\"Approval for Credit Note\")&&(doc.iom_type!=\"Approval for Stock Change Request\")&&(doc.department_from==\"Delivery - WAIP\")&&(doc.iom_type!=\"Approval for Schedule Revised\")&&(doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")&& (doc.iom_type!=\"Approval for Invoice Cancel\")|| (doc.iom_type==\"Approval for Tools & Dies Invoice\" && doc.department_from==\"M P L & Purchase - WAIP\")||(doc.iom_type==\"Approval for New Business JO\")||(doc.iom_type==\"Approval for New Business PO\" || doc.iom_type==\"Approval for New Business SO\")||(doc.iom_type==\"Approval for Price Revision JO\")||(doc.iom_type==\"Approval for Proto Sample PO\" || doc.iom_type==\"Approval for Proto Sample SO\" && (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from == \"Marketing - WAIP\"))||(doc.iom_type==\"Approval for Debit Note\" && doc.department_from==\"M P L & Purchase - WAIP\") ||(doc.iom_type==\"Approval for Tooling Invoice\")||(doc.iom_type==\"Approval for Price Revision PO\" || doc.iom_type==\"Approval for Price Revision SO\")||(doc.iom_type==\"Approval for Debit Note / Supplementary Invoice\")",
+   "mandatory_depends_on": "eval:(doc.iom_type!=\"Approval for Manpower Request\")&&(doc.iom_type!=\"Approval for Manpower Request\")&&(doc.iom_type!=\"Approval for Credit Note\")&&(doc.iom_type!=\"Approval for Stock Change Request - Stock Reconciliation\")&&(doc.department_from==\"Delivery - WAIP\")&&(doc.iom_type!=\"Approval for Schedule Revised\")&&(doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")&& (doc.iom_type!=\"Approval for Invoice Cancel\")|| (doc.iom_type==\"Approval for Tools & Dies Invoice\" && doc.department_from==\"M P L & Purchase - WAIP\")||(doc.iom_type==\"Approval for New Business JO\")||(doc.iom_type==\"Approval for New Business PO\" || doc.iom_type==\"Approval for New Business SO\")||(doc.iom_type==\"Approval for Price Revision JO\")||(doc.iom_type==\"Approval for Proto Sample PO\" || doc.iom_type==\"Approval for Proto Sample SO\" && (doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from == \"Marketing - WAIP\"))||(doc.iom_type==\"Approval for Debit Note\" && doc.department_from==\"M P L & Purchase - WAIP\") ||(doc.iom_type==\"Approval for Tooling Invoice\")||(doc.iom_type==\"Approval for Price Revision PO\" || doc.iom_type==\"Approval for Price Revision SO\")||(doc.iom_type==\"Approval for Debit Note / Supplementary Invoice\")",
    "options": "Payment Term"
   },
   {
-   "depends_on": "eval:(doc.iom_type!=\"Approval for Manpower Request\")&&(doc.department_from!=\"Marketing - WAIP\")&&(doc.iom_type!=\"Approval for Stock Change Request\")&&(doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")&&(doc.department_from==\"Delivery - WAIP\" && doc.iom_type!=\"Approval for Schedule Revised\")&&(doc.iom_type!=\"Approval for Invoice Cancel\")",
+   "depends_on": "eval:(doc.iom_type!=\"Approval for Manpower Request\")&&(doc.department_from!=\"Marketing - WAIP\")&&(doc.iom_type!=\"Approval for Stock Change Request - Stock Reconciliation\")&&(doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")&&(doc.department_from==\"Delivery - WAIP\" && doc.iom_type!=\"Approval for Schedule Revised\")&&(doc.iom_type!=\"Approval for Invoice Cancel\")",
    "fieldname": "delivery_terms",
    "fieldtype": "Link",
    "label": "Delivery Terms",
@@ -755,7 +820,7 @@
    "label": "GST"
   },
   {
-   "depends_on": "eval:((doc.iom_type!=\"Approval for Credit Note\"&& doc.iom_type!=\"Approval for New Business PO\" || doc.iom_type!=\"Approval for New Business SO\" && doc.iom_type!=\"Approval for Debit Note / Supplementary Invoice\" && doc.iom_type!=\"Approval for Price Revision PO\" || doc.iom_type!=\"Approval for Price Revision SO\" && doc.iom_type!=\"Approval for Tooling Invoice\")&&(doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")&& (doc.iom_type!=\"Approval for Invoice Cancel\")&&(doc.department_from==\"Delivery - WAIP\" && doc.iom_type!=\"Approval for Schedule Revised\")||(doc.iom_type==\"Approval for Proto Sample PO\" || doc.iom_type==\"Approval for Proto Sample SO\"))&&(doc.iom_type!=\"Approval for Stock Change Request\")&& (doc.iom_type!=\"Approval for Manpower Request\") ",
+   "depends_on": "eval:((doc.iom_type!=\"Approval for Credit Note\"&& doc.iom_type!=\"Approval for New Business PO\" || doc.iom_type!=\"Approval for New Business SO\" && doc.iom_type!=\"Approval for Debit Note / Supplementary Invoice\" && doc.iom_type!=\"Approval for Price Revision PO\" || doc.iom_type!=\"Approval for Price Revision SO\" && doc.iom_type!=\"Approval for Tooling Invoice\")&&(doc.iom_type!=\"Approval for Air Shipment\" && doc.department_from==\"Delivery - WAIP\")&& (doc.iom_type!=\"Approval for Invoice Cancel\")&&(doc.department_from==\"Delivery - WAIP\" && doc.iom_type!=\"Approval for Schedule Revised\")||(doc.iom_type==\"Approval for Proto Sample PO\" || doc.iom_type==\"Approval for Proto Sample SO\"))&&(doc.iom_type!=\"Approval for Stock Change Request - Stock Reconciliation\")&& (doc.iom_type!=\"Approval for Manpower Request\") ",
    "fieldname": "mode_of_dispatch",
    "fieldtype": "Select",
    "label": "Mode of Dispatch",
@@ -1042,7 +1107,7 @@
    "fieldtype": "Section Break"
   },
   {
-   "depends_on": "eval: ((doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from==\"Raw Material - WAIP\" || doc.department_from==\"PPC - WAIP\" || doc.department_from==\"PPS - WAIP\") && doc.iom_type!=\"Approval for Schedule Revised\" && doc.iom_type!=\"Approval for Product Conversion\"  && doc.iom_type!=\"Approval for Customer Name/Address Change\"&& doc.iom_type!=\"Approval for Manpower Request\"&& doc.iom_type!=\"Approval for Stock Change Request\" && doc.iom_type!=\"Approval for Business Visit\")",
+   "depends_on": "eval: ((doc.department_from==\"M P L & Purchase - WAIP\" || doc.department_from==\"Raw Material - WAIP\" || doc.department_from==\"PPC - WAIP\" || doc.department_from==\"PPS - WAIP\") && doc.iom_type!=\"Approval for Schedule Revised\" && doc.iom_type!=\"Approval for Product Conversion\"  && doc.iom_type!=\"Approval for Customer Name/Address Change\"&& doc.iom_type!=\"Approval for Manpower Request\"&& doc.iom_type!=\"Approval for Stock Change Request - Stock Reconciliation\" && doc.iom_type!=\"Approval for Business Visit\")",
    "fetch_from": "supplier.supplier_group",
    "fieldname": "supplier_group",
    "fieldtype": "Link",
@@ -1056,7 +1121,7 @@
    "fieldtype": "Select",
    "label": "Revision Level",
    "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Schedule Revised\"",
-   "options": "\nRevised - 01\nRevised - 02\nRevised - 03\nRevised - 04\nRevised - 05\nRevised - 06\nRevised - 07"
+   "options": "\nRevised - 01\nRevised - 02\nRevised - 03\nRevised - 04\nRevised - 05\nRevised - 06\nRevised - 07\nRevised - 08\nRevised - 09\nRevised - 10"
   },
   {
    "depends_on": "eval:(doc.iom_type==\"Approval for Schedule Increase\" && doc.department_from==\"Delivery - WAIP\")||doc.iom_type==\"Approval for Schedule Revised\"",
@@ -1198,7 +1263,7 @@
    "fetch_if_empty": 1,
    "fieldname": "primary_address",
    "fieldtype": "Text",
-   "label": "Current Address",
+   "label": "<b style=\"color:green;\">Current Customer Address</b>",
    "read_only": 1
   },
   {
@@ -1285,10 +1350,11 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.select_request_type==\"Customer Address\" || doc.select_request_type==\"Both\"",
    "fieldname": "new_address",
    "fieldtype": "Small Text",
-   "label": "New Address",
-   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Customer Name/Address Change\""
+   "label": "<b style=\"color:blue;\">New Customer Address</b>",
+   "mandatory_depends_on": "eval:doc.select_request_type==\"Customer Address\" || doc.select_request_type==\"Both\""
   },
   {
    "depends_on": "eval:(doc.iom_type==\"Approval for Schedule Revised\" && doc.department_from==\"M P L & Purchase - WAIP\")",
@@ -1322,6 +1388,7 @@
    "fieldname": "new_customer",
    "fieldtype": "Link",
    "label": "Customer",
+   "mandatory_depends_on": "eval:(\r\n    (doc.department_from==\"NPD - WAIP\" && doc.iom_type!=\"Approval for Stock Change Request\")\r\n    || (doc.department_from==\"Marketing - WAIP\")\r\n    || (\r\n        (doc.department_from==\"Delivery - WAIP\")\r\n        && (doc.department_from!=\"M P L & Purchase - WAIP\")&& (doc.iom_type!=\"Approval for Stock Change Request\")&& (doc.iom_type!=\"Approval for Manpower Request\")\r\n        && (doc.iom_type!=\"Approval for Schedule Revised\")\r\n    )\r\n)\r\n",
    "options": "Customer"
   },
   {
@@ -1338,15 +1405,16 @@
    "depends_on": "eval: frappe.session.user == \"amar.p@groupteampro.com\" || frappe.session.user == \"bhuvaneswari.a@groupteampro.com\" || frappe.session.user == \"divya.p@groupteampro.com\"",
    "fieldname": "customer_wise_schedule",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Customer Wise Schedule",
    "options": "Inter Office Memo Customer Customer Schedule"
   },
   {
-   "allow_bulk_edit": 1,
    "allow_on_submit": 1,
-   "depends_on": "eval: frappe.session.user == \"amar.p@groupteampro.com\"",
+   "depends_on": "eval: frappe.session.user == \"amar.p@groupteampro.com\"|| frappe.session.user==\"divya.p@groupteampro.com\"",
    "fieldname": "item_group_wise_schedule",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Item Group Wise Schedule",
    "options": "Inter Office Memo Item Group Schedule"
   },
@@ -1369,6 +1437,7 @@
    "depends_on": "eval: frappe.session.user == \"amar.p@groupteampro.com\"|| frappe.session.user==\"divya.p@groupteampro.com\"",
    "fieldname": "supplier_wise_schedule",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Supplier Wise Schedule",
    "options": "Inter Office Memo Supplier Schedule"
   },
@@ -1382,26 +1451,28 @@
   },
   {
    "allow_bulk_edit": 1,
-   "depends_on": "eval:doc.iom_type==\"Approval for Stock Change Request\"",
+   "depends_on": "eval:doc.iom_type==\"Approval for Stock Change Request - Stock Reconciliation\"",
    "fieldname": "approval_for_stock_change_request",
    "fieldtype": "Table",
    "label": "Approval for Stock Change Request",
-   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Stock Change Request\"",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Stock Change Request - Stock Reconciliation\"",
    "options": "Approval for Stock Change Request"
   },
   {
-   "depends_on": "eval:doc.iom_type==\"Approval for Stock Change Request\"",
+   "depends_on": "eval:doc.iom_type==\"Approval for Stock Change Request - Stock Reconciliation\"|| doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
    "fieldname": "total_shortage_value",
    "fieldtype": "Currency",
    "label": "Total Shortage Value",
-   "precision": "2"
+   "precision": "2",
+   "read_only": 1
   },
   {
-   "depends_on": "eval:doc.iom_type==\"Approval for Stock Change Request\"",
+   "depends_on": "eval:doc.iom_type==\"Approval for Stock Change Request - Stock Reconciliation\"|| doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
    "fieldname": "total_excess_value",
    "fieldtype": "Currency",
    "label": "Total Excess Value",
-   "precision": "2"
+   "precision": "2",
+   "read_only": 1
   },
   {
    "allow_bulk_edit": 1,
@@ -1521,7 +1592,7 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval:doc.iom_type==\"Approval for Business Visit\"",
+   "depends_on": "eval:doc.iom_type==\"Approval for Business Visit\" || doc.iom_type==\"Approval for Travel Request\"",
    "fieldname": "travel_itinerary",
    "fieldtype": "Table",
    "label": "Travel Itinerary",
@@ -1532,6 +1603,7 @@
    "fieldname": "list_of_employees_for_business_visit",
    "fieldtype": "Table",
    "label": "List of Employees for Business Visit",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
    "options": "Employee Visit Details"
   },
   {
@@ -1549,11 +1621,11 @@
    "options": "Costing Details"
   },
   {
-   "depends_on": "eval:doc.iom_type==\"Approval for Business Visit\"",
+   "depends_on": "eval:doc.iom_type==\"Approval for Business Visit\" || doc.iom_type ==\"Approval for Travel Request\"",
    "fieldname": "travel_type",
    "fieldtype": "Select",
    "label": "Travel Type",
-   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Business Visit\"",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Business Visit\" || doc.iom_type ==\"Approval for Travel Request\"",
    "options": "\nDomestic\nInternational"
   },
   {
@@ -1564,11 +1636,11 @@
    "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Business Visit\""
   },
   {
-   "depends_on": "eval:doc.iom_type==\"Approval for Business Visit\"",
+   "depends_on": "eval:doc.iom_type==\"Approval for Business Visit\" || doc.iom_type ==\"Approval for Travel Request\"",
    "fieldname": "purpose_of_visit",
    "fieldtype": "Data",
    "label": "Purpose of Visit",
-   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Business Visit\""
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Business Visit\" || doc.iom_type==\"Approval for Travel Request\""
   },
   {
    "depends_on": "eval:doc.iom_type==\"Approval for Business Visit\"",
@@ -1654,6 +1726,7 @@
    "label": "Supplier Code"
   },
   {
+   "depends_on": "eval: doc.frappe.session.user == \"amar.p@groupteampro.com\"",
    "fieldname": "reference_tab",
    "fieldtype": "Tab Break",
    "label": "Reference"
@@ -1679,13 +1752,435 @@
    "fieldtype": "Check",
    "label": "Item Schedule Revised",
    "read_only": 1
+  },
+  {
+   "fieldname": "response",
+   "fieldtype": "HTML",
+   "label": "Response"
+  },
+  {
+   "fieldname": "ppc",
+   "fieldtype": "Link",
+   "label": "PPC",
+   "options": "User"
+  },
+  {
+   "fieldname": "ppc_approved_on",
+   "fieldtype": "Datetime",
+   "label": "PPC Approved On"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Customer Name/Address Change\"",
+   "fieldname": "select_request_type",
+   "fieldtype": "Select",
+   "label": "Select Request Type",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Customer Name/Address Change\"",
+   "options": "\nCustomer Name\nCustomer Address\nBoth"
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fetch_if_empty": 1,
+   "fieldname": "current_name",
+   "fieldtype": "Data",
+   "label": "<b style=\"color:green;\">Current Customer Name</b>",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.select_request_type==\"Customer Name\" || doc.select_request_type==\"Both\"",
+   "fieldname": "new_name",
+   "fieldtype": "Data",
+   "label": "<b style=\"color:blue;\">New Customer Name</b>",
+   "mandatory_depends_on": "eval:doc.select_request_type==\"Customer Name\" || doc.select_request_type==\"Both\""
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "response_data",
+   "fieldtype": "Long Text",
+   "label": "Response Data",
+   "no_copy": 1
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\")||(doc.iom_type==\"Approval for New Customer Registration\")",
+   "fieldname": "address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\")||(doc.iom_type==\"Approval for New Customer Registration\")"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\")||(doc.iom_type==\"Approval for New Customer Registration\")",
+   "fieldname": "address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\")||(doc.iom_type==\"Approval for New Customer Registration\")"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\"",
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\""
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\"",
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\"",
+   "options": "Country"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\"",
+   "fieldname": "stateprovince",
+   "fieldtype": "Link",
+   "label": "State/Province",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\"",
+   "options": "State"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\"",
+   "fieldname": "postal_code",
+   "fieldtype": "Data",
+   "label": "Postal Code",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\""
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\"",
+   "fieldname": "contact_person",
+   "fieldtype": "Data",
+   "label": "Contact Person",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\""
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\"",
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\""
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\"",
+   "fieldname": "phone_no",
+   "fieldtype": "Data",
+   "label": "Phone No",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" || doc.iom_type==\"Approval for New Customer Registration\""
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
+   "fieldname": "party_type",
+   "fieldtype": "Select",
+   "label": "Party Type",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
+   "options": "\nCustomer\nSupplier"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
+   "fieldname": "party_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Party Name",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
+   "options": "party_type"
+  },
+  {
+   "default": "0",
+   "fieldname": "supplier_create",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Supplier Create"
+  },
+  {
+   "default": "0",
+   "fieldname": "customer_created",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Customer Created"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
+   "fieldname": "supplier_new_name",
+   "fieldtype": "Link",
+   "label": "Supplier Name",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
+   "options": "Supplier"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
+   "fetch_from": "supplier_new_name.supplier_group",
+   "fetch_if_empty": 1,
+   "fieldname": "supplier_new_group",
+   "fieldtype": "Link",
+   "label": "Supplier Group",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
+   "options": "Supplier Group",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
+   "fieldname": "new_month",
+   "fieldtype": "Select",
+   "label": "Month",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
+   "options": "\nJAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\")",
+   "fieldname": "customer_group_new",
+   "fieldtype": "Link",
+   "label": "Customer Group",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\")",
+   "options": "Customer Group"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\"",
+   "fieldname": "new_supplier_group",
+   "fieldtype": "Link",
+   "label": "Supplier Group",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\"",
+   "options": "Supplier Group"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\"))||(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\")",
+   "fieldname": "gst_category",
+   "fieldtype": "Select",
+   "label": "GST Category",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\"))||(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\")",
+   "options": "Registered Regular\nRegistered Composition\nUnregistered\nSEZ\nOverseas\nDeemed Export\nUIN Holders\nTax Deductor"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Raw Material\"&& doc.new_supplier_group!=\"Import- Bought-Out\") && doc.gst_category!=\"Unregistered\"",
+   "fieldname": "gst_no",
+   "fieldtype": "Autocomplete",
+   "label": "GST No",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\") && doc.gst_category!=\"Unregistered\""
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\" && doc.gst_category!=\"Unregistered\")",
+   "fieldname": "customer_gstin",
+   "fieldtype": "Autocomplete",
+   "label": "GSTIN No",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\" && doc.gst_category!=\"Unregistered\")"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\"))||(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\")",
+   "fieldname": "pan_no",
+   "fieldtype": "Data",
+   "label": "PAN No",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\"))||(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\")"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\"",
+   "fieldname": "supplier_type",
+   "fieldtype": "Select",
+   "label": "Supplier Type",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\"",
+   "options": "Company\nIndividual\nProprietorship\nPartnership"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\"",
+   "fieldname": "new_supplier_code",
+   "fieldtype": "Data",
+   "label": "Supplier Code",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\""
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\"",
+   "fieldname": "new_supplier_name",
+   "fieldtype": "Data",
+   "label": "Supplier Name",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Supplier Registration\""
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\")",
+   "fieldname": "new_customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\")"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\")",
+   "fieldname": "customer_code",
+   "fieldtype": "Data",
+   "label": "Customer Code",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\")"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\")",
+   "fieldname": "customer_type",
+   "fieldtype": "Select",
+   "label": "Customer Type",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Customer Registration\")",
+   "options": "Company\nIndividual\nProprietorship\nPartnership"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\")||(doc.iom_type==\"Approval for New Customer Registration\")",
+   "fieldname": "payment_days",
+   "fieldtype": "Data",
+   "label": "Payment Days",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\")||(doc.iom_type==\"Approval for New Customer Registration\")"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\"))||(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\")",
+   "fieldname": "msme__udyam_no",
+   "fieldtype": "Data",
+   "label": "MSME / Udyam No",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\"))||(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\")"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\"))||(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\")",
+   "fieldname": "msme__udyam_no_attach",
+   "fieldtype": "Attach",
+   "hidden": 1,
+   "label": "MSME / Udyam No Attach"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\"))||(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\")",
+   "fieldname": "tds_exemption",
+   "fieldtype": "Select",
+   "label": "TDS Exemption",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\" && (doc.new_supplier_group!=\"Import- Bought-Out\" && doc.new_supplier_group!=\"Import- Raw Material\"))||(doc.iom_type==\"Approval for New Customer Registration\" && doc.customer_group_new==\"Domestic\")",
+   "options": "\nApplicable\nNot Applicable"
+  },
+  {
+   "depends_on": "eval:(doc.tds_exemption==\"Applicable\")",
+   "fieldname": "tds_exemption_attach",
+   "fieldtype": "Attach",
+   "label": "TDS Exemption Attach",
+   "mandatory_depends_on": "eval:doc.tds_exemption==\"Applicable\""
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
+   "fieldname": "supplier_stock_reconciliation",
+   "fieldtype": "Table",
+   "label": "Supplier Stock Reconciliation",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Supplier Stock Reconciliation\"",
+   "options": "Supplier Stock Reconciliation"
+  },
+  {
+   "depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\")||doc.iom_type==\"Approval for New Customer Registration\"",
+   "fieldname": "supplier_bank_details",
+   "fieldtype": "Table",
+   "label": "Supplier Bank Details",
+   "mandatory_depends_on": "eval:(doc.iom_type==\"Approval for New Supplier Registration\")||doc.iom_type==\"Approval for New Customer Registration\"",
+   "options": "IOM Supplier Bank Details"
+  },
+  {
+   "fieldname": "section_break_gale",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_mkdv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
+   "fieldname": "section_break_clgr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_sponsored_amount_new",
+   "fieldtype": "Currency",
+   "label": "Total Sponsored Amount",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Travel Request\""
+  },
+  {
+   "fieldname": "estimated_travel_expenses_new",
+   "fieldtype": "Currency",
+   "label": "Estimated Travel Expenses",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Travel Request\""
+  },
+  {
+   "fieldname": "column_break_ywob",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_funded_amount_new",
+   "fieldtype": "Currency",
+   "label": "Total Funded Amount",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Travel Request\""
+  },
+  {
+   "fieldname": "advance_amount_new",
+   "fieldtype": "Currency",
+   "label": "Advance Amount",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Travel Request\""
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
+   "fieldname": "employee_travel_visit_details",
+   "fieldtype": "Table",
+   "label": "List of Employees for Business Visit",
+   "mandatory_depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
+   "options": "Employee Travel Visit Details"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
+   "fieldname": "travel_visit_schedule",
+   "fieldtype": "Table",
+   "label": "Visit Schedule",
+   "options": "Travel Visit Schedule"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Travel Request\"",
+   "fieldname": "travel_costing_details",
+   "fieldtype": "Table",
+   "label": "Costing Details",
+   "options": "Travel Costing Details"
+  },
+  {
+   "depends_on": "eval:doc.iom_type==\"Approval for Supplier Stock Reconciliation\" && doc.workflow_state!=\"Draft\"",
+   "fieldname": "summary_section",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "tot_short_value",
+   "fieldtype": "Currency",
+   "label": "Total Shortage Value",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "column_break_smmi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier_accept_debit_value",
+   "fieldtype": "Currency",
+   "label": "Supplier Accept Debit Value",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_hfjn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier_not_accept_debit_value",
+   "fieldtype": "Currency",
+   "label": "Supplier Not Accept Debit Value",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier_user",
+   "fieldtype": "Link",
+   "label": "Supplier User",
+   "options": "User"
+  },
+  {
+   "fieldname": "supplier_approved_on",
+   "fieldtype": "Datetime",
+   "label": "Supplier Approved On"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2025-11-15 10:18:23.822322",
+ "modified": "2025-11-29 12:48:31.559533",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Inter Office Memo",

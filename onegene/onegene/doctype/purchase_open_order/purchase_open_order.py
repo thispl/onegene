@@ -36,10 +36,10 @@ class PurchaseOpenOrder(Document):
 			order_open = frappe.get_doc("Purchase Open Order",{"purchase_order":self.purchase_order})
 			get_so_qty = []
 			for i in order_open.open_order_table:
-				get_so_qty.append(frappe._dict({"item_code":i.item_code,"qty":i.qty,"warehouse":i.warehouse,"item_name":i.item_name,"rate":i.rate,"amount":i.amount}))
+				get_so_qty.append(frappe._dict({"item_code":i.item_code,"qty":i.qty,"warehouse":i.warehouse,"item_name":i.item_name,"rate":i.rate,"amount":i.amount,"docname": i.docname}))
 			json_data = json.dumps(get_so_qty)
 			update_child_qty_rate("Purchase Order", json_data, order_open.purchase_order)
-
+        
 @frappe.whitelist()
 def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, child_docname="items"):
 	def check_doc_permissions(doc, perm_type="create"):
@@ -164,7 +164,7 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 			# ignore empty rows
 			continue
 
-		if not d.get("item_code"):
+		if not d.get("docname"):
 			new_child_flag = True
 			items_added_or_removed = True
 			check_doc_permissions(parent, "create")
@@ -288,11 +288,9 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 					child_item.precision("discount_percentage"),
 				)
 				child_item.discount_amount = flt(child_item.price_list_rate) - flt(child_item.rate)
-
-				if parent_doctype in sales_doctypes:
-					child_item.margin_type = ""
-					child_item.margin_rate_or_amount = 0
-					child_item.rate_with_margin = 0
+				child_item.margin_type = ""
+				child_item.margin_rate_or_amount = 0
+				child_item.rate_with_margin = 0
 
 		child_item.flags.ignore_validate_update_after_submit = True
 		if new_child_flag:
@@ -389,7 +387,7 @@ def validate_and_delete_children(parent, data) -> bool:
 			deleted_children.append(item)
 
 	for d in deleted_children:
-		validate_child_on_delete(d, parent)
+		# validate_child_on_delete(d, parent)
 		d.cancel()
 		d.delete(ignore_permissions=True)
 
@@ -403,5 +401,87 @@ def validate_and_delete_children(parent, data) -> bool:
 	return bool(deleted_children)
 
 
+def set_order_defaults(
+	parent_doctype, parent_doctype_name, child_doctype, child_docname, trans_item
+):
+	"""
+	Returns a Sales/Purchase Order Item child item containing the default values
+	"""
+	p_doc = frappe.get_doc(parent_doctype, parent_doctype_name)
+	child_item = frappe.new_doc(child_doctype, parent_doc=p_doc, parentfield=child_docname)
+	item = frappe.get_doc("Item", trans_item.get("item_code"))
 
+	for field in ("item_code", "item_name", "description", "item_group"):
+		child_item.update({field: item.get(field)})
+
+	date_fieldname = "delivery_date" if child_doctype == "Sales Order Item" else "schedule_date"
+	child_item.update({date_fieldname: trans_item.get(date_fieldname) or p_doc.get(date_fieldname)})
+	child_item.stock_uom = item.stock_uom
+	child_item.uom = trans_item.get("uom") or item.stock_uom
+	# child_item.warehouse = get_item_warehouse(item, p_doc, overwrite_warehouse=True)
+	child_item.warehouse = frappe.db.get_value("Item", item.name, "custom_warehouse") or "Stores - WAIP"
+	conversion_factor = flt(
+		get_conversion_factor(item.item_code, child_item.uom).get("conversion_factor")
+	)
+	child_item.conversion_factor = flt(trans_item.get("conversion_factor")) or conversion_factor
+
+	if child_doctype == "Purchase Order Item":
+		# Initialized value will update in parent validation
+		child_item.base_rate = 1
+		child_item.base_amount = 1
+	if child_doctype == "Sales Order Item":
+		# child_item.warehouse = get_item_warehouse(item, p_doc, overwrite_warehouse=True)
+		child_item.warehouse = frappe.db.get_value("Item", item.name, "custom_warehouse") or "Stores - WAIP"
+		if not child_item.warehouse:
+			frappe.throw(
+				_("Cannot find {} for item {}. Please set the same in Item Master or Stock Settings.").format(
+					frappe.bold("default warehouse"), frappe.bold(item.item_code)
+				)
+			)
+
+	set_child_tax_template_and_map(item, child_item, p_doc)
+	add_taxes_from_tax_template(child_item, p_doc)
+	return child_item
+
+ 
+def set_child_tax_template_and_map(item, child_item, parent_doc):
+	args = {
+		"item_code": item.item_code,
+		"posting_date": parent_doc.transaction_date,
+		"tax_category": parent_doc.get("tax_category"),
+		"company": parent_doc.get("company"),
+	}
+
+	child_item.item_tax_template = _get_item_tax_template(args, item.taxes)
+	if child_item.get("item_tax_template"):
+		child_item.item_tax_rate = get_item_tax_map(
+			parent_doc.get("company"), child_item.item_tax_template, as_json=True
+		)
+  
+def add_taxes_from_tax_template(child_item, parent_doc, db_insert=True):
+	add_taxes_from_item_tax_template = frappe.db.get_single_value(
+		"Accounts Settings", "add_taxes_from_item_tax_template"
+	)
+
+	if child_item.get("item_tax_rate") and add_taxes_from_item_tax_template:
+		tax_map = json.loads(child_item.get("item_tax_rate"))
+		for tax_type in tax_map:
+			tax_rate = flt(tax_map[tax_type])
+			taxes = parent_doc.get("taxes") or []
+			# add new row for tax head only if missing
+			found = any(tax.account_head == tax_type for tax in taxes)
+			if not found:
+				tax_row = parent_doc.append("taxes", {})
+				tax_row.update(
+					{
+						"description": str(tax_type).split(" - ")[0],
+						"charge_type": "On Net Total",
+						"account_head": tax_type,
+						"rate": tax_rate,
+					}
+				)
+				if parent_doc.doctype == "Purchase Order":
+					tax_row.update({"category": "Total", "add_deduct_tax": "Add"})
+				if db_insert:
+					tax_row.db_insert()
 

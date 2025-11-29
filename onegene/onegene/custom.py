@@ -15,7 +15,7 @@ import urllib.parse
 import openpyxl
 from openpyxl.styles import Alignment, Font, Border, Side, PatternFill
 from io import BytesIO
-from frappe.utils import now
+from frappe.utils import now, fmt_money
 from frappe import throw,_, bold
 from frappe.utils import flt
 from dateutil.relativedelta import relativedelta
@@ -2829,6 +2829,7 @@ def create_purchase_open_order(doc, method):
 				"rate": po.rate,
 				"warehouse": po.warehouse,
 				"amount": po.amount,
+				"docname": po.name,
 			})
 		new_doc.save(ignore_permissions=True)
 
@@ -2842,9 +2843,9 @@ def create_purchase_order_schedule_from_po(doc,method):
 			if frappe.db.exists('Purchase Order Schedule', {'purchase_order_number': doc.name, 'item_code': schedule.item_code, 'schedule_date': schedule.schedule_date}):
 				frappe.throw("Schedule already exists for this item code and schedule date")
 				frappe.throw("இந்த Item Code மற்றும் Schedule Date க்கான schedule ஏற்கனவே உள்ளது")
-			po_type = frappe.db.get_value("Purchase Order",{"name":doc.name},"custom_is_jobcard__subcontracted")
+			po_type = frappe.db.get_value("Purchase Order",{"name":doc.name},"custom_po_type")
 			new_doc = frappe.new_doc('Purchase Order Schedule')
-			new_doc.po_type = "Job Order" if po_type else "Purchase Order"
+			new_doc.po_type = po_type
 			new_doc.supplier_code = doc.supplier_code
 			new_doc.supplier_name = doc.supplier
 			new_doc.purchase_order_number = doc.name
@@ -2868,8 +2869,8 @@ def create_purchase_order_schedule_from_po(doc,method):
 			new_doc = frappe.new_doc('Purchase Order Schedule') 
 			new_doc.supplier_code = doc.supplier_code
 			new_doc.supplier_name = doc.supplier
-			po_type = frappe.db.get_value("Purchase Order",{"name":doc.name},"custom_is_jobcard__subcontracted")
-			new_doc.po_type = "Job Order" if po_type else "Purchase Order"
+			po_type = frappe.db.get_value("Purchase Order",{"name":doc.name},"custom_po_type")
+			new_doc.po_type = po_type
 			new_doc.purchase_order_number = doc.name
 			new_doc.item_code = schedule.item_code
 			new_doc.schedule_date = schedule.schedule_date
@@ -2913,6 +2914,7 @@ def create_sales_open_order(doc,method):
 				"rate": so.rate,
 				"warehouse": so.warehouse,
 				"amount": so.amount,
+				"docname": so.name,
 			})
 		new_doc.save(ignore_permissions=True)
 
@@ -2963,8 +2965,8 @@ def create_order_schedule_from_po_for_open(item_code, schedule_date, schedule_qt
 	new_doc = frappe.new_doc('Purchase Order Schedule') 
 	new_doc.supplier_name = frappe.db.get_value("Supplier",{"supplier_code": supplier_code},"name")
 	new_doc.supplier_code = supplier_code
-	po_type = frappe.db.get_value("Purchase Order",{"name":name},"custom_is_jobcard__subcontracted")
-	new_doc.po_type = "Job Order" if po_type else "Purchase Order"
+	po_type = frappe.db.get_value("Purchase Order",{"name":name},"custom_po_type")
+	new_doc.po_type = po_type
 	new_doc.order_type = "Open"
 	new_doc.purchase_order_number = name
 	new_doc.item_code = item_code
@@ -3078,7 +3080,7 @@ def get_items_for_sii(doctype, txt, searchfield, start, page_len, filters):
 		FROM `tabSales Order Item` soi
 		LEFT JOIN `tabSales Order` so ON soi.parent = so.name
 		WHERE so.customer = %s
-		  AND soi.docstatus = 1
+		  AND so.docstatus = 1
 		  AND soi.custom_disabled = 0
 		  AND (soi.item_code LIKE %s OR soi.item_name LIKE %s)
 		  AND (so.status IN ('To Deliver', 'To Deliver and Bill', 'Overdue') OR so.status IS NULL)
@@ -3781,9 +3783,11 @@ def get_raw_materials_for_jobcard(doc, method):
 		#     processed_qty = doc.custom_processed_qty or 0
 		#     doc.custom_possible_qty = possible_qty if (possible_qty) > 0 else 0
 
-def test_check():
-	po = frappe.db.get_value("Customer", "Hanon System Slovakia S.R.O", "primary_address")
-	print(po)
+def zero_ot():
+	departments = frappe.db.get_all("Department", "name")
+	for row in departments:
+		frappe.db.set_value("OT Details", {"parent": row.name}, "allowed_ot", 0)
+
 	
 @frappe.whitelist()
 def update_quantity_in_job_card(doc, method):
@@ -5961,383 +5965,384 @@ def create_html_mr(doc):
 
 @frappe.whitelist()
 def create_html_lr(doc):
-	doc = frappe.parse_json(doc)
-	template = """
-	<style>
-	td {
-	border: 1px solid black;
-	
+    doc = frappe.parse_json(doc)
+    template = """
+    <style>
+    td {
+    border: 1px solid black;
+    
 }
  table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 12px;
-	font-family: 'Book Antiqua','Palatino Linotype',Palatino,serif;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-family: 'Book Antiqua','Palatino Linotype',Palatino,serif;
   }
   td {
-	border: 1px solid #000;
+    border: 1px solid #000;
   }
   .label-cell {
-	font-weight: bold;
-	width: 10%;
-	white-space: nowrap;
-	line-height:0.9;
-	border-right: none; /* remove right border */
-	border-top: none !important;
-	border-bottom: none !important;
-	font-size:14px;
+    font-weight: bold;
+    width: 10%;
+    white-space: nowrap;
+    line-height:0.9;
+    border-right: none; /* remove right border */
+    border-top: none !important;
+    border-bottom: none !important;
+    font-size:14px;
   }
   .label-text {
-	display: inline-block;
-	line-height:0.9;
-	width: 100px; /* adjust for colon alignment */
-	
+    display: inline-block;
+    line-height:0.9;
+    width: 100px; /* adjust for colon alignment */
+    
   }
   .value-cell {
-	text-align: left;
-	line-height:0.9;
-	width: 30%;
-	border-left: none; /* remove left border */
-	border-top: none !important;
-	border-bottom: none !important;
-	font-size:14px;
+    text-align: left;
+    line-height:0.9;
+    width: 30%;
+    border-left: none; /* remove left border */
+    border-top: none !important;
+    border-bottom: none !important;
+    font-size:14px;
   }
   .no-border {
-	border: none !important;
+    border: none !important;
   }
  .remove-top-border {
-		border-top: none !important;
-	}
-	
+        border-top: none !important;
+    }
+    
 .remove-bottom-border {
-	border-bottom: none !important;
+    border-bottom: none !important;
 }
 .no-top-bottom {
-	border-top: none !important;
-	border-bottom: none !important;
-	border-left: 1px solid black !important;   /* keep left if you want */
-	border-right: 1px solid black !important;  /* keep right if you want */
-	padding-top: 0px !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: 1px solid black !important;   /* keep left if you want */
+    border-right: 1px solid black !important;  /* keep right if you want */
+    padding-top: 0px !important;
   padding-bottom: 0px !important;
-	
+    
 }
-	</style>
-		<meta name="pdfkit-orientation" content="landscape" />
+    </style>
+        <meta name="pdfkit-orientation" content="landscape" />
 <meta name="page-size" content ='A4'/>
 <table border="1" cellspacing="0" cellpadding="5" class="remove-bottom-border;">
   <tr>
-	<td colspan=1 style=" border-right: none !important;">&nbsp;<img src="/files/ci_img.png" width="120px" height=35%;>
-				 
-			</td>
-	<td colspan=9 style="border-left: none !important;font-size: 14px; font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif; ">
-						<div style="padding-left:250px;"><b>LOGISTICS REQUEST APPROVAL</b></div>
-	</td>
+    <td colspan=1 style=" border-right: none !important;">&nbsp;<img src="/files/ci_img.png" width="120px" height=35%;>
+                 
+            </td>
+    <td colspan=9 style="border-left: none !important;font-size: 14px; font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif; ">
+                        <div style="padding-left:250px;"><b>LOGISTICS REQUEST APPROVAL</b></div>
+    </td>
   </tr>
   <tr>
-	<td class="label-cell"><span class="label-text">Department</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	<td colspan="4" style="border-right: none;" class="value-cell">LOGISTICS</td>
-	<td class="label-cell" style="border-left: none;"><span class="label-text">Request Date</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	<td colspan="4" class="value-cell">{{ frappe.utils.format_date(doc.creation) }}</td>
+    <td class="label-cell"><span class="label-text">Department</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    <td colspan="4" style="border-right: none;" class="value-cell">LOGISTICS</td>
+    <td class="label-cell" style="border-left: none;"><span class="label-text">Request Date</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    <td colspan="4" class="value-cell">{{ frappe.utils.format_date(doc.creation) }}</td>
   </tr>
 
   <tr>
-	<td class="label-cell"><span class="label-text">Requester Name</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	{% set name = frappe.db.get_value("Employee", {"user_id": doc.owner}, ["employee_name"]) %}
-	<td colspan="4" style="border-right: none;" class="value-cell">{{ name or '' }}</td>
-	<td class="label-cell" style="border-left: none;"><span class="label-text">Doc. No</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	<td colspan="4" class="value-cell">{{ doc.name }}</td>
+    <td class="label-cell"><span class="label-text">Requester Name</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    {% set name = frappe.db.get_value("Employee", {"user_id": doc.owner}, ["employee_name"]) %}
+    <td colspan="4" style="border-right: none;" class="value-cell">{{ name or '' }}</td>
+    <td class="label-cell" style="border-left: none;"><span class="label-text">Doc. No</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    <td colspan="4" class="value-cell">{{ doc.name }}</td>
   </tr>
 
   <tr style="border-top: 1px solid black !important; border-bottom: 1px solid black !important; ">
-	<td class="label-cell"><span class="label-text" >Customer Name</span>&nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	<td colspan="9" class="value-cell" style="border-top: 1px solid black !important; border-bottom: 1px solid black !important;font-weight:bold; ">{{ doc.customer or "" }}</td>
+    <td class="label-cell"><span class="label-text" >Customer Name</span>&nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    <td colspan="9" class="value-cell" style="border-top: 1px solid black !important; border-bottom: 1px solid black !important;font-weight:bold; ">{{ doc.customer or "" }}</td>
   </tr>
 
   <tr>
-	<td class="label-cell"><span class="label-text">Logistic Mode</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	<td colspan="9" class="value-cell">{{ doc.logistic_type or "" }}</td>
+    <td class="label-cell"><span class="label-text">Logistic Mode</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    <td colspan="9" class="value-cell">{{ doc.logistic_type or "" }}</td>
   </tr>
 
   <tr>
-	<td class="label-cell"><span class="label-text">Scope of Delivery</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	<td colspan="9" class="value-cell">{{ doc.scope_of_delivery or "" }}</td>
+    <td class="label-cell"><span class="label-text">Scope of Delivery</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    <td colspan="9" class="value-cell">{{ doc.scope_of_delivery or "" }}</td>
   </tr>
 
   <tr>
-	<td class="label-cell"><span class="label-text">Shipment Mode</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	<td colspan="9" class="value-cell">{{ doc.cargo_type or "" }}</td>
+    <td class="label-cell"><span class="label-text">Shipment Mode</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    <td colspan="9" class="value-cell">{{ doc.cargo_type or "" }}</td>
   </tr>
 
   <tr>
-	<td class="label-cell"><span class="label-text">Invoice No</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	<td colspan="9" class="value-cell">{{ doc.order_no or "" }}</td>
+    <td class="label-cell"><span class="label-text">Invoice No</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    <td colspan="9" class="value-cell">{{ doc.order_no or "" }}</td>
   </tr>
 
   <tr class="remove-bottom-border;" style="border-bottom: hidden;">
-	<td class="label-cell remove-bottom-border;" style="border-bottom: none !important;"><span class="label-text">Remarks</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
-	{% set name = frappe.db.get_value("Employee", {"user_id": doc.owner}, ["employee_name"]) %}
-	<td colspan="9" style="border-bottom: none !important;" class="value-cell remove-bottom-border;">{{ name or '' }}</td>
+    <td class="label-cell remove-bottom-border;" style="border-bottom: none !important;"><span class="label-text">Remarks</span> &nbsp;&nbsp;&nbsp;&nbsp; :</td>
+    {% set name = frappe.db.get_value("Employee", {"user_id": doc.owner}, ["employee_name"]) %}
+    <td colspan="9" style="border-bottom: none !important;" class="value-cell remove-bottom-border;">{{ name or '' }}</td>
   </tr>
 </table>
   <div class="container remove-top-border; " style=" border-bottom: 1px solid black !important;border-left: 1px solid black !important;border-right: 1px solid black !important;">
-	<div class="row remove-top-border;" style="border-bottom: none !important;">
-		<div class="col-xs-12 p-0 remove-top-border;" style="font-size:10px;border-top: none !important;">
-		<table class="remove-top-border;" border="1" cellspacing="0" cellpadding="5" style="width:100%; border-collapse:collapse; text-align:center;border-top: none;border-right: none;border-left: none;border-bottom: none !important;border-top: none !important;">
+    <div class="row remove-top-border;" style="border-bottom: none !important;">
+        <div class="col-xs-12 p-0 remove-top-border;" style="font-size:10px;border-top: none !important;">
+        <table class="remove-top-border;" border="1" cellspacing="0" cellpadding="5" style="width:100%; border-collapse:collapse; text-align:center;border-top: none;border-right: none;border-left: none;border-bottom: none !important;border-top: none !important;">
 
-		<tr class="remove-top-border;" style="font-size: 13px;font-weight: bold; text-align:center; font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif;border-left: none;border-right: none;">
-			<td colspan=1 class="remove-top-border;" style="width:4%;border-left: none;">S.No</td>
-			<td class="remove-top-border;" style="width:40%;">Forwarder Name</td>
-			<td class="remove-top-border;" style="width:7%;">Volume in <br>details(CBM)</td>
-			<td class="remove-top-border;" style="width:7%;">Invoice Value <br>INR</td>
-			<td class="remove-top-border;" style="width:7%;">Freight Charges</td>
-			<td class="remove-top-border;" style="width:7%;">Port/Handling Charges</td>
-			<td class="remove-top-border;" style="width:7%;">CHA Charges</td>
-			<td class="remove-top-border;" style="width:7%;">Total Expenses</td>
-			<td class="remove-top-border;" style="width:7%;">%</td>
-			<td class="remove-top-border;" style="width:7%;border-right: none;">Remarks</td>
-		</tr>
+        <tr class="remove-top-border;" style="font-size: 13px;font-weight: bold; text-align:center; font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif;border-left: none;border-right: none;">
+            <td colspan=1 class="remove-top-border;" style="width:4%;border-left: none;">S.No</td>
+            <td class="remove-top-border;" style="width:40%;">Forwarder Name</td>
+            <td class="remove-top-border;" style="width:7%;">Volume in <br>details(CBM)</td>
+            <td class="remove-top-border;" style="width:7%;">Invoice Value <br>INR</td>
+            <td class="remove-top-border;" style="width:7%;">Freight Charges</td>
+            <td class="remove-top-border;" style="width:7%;">Port/Handling Charges</td>
+            <td class="remove-top-border;" style="width:7%;">CHA Charges</td>
+            <td class="remove-top-border;" style="width:7%;">Total Expenses</td>
+            <td class="remove-top-border;" style="width:7%;">%</td>
+            <td class="remove-top-border;" style="width:7%;border-right: none;">Remarks</td>
+        </tr>
 
 {%- set max_rows = 8 -%}
 {%- set row_count = (doc.ffw_quotation|length)  -%}
 
 {%- for item in doc.ffw_quotation -%}
 <tr style="font-size:13px; font-family:'Book Antiqua', 'Palatino Linotype', Palatino, serif;">
-	{% set ffw_name = frappe.db.get_value("Supplier", item.ffw_name, 'supplier_name') %}
-	<td style="text-align:center; border:1px solid black;border-bottom: hidden;border-left: none !important;">{{ item.idx }}</td>
-	<td style="text-align:center; border:1px solid black;border-bottom: hidden;">{{ ffw_name }}</td>
-	<td style="text-align:center; border:1px solid black;border-bottom: hidden;">{{ doc.cbm or "" }}</td>
-	{% set tot = frappe.db.get_value("Sales Invoice", {"name": doc.order_no}, "base_grand_total") %}
-	<td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ frappe.utils.fmt_money(tot) }}</td>
-	<td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ item.freight_charges }}</td>
-	<td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ item.porthandling_charges }}</td>
-	<td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ item.cha_charges }}</td>
-	<td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ frappe.utils.fmt_money(item.total_shipment_cost) }}</td>
-	{% set per = ((item.quoted_value / doc.grand_total) * 100) %}
-	<td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ "{:.2f}%".format(per) }}</td>
-	<td style="border-right:1px solid black; border-top:1px solid black;border-bottom: hidden;"></td>
+    {% set ffw_name = frappe.db.get_value("Supplier", item.ffw_name, 'supplier_name') %}
+    <td style="text-align:center; border:1px solid black;border-bottom: hidden;border-left: none !important;">{{ item.idx }}</td>
+    <td style="text-align:center; border:1px solid black;border-bottom: hidden;">{{ ffw_name }}</td>
+    <td style="text-align:center; border:1px solid black;border-bottom: hidden;">{{ doc.cbm or "" }}</td>
+    {% set tot = frappe.db.get_value("Sales Invoice", {"name": doc.order_no}, "base_grand_total") %}
+    <td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ frappe.utils.fmt_money(tot) }}</td>
+    <td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ item.freight_charges }}</td>
+    <td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ item.porthandling_charges }}</td>
+    <td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ item.cha_charges }}</td>
+    <td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ frappe.utils.fmt_money(item.total_shipment_cost) }}</td>
+    {% set per = ((item.quoted_value / doc.grand_total) * 100) %}
+    <td style="text-align:right; border:1px solid black;border-bottom: hidden;">{{ "{:.2f}%".format(per) }}</td>
+    <td style="border-right:1px solid black; border-top:1px solid black;border-bottom: hidden;"></td>
 </tr>
 {%- endfor -%}
 {% if row_count < 3 %}
-		{% set row_height = 18 %}
-	{% else %}
-		{% set row_height = 13 %}
-	{% endif %}
+        {% set row_height = 18 %}
+    {% else %}
+        {% set row_height = 13 %}
+    {% endif %}
 
 {%- for i in range(row_count, max_rows) -%}
 
 <!--<tr class="remove-bottom-border;" style="border-bottom: none !important;">-->
-	<tr class="remove-bottom-border"style="font-size:10px;border-left: none !important;border: 1px solid black;{% if loop.last %}border-bottom:1px solid black;{% else %}border-bottom:none !important;{% endif %} border-top:none;height:{{ row_height }}px;">
-	<td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
-	<td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
-	<td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
-	<td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
-	<td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
-	<td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
-	<td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
-	<td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
-	<td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
-	<td class="remove-bottom-border" style="border: 1px solid black;border-bottom:none !important;border-top: none !important;border-right:none !important;"></td>
+    <tr class="remove-bottom-border"style="font-size:10px;border-left: none !important;border: 1px solid black;{% if loop.last %}border-bottom:1px solid black;{% else %}border-bottom:none !important;{% endif %} border-top:none;height:{{ row_height }}px;">
+    <td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
+    <td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
+    <td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
+    <td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
+    <td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
+    <td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
+    <td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
+    <td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
+    <td class="no-top-bottom remove-bottom-border" style="text-align:center;font-size:10px;border: 1px solid black;border-bottom: none !important;border-left: none !important;"></td>
+    <td class="remove-bottom-border" style="border: 1px solid black;border-bottom:none !important;border-top: none !important;border-right:none !important;"></td>
 </tr>
 {%- endfor -%}
 
 
-	</table>
+    </table>
    
-	<table border=1 width=100% style="border-collapse:collapse;page-break-inside: avoid; break-inside: avoid;">
-		<!--<tr class='remove-top-border;' style="border-top: none;">-->
-		<!--    <td class="remove-top-border;" colspan=10 style="border-top: 1px solid black !important;border-bottom: none;">&nbsp;</td>-->
-		<!--</tr>-->
-		<tr style="font-size: 13px;  font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif; text-align:left;border-left:hidden;">
-			<td style="border-right: none;border-top: none;border-bottom: none;border-left:none;"><b>ETD</b>&nbsp;:&nbsp;{{frappe.format(doc.etd,{'fieldtype': 'Date'}) or ""}}</td>
-			<td style="border-right: none;border-left: none;border-bottom: none;border-top: none !important;"><b>ETA</b>&nbsp;:&nbsp;{{frappe.format(doc.eta,{'fieldtype': 'Date'}) or ""}}</td>
-			<td style="border-left: none;border-bottom: none;border-top: none !important;border-right:none;"><b>Transit Time</b>&nbsp;:&nbsp;{{doc.transit_time or ""}}</td>
-		</tr>
-		<!--<tr style="border-top: none;">-->
-		<!--    <td colspan=10 style="border-top: none;border-bottom: none;">&nbsp;</td>-->
-		<!--</tr>-->
-	<tr style="border-top: none;border-left:hidden;border-right:hidden;">
-		{%set supplier_name = frappe.db.get_value("Supplier",doc.recommended_ffw,'supplier_name') %}
-			<td colspan=10 style="border-top: none;border-bottom: 1px solid black !important;font-size:13px;border-left:none;border-right:none;">Conclusion : After a several round of discussion we have finalized the deal with &nbsp;<b>{{supplier_name}}</b></td>
-		</tr>
-		</table>
-		
+    <table border=1 width=100% style="border-collapse:collapse;page-break-inside: avoid; break-inside: avoid;">
+        <!--<tr class='remove-top-border;' style="border-top: none;">-->
+        <!--    <td class="remove-top-border;" colspan=10 style="border-top: 1px solid black !important;border-bottom: none;">&nbsp;</td>-->
+        <!--</tr>-->
+        <tr style="font-size: 13px;  font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif; text-align:left;border-left:hidden;">
+            <td style="border-right: none;border-top: none;border-bottom: none;border-left:none;"><b>ETD</b>&nbsp;:&nbsp;{{frappe.format(doc.etd,{'fieldtype': 'Date'}) or ""}}</td>
+            <td style="border-right: none;border-left: none;border-bottom: none;border-top: none !important;"><b>ETA</b>&nbsp;:&nbsp;{{frappe.format(doc.eta,{'fieldtype': 'Date'}) or ""}}</td>
+            <td style="border-left: none;border-bottom: none;border-top: none !important;border-right:none;"><b>Transit Time</b>&nbsp;:&nbsp;{{doc.transit_time or ""}}</td>
+        </tr>
+        <!--<tr style="border-top: none;">-->
+        <!--    <td colspan=10 style="border-top: none;border-bottom: none;">&nbsp;</td>-->
+        <!--</tr>-->
+    <tr style="border-top: none;border-left:hidden;border-right:hidden;">
+        {%set supplier_name = frappe.db.get_value("Supplier",doc.recommended_ffw,'supplier_name') %}
+            <td colspan=10 style="border-top: none;border-bottom: 1px solid black !important;font-size:13px;border-left:none;border-right:none;">Conclusion : After a several round of discussion we have finalized the deal with &nbsp;<b>{{supplier_name}}</b></td>
+        </tr>
+        </table>
+        
 
 
-		<table class="remove-top-border" border="1" cellspacing="0" cellpadding="5"
-	style="width:100%;border-collapse:collapse;text-align:center;page-break-inside:avoid;break-inside:avoid;">
+        <table class="remove-top-border" border="1" cellspacing="0" cellpadding="5"
+    style="width:100%;border-collapse:collapse;text-align:center;page-break-inside:avoid;break-inside:avoid;">
 
-	<!-- HEADER ROW -->
-	{% if doc.cargo_type == "Air" and doc.scope_of_delivery=="Wonjin" %} 
-	<td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:hidden;border:bottom:hidden;border-left:hidden;text-align:center;">Prepared By</td>
-	<td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">Requested By</td> 
-	<td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">Finance</td> 
-	<td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">BMD</td> 
-	<td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">CMD</td>
-	<td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:hidden;border-bottom:hidden;border-left:none;text-align:center;">SMD</td> 
-	{% elif doc.cargo_type == "Sea" and doc.scope_of_delivery=="Wonjin" %} 
-	<td colspan="1" class ="remove-top-border" style="width:12.5%;border-bottom:hidden;border-right:none;border-left:hidden;text-align:center;">Prepared By</td> 
-	<td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">Requested By</td>
-	<td colspan="2" class ="remove-top-border" style="width:12.5%;border-bottom:hidden;border-right:hidden;border-left:none;text-align:center;">Finance</td> 
-	<td colspan="2" class ="remove-top-border" style="width:12.5%;border-right:none;border-left:hidden;border-bottom:hidden;text-align:center;">CMD</td>
-	{% elif doc.scope_of_delivery=="Customer" %} 
-	<td colspan=2 class ="remove-top-border" style="width:12.5%;border-bottom:hidden;border-right:hidden;border-left:hidden;text-align:center;">Prepared By</td> 
-	<td colspan=2 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">Requested By</td> 
-	<td colspan=2 class ="remove-top-border" style="width:12.5%;border-right:none;border-left:hidden;border-bottom:hidden;text-align:center;">Finance</td>
-	{% endif %}
-	</tr>
-	<!-- SIGNATURE ROW -->
-	<tr style="font-size:10px;font-family:'Book Antiqua','Palatino Linotype',Palatino,serif;border-bottom:hidden;border-right:hidden;border-left:hidden;">
-		{% if doc.cargo_type == "Air" and doc.scope_of_delivery=="Wonjin" %}
+    <!-- HEADER ROW -->
+    {% if doc.cargo_type == "Air" and doc.scope_of_delivery=="Wonjin" %} 
+    <td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:hidden;border:bottom:hidden;border-left:hidden;text-align:center;">Prepared By</td>
+    <td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">Requested By</td> 
+    <td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">Finance</td> 
+    <td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">BMD</td> 
+    <td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">CMD</td>
+    <td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:hidden;border-bottom:hidden;border-left:none;text-align:center;">SMD</td> 
+    {% elif doc.cargo_type == "Sea" and doc.scope_of_delivery=="Wonjin" %} 
+    <td colspan="1" class ="remove-top-border" style="width:12.5%;border-bottom:hidden;border-right:none;border-left:hidden;text-align:center;">Prepared By</td> 
+    <td colspan=1 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">Requested By</td>
+    <td colspan="2" class ="remove-top-border" style="width:12.5%;border-bottom:hidden;border-right:hidden;border-left:none;text-align:center;">Finance</td> 
+    <td colspan="2" class ="remove-top-border" style="width:12.5%;border-right:none;border-left:hidden;border-bottom:hidden;text-align:center;">CMD</td>
+    {% elif doc.scope_of_delivery=="Customer" %} 
+    <td colspan=2 class ="remove-top-border" style="width:12.5%;border-bottom:hidden;border-right:hidden;border-left:hidden;text-align:center;">Prepared By</td> 
+    <td colspan=2 class ="remove-top-border" style="width:12.5%;border-right:none;border:bottom:hidden;border-left:none;text-align:center;">Requested By</td> 
+    <td colspan=2 class ="remove-top-border" style="width:12.5%;border-right:none;border-left:hidden;border-bottom:hidden;text-align:center;">Finance</td>
+    {% endif %}
+    </tr>
+    <!-- SIGNATURE ROW -->
+    <tr style="font-size:10px;font-family:'Book Antiqua','Palatino Linotype',Palatino,serif;border-bottom:hidden;border-right:hidden;border-left:hidden;">
+        {% if doc.cargo_type == "Air" and doc.scope_of_delivery=="Wonjin" %}
 
-			{% set prepared_by = frappe.db.get_value("Employee",{"user_id": doc.prepared_by},['custom_digital_signature']) %}
-			<td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if prepared_by %}<img src="{{prepared_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
-			</td>
-			
-			{% set si_owner = frappe.db.get_value("Sales Invoice",{"name": doc.order_no},['owner']) %}
-			{% set requested_by = frappe.db.get_value("Employee",{"user_id": doc.owner},['custom_digital_signature']) %}
-			<td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if requested_by %}<img src="{{requested_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
-			</td>
+            {% set prepared_by = frappe.db.get_value("Employee",{"user_id": doc.prepared_by},['custom_digital_signature']) %}
+            <td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if prepared_by %}<img src="{{prepared_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
+            </td>
+            
+            {% set si_owner = frappe.db.get_value("Sales Invoice",{"name": doc.order_no},['owner']) %}
+            {% set requested_by = frappe.db.get_value("Employee",{"user_id": doc.owner},['custom_digital_signature']) %}
+            <td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if requested_by %}<img src="{{requested_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
+            </td>
 
-			
-			
-			{% set finance = frappe.db.get_value("Employee", {"name": 'S0189'}, ["custom_digital_signature"]) %}
-			<td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if finance and doc.approved_by_finance %}
-					<img src="{{finance}}" style="height:60px;width:35%;object-fit:contain;">
-				{% endif %}
-			</td>
-			
-			{% set bmd = frappe.db.get_value("Employee", {"name": "BMD01"}, ["custom_digital_signature"]) %}
-			<td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if bmd and doc.approved_by_bmd %}
-					<img src="{{bmd}}" style="height:60px;width:35%;object-fit:contain;">
-				{% endif %}
-			</td>
-			
-			{% set cmd = frappe.db.get_value("Employee", {"name": "CMD01"}, ["custom_digital_signature"]) %}
-			<td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if cmd and doc.approved_by_cmd %}
-					<img src="{{cmd}}" style="height:60px;width:35%;object-fit:contain;">
-				{% endif %}
-			</td>
-			
-			{% set smd = frappe.db.get_value("Employee", {"name": "SMD01"}, ["custom_digital_signature"]) %}
-			<td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if smd and doc.approved_by_smd %}
-					<img src="{{smd}}" style="height:60px;width:35%;object-fit:contain;">
-				{% endif %}
-			</td>
+            
+            
+            {% set finance = frappe.db.get_value("Employee", {"name": 'S0189'}, ["custom_digital_signature"]) %}
+            <td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if finance and doc.approved_by_finance %}
+                    <img src="{{finance}}" style="height:60px;width:35%;object-fit:contain;">
+                {% endif %}
+            </td>
+            
+            {% set bmd = frappe.db.get_value("Employee", {"name": "BMD01"}, ["custom_digital_signature"]) %}
+            <td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if bmd and doc.approved_by_bmd %}
+                    <img src="{{bmd}}" style="height:60px;width:35%;object-fit:contain;">
+                {% endif %}
+            </td>
+            
+            {% set cmd = frappe.db.get_value("Employee", {"name": "CMD01"}, ["custom_digital_signature"]) %}
+            <td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if cmd and doc.approved_by_cmd %}
+                    <img src="{{cmd}}" style="height:60px;width:35%;object-fit:contain;">
+                {% endif %}
+            </td>
+            
+            {% set smd = frappe.db.get_value("Employee", {"name": "SMD01"}, ["custom_digital_signature"]) %}
+            <td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if smd and doc.approved_by_smd %}
+                    <img src="{{smd}}" style="height:60px;width:35%;object-fit:contain;">
+                {% endif %}
+            </td>
 
-		{% elif doc.cargo_type == "Sea" and doc.scope_of_delivery=="Wonjin" %}
-			{% set prepared_by = frappe.db.get_value("Employee",{"user_id": doc.prepared_by},"custom_digital_signature") %}
-			<td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if prepared_by %}<img src="{{prepared_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
-			</td>
-			{% set si_owner = frappe.db.get_value("Sales Invoice",{"name": doc.order_no},['owner']) %}
-			{% set requested_by = frappe.db.get_value("Employee",{"user_id": doc.owner},['custom_digital_signature']) %}
-			<td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if requested_by %}<img src="{{requested_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
-			</td>
-			
-			
-			{% set finance = frappe.db.get_value("Employee",{"name": 'S0189'},["custom_digital_signature"]) %}
-			<td colspan="2" style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if finance and doc.approved_by_finance %}<img src="{{finance}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
-			</td>
-			{% set cmd = frappe.db.get_value("Employee",{"name": 'CMD01'},["custom_digital_signature"]) %}
-			<td colspan="2" style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if cmd and doc.approved_by_cmd %}<img src="{{cmd}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
-			</td>
+        {% elif doc.cargo_type == "Sea" and doc.scope_of_delivery=="Wonjin" %}
+            {% set prepared_by = frappe.db.get_value("Employee",{"user_id": doc.prepared_by},"custom_digital_signature") %}
+            <td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if prepared_by %}<img src="{{prepared_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
+            </td>
+            {% set si_owner = frappe.db.get_value("Sales Invoice",{"name": doc.order_no},['owner']) %}
+            {% set requested_by = frappe.db.get_value("Employee",{"user_id": doc.owner},['custom_digital_signature']) %}
+            <td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if requested_by %}<img src="{{requested_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
+            </td>
+            
+            
+            {% set finance = frappe.db.get_value("Employee",{"name": 'S0189'},["custom_digital_signature"]) %}
+            <td colspan="2" style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if finance and doc.approved_by_finance %}<img src="{{finance}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
+            </td>
+            {% set cmd = frappe.db.get_value("Employee",{"name": 'CMD01'},["custom_digital_signature"]) %}
+            <td colspan="2" style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if cmd and doc.approved_by_cmd %}<img src="{{cmd}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
+            </td>
 
-		{% elif doc.scope_of_delivery=="Customer" %}
-			{% set prepared_by = frappe.db.get_value("Employee",{"user_id": doc.prepared_by},['custom_digital_signature']) %}
-			<td colspan="3" style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if prepared_by %}<img src="{{prepared_by}}" style="height:50px;width:25%;object-fit:contain;">{% endif %}
-			</td>
-			{% set si_owner = frappe.db.get_value("Sales Invoice",{"name": doc.order_no},['owner']) %}
-			{% set requested_by = frappe.db.get_value("Employee",{"user_id": doc.owner},['custom_digital_signature']) %}
-			<td style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if requested_by %}<img src="{{requested_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
-			</td>
-			
-			
-			{% set finance = frappe.db.get_value("Employee",{"name": 'S0189'},["custom_digital_signature"]) %}
-			<td colspan="2" style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
-				{% if finance and doc.approved_by_finance %}<img src="{{finance}}" style="height:50px;width:25%;object-fit:contain;">{% endif %}
-			</td>
-		{% endif %}
-	</tr>
+        {% elif doc.scope_of_delivery=="Customer" %}
+            {% set prepared_by = frappe.db.get_value("Employee",{"user_id": doc.prepared_by},['custom_digital_signature']) %}
+            <td colspan="2" style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if prepared_by %}<img src="{{prepared_by}}" style="height:50px;width:25%;object-fit:contain;">{% endif %}
+            </td>
+            {% set si_owner = frappe.db.get_value("Sales Invoice",{"name": doc.order_no},['owner']) %}
+            {% set requested_by = frappe.db.get_value("Employee",{"user_id": doc.owner},['custom_digital_signature']) %}
+            <td colspan=2 style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if requested_by %}<img src="{{requested_by}}" style="height:60px;width:35%;object-fit:contain;">{% endif %}
+            </td>
+            
+            
+            {% set finance = frappe.db.get_value("Employee",{"name": 'S0189'},["custom_digital_signature"]) %}
+            <td colspan="2" style="height:60px;vertical-align:middle;border-top:hidden;border-right:hidden;border-left:hidden;text-align:center;">
+                {% if finance and doc.approved_by_finance %}<img src="{{finance}}" style="height:50px;width:25%;object-fit:contain;">{% endif %}
+            </td>
+        {% endif %}
+    </tr>
 
-	<!-- DATETIME ROW (separate) -->
-	<tr class="remove-top-border remove-bottom-border"
-		style="font-size:9px;text-align:center;font-family:'Book Antiqua','Palatino Linotype',Palatino,serif;border-top:none;border-right:hidden;border-left:hidden;">
-		{% if doc.cargo_type == "Air" and doc.scope_of_delivery=="Wonjin" %}
-			<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.prepared_by_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
-			<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.creation, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-			<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_finance_date_and_time, "dd-MM-yyyy HH:mm:ss")  or ''}}</td>
-			<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_bmd_date_and_time, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-			<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_cmd_date_and_time, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-			<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_smd_date_and_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
-		{% elif doc.cargo_type == "Sea" and doc.scope_of_delivery=="Wonjin" %}
-			<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.prepared_by_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
-			<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.creation, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-			<td colspan="2" class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_finance_date_and_time, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-			<td colspan="2" class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_cmd_date_and_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
-		{% elif doc.scope_of_delivery=="Customer" %}
-			<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.prepared_by_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
-			<td colspan="2" class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.creation, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-			<td colspan="2" class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_finance_date_and_time, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-		{% endif %}
-	</tr>
-	<tr class="remove-top-border remove-bottom-border"
-		style="font-size:12px;text-align:left;font-family:'Book Antiqua','Palatino Linotype',Palatino,serif;border-top:none;border-right:hidden;border-left:hidden;">
-		<td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;" colspan="6">Note: This document is Digitally Signed</td>
-		</tr>
+    <!-- DATETIME ROW (separate) -->
+    <tr class="remove-top-border remove-bottom-border"
+        style="font-size:9px;text-align:center;font-family:'Book Antiqua','Palatino Linotype',Palatino,serif;border-top:none;border-right:hidden;border-left:hidden;">
+        {% if doc.cargo_type == "Air" and doc.scope_of_delivery=="Wonjin" %}
+            <td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.prepared_by_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
+            <td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.creation, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+            <td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_finance_date_and_time, "dd-MM-yyyy HH:mm:ss")  or ''}}</td>
+            <td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_bmd_date_and_time, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+            <td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_cmd_date_and_time, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+            <td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_smd_date_and_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
+        {% elif doc.cargo_type == "Sea" and doc.scope_of_delivery=="Wonjin" %}
+            <td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.prepared_by_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
+            <td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.creation, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+            <td colspan="2" class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_finance_date_and_time, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+            <td colspan="2" class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_cmd_date_and_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
+        {% elif doc.scope_of_delivery=="Customer" %}
+            <td colspan=2 class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.prepared_by_time, "dd-MM-yyyy HH:mm:ss") or ''}}</td>
+            <td colspan="2" class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.creation, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+            <td colspan="2" class="remove-bottom-border" style="border-right:hidden;border-left:hidden;font-size:9px;text-align:center;">{{ frappe.utils.format_datetime(doc.approved_by_finance_date_and_time, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+        {% endif %}
+    </tr>
+    <tr class="remove-top-border remove-bottom-border"
+        style="font-size:12px;text-align:left;font-family:'Book Antiqua','Palatino Linotype',Palatino,serif;border-top:none;border-right:hidden;border-left:hidden;">
+        <td class="remove-bottom-border" style="border-right:hidden;border-left:hidden;" colspan="6">Note: This document is Digitally Signed</td>
+        </tr>
 </table>
 </div>
 </div> 
 </div>
 
-		"""
-	html = render_template(template, {"doc": doc})
-	return {"html": html}
+        """
+    html = render_template(template, {"doc": doc})
+    return {"html": html}
+
 
 @frappe.whitelist()
 def create_html_lr_export(doc):
-	doc = frappe.parse_json(doc)
-	template = """
-	<style>
-	.tab1,
+    doc = frappe.parse_json(doc)
+    template = """
+    <style>
+    .tab1,
 .tab1 tr,
 .tab1 td{
-	border:1px solid black;
+    border:1px solid black;
 }
 
 .tab2,
 .tab2 tr,
 .tab2 td{
-	border:1px solid black;
-	border-bottom:none;
+    border:1px solid black;
+    border-bottom:none;
 
 }
 
 .tab3,
 .tab3 tr,
 .tab3 td{
-	border:1px solid black;
-	border-bottom:none;
-	border:none;
+    border:1px solid black;
+    border-bottom:none;
+    border:none;
 }
 
 .no-border{
-	border:none !important;
+    border:none !important;
 }
 
 .no-border-1{
-	border-top:none !important;
-	border-bottom:none !important;
+    border-top:none !important;
+    border-bottom:none !important;
 }
 
 /*.tab2 tr{*/
@@ -6347,509 +6352,535 @@ def create_html_lr_export(doc):
 
 
 .page-break {
-	page-break-before: always;
-	break-before: page;
+    page-break-before: always;
+    break-before: page;
 }
 
 .in-words-row {
-	page-break-inside: avoid;
-	break-inside: avoid;
-	border-bottom:none;
-	border-top: 1px solid black;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    border-bottom:none;
+    border-top: 1px solid black;
 }
 
 
-	</style>
+    </style>
 
-	<!--{% set data = packing_list(doc.name)%}-->
+    <!--{% set data = packing_list(doc.name)%}-->
 <!--{{data}}-->
 
 
 <div class="container">
-	<div class="row ">
-		<div class="col-xs-12 p-0 " >
-			
-		   <table width=100% style="border-collapse:collapse;border-bottom: none;font-size:10px;" class="tab1 mr-0 ml-0" >
-			   <tr>
-					<td colspan="5" style="font-size:15px;">
-					   <center><b>PACKING LIST</b></center> 
-					</td>
-				</tr>
-			   <tr>
-				   <td rowspan="8" 
-					style="width:30%; font-size:10px; border-bottom:1px solid black !important;vertical-align: middle;">
-					<div style="margin-top:0px;">
-					{% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
-						{% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
-						{% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
-						{% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
-						{% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
-						{% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
-						<b>Factory Address</b><br>
-						{% if address_title %}
-							{{ address_title }}<br>
-						{% endif %}
-						{% if address_line1 %}
-							{{ address_line1 }}<br>
-						{% endif %}
-						{% if address_line2 %}
-							{{ address_line2 }}<br>
-						{% endif %}
-						{% if city %}
-							{{ city }}<br>
-						{% endif %}
-						{% if state %}
-							{{ state }}<br>
-						{% endif %}
-						{% if country %}
-							{{ country }}
-						{% endif %}
-	</div>
-				</td>
-						
-					<td rowspan="8"  style="width:30%; font-size:10px; border-bottom:1px solid black !important;">
-						<div style="margin-top:0px;">
-						{% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
-						{% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
-						{% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
-						{% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
-						{% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
-						{% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
-						<b>Exporter</b><br>
-						{% if address_title %}
-							{{ address_title }}<br>
-						{% endif %}
-						{% if address_line1 %}
-							{{ address_line1 }}<br>
-						{% endif %}
-						{% if address_line2 %}
-							{{ address_line2 }}<br>
-						{% endif %}
-						{% if city %}
-							{{ city }}<br>
-						{% endif %}
-						{% if state %}
-							{{ state }}<br>
-						{% endif %}
-						{% if country %}
-							{{ country }}
-						{% endif %}
-						
-						</div>
-					</td>
-				</tr>
-			<tr>
-					<td style="border-bottom:hidden;border-right:hidden;"><b>Invoice No & Date:</b></td>
-						
-					<td style="border-bottom:hidden;border-left:hidden;"><b>Exporter IEC</b></td>
-				</tr>
-			   <tr>        
-						<td style="border-top:hidden;border-right:hidden;"><b>{{doc.order_no}}&nbsp;&nbsp;{{ frappe.format(frappe.db.get_value("Sales Invoice",{"name":doc.order_no},"posting_date"),{'fieldtype':'Date'}) or ""  }}</b></td>
-						<td style="border-top:hidden;border-left:hidden;"><b>{{frappe.db.get_value('Company',{'name':doc.company},"custom_exporter_iec")or ""}}</b>
-					</td>
-			   </tr>
-			   <tr>
-					<td colspan="2" style="border-bottom:hidden;">
-						
-						  <b>Buyer's Order No & PO :</b></td> 
-					</tr>
-			   <tr>
-					<td colspan="2" style="border-top:hidden;margin-top:0">        
-						<b>{{frappe.db.get_value("Sales Invoice",{"name":doc.order_no},"po_no") or ""}}</b>
-						
-					</td>
-				</tr>
-				
-				<tr>
-					<td colspan="2" style="">
-						<b>CIN No:{{frappe.db.get_value('Customer',{'name':doc.customer},"custom_cin_number")or ""}}</b>
-					</td>
-				</tr>
-				
-				<tr>
-					<td colspan="2" style="border-bottom:hidden;">
-						<b>GSTIN No :&nbsp;{{frappe.db.get_value('Address',{'address_title':doc.company},'gstin') or ""}}</b>
-					</td>
-				</tr>
-			   <tr>
-					<td colspan="2" style="border-top:hidden;">        
-						<b>Other References :</b>
-					</td>
-				</tr>
-				
-		</table> 
-		<table width=100% style="border-collapse:collapse;margin-top:5px;padding:0px;border-bottom:hidden;" class="tab1 mr-0 ml-0">
-			
-				<tr class= "remove-top-border">
-					<td class= "remove-top-border" colspan="2" style="border-bottom:hidden;width:60%;font-size:10px;border-top: 1px solid black !important;">
-						<b>Consignee</b>
-				</td>
-				<td colspan="2" style="width:40%;font-size:10px;border-bottom:hidden;border-top: 1px solid black !important;" class= "remove-top-border" >
-						<b>Buyer if Other  than consignee</b>
-				</td>
-				</tr>
-				<tr class= "remove-top-border">
-				<td class="remove-top-border" colspan="2" 
-					style="width:60%; font-size:10px; border-bottom:1px solid black !important;">
-					<div>
-					{% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
-						{% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
-						{% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
-						{% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
-						{% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
-						{% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
-						
-						{% if address_title %}
-							{{ address_title }}<br>
-						{% endif %}
-						{% if address_line1 %}
-							{{ address_line1 }}<br>
-						{% endif %}
-						{% if address_line2 %}
-							{{ address_line2 }}<br>
-						{% endif %}
-						{% if city %}
-							{{ city }}<br>
-						{% endif %}
-						{% if state %}
-							{{ state }}<br>
-						{% endif %}
-						{% if country %}
-							{{ country }}
-						{% endif %}
-	</div>
-				</td>
-						
+    <div class="row ">
+        <div class="col-xs-12 p-0 " >
+            
+           <table width=100% style="border-collapse:collapse;border-bottom: none;font-size:10px;" class="tab1 mr-0 ml-0" >
+               <tr>
+                    <td colspan="5" style="font-size:15px;">
+                       <center><b>PACKING LIST</b></center> 
+                    </td>
+                </tr>
+               <tr>
+                   <td rowspan="8" 
+                    style="width:30%; font-size:10px; border-bottom:1px solid black !important;vertical-align: middle;">
+                    <div style="margin-top:0px;">
+                    {% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
+                        {% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
+                        {% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
+                        {% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
+                        {% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
+                        {% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
+                        <b>Factory Address</b><br>
+                        {% if address_title %}
+                            {{ address_title }}<br>
+                        {% endif %}
+                        {% if address_line1 %}
+                            {{ address_line1 }}<br>
+                        {% endif %}
+                        {% if address_line2 %}
+                            {{ address_line2 }}<br>
+                        {% endif %}
+                        {% if city %}
+                            {{ city }}<br>
+                        {% endif %}
+                        {% if state %}
+                            {{ state }}<br>
+                        {% endif %}
+                        {% if country %}
+                            {{ country }}
+                        {% endif %}
+    </div>
+                </td>
+                        
+                    <td rowspan="8"  style="width:30%; font-size:10px; border-bottom:1px solid black !important;">
+                        <div style="margin-top:0px;">
+                        {% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
+                        {% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
+                        {% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
+                        {% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
+                        {% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
+                        {% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
+                        <b>Exporter</b><br>
+                        {% if address_title %}
+                            {{ address_title }}<br>
+                        {% endif %}
+                        {% if address_line1 %}
+                            {{ address_line1 }}<br>
+                        {% endif %}
+                        {% if address_line2 %}
+                            {{ address_line2 }}<br>
+                        {% endif %}
+                        {% if city %}
+                            {{ city }}<br>
+                        {% endif %}
+                        {% if state %}
+                            {{ state }}<br>
+                        {% endif %}
+                        {% if country %}
+                            {{ country }}
+                        {% endif %}
+                        
+                        </div>
+                    </td>
+                </tr>
+            <tr>
+                    <td style="border-bottom:hidden;border-right:hidden;"><b>Invoice No & Date:</b></td>
+                        
+                    <td style="border-bottom:hidden;border-left:hidden;"><b>Exporter IEC</b></td>
+                </tr>
+               <tr>        
+                        <td style="border-top:hidden;border-right:hidden;"><b>{{doc.order_no}}&nbsp;&nbsp;{{ frappe.format(frappe.db.get_value("Sales Invoice",{"name":doc.order_no},"posting_date"),{'fieldtype':'Date'}) or ""  }}</b></td>
+                        <td style="border-top:hidden;border-left:hidden;"><b>{{frappe.db.get_value('Company',{'name':doc.company},"custom_exporter_iec")or ""}}</b>
+                    </td>
+               </tr>
+               <tr>
+                    <td colspan="2" style="border-bottom:hidden;">
+                        
+                          <b>Buyer's Order No & PO :</b></td> 
+                    </tr>
+               <tr>
+                    <td colspan="2" style="border-top:hidden;margin-top:0">        
+                        <b>{{frappe.db.get_value("Sales Invoice",{"name":doc.order_no},"po_no") or ""}}</b>
+                        
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td colspan="2" style="">
+                        <b>CIN No:{{frappe.db.get_value('Customer',{'name':doc.customer},"custom_cin_number")or ""}}</b>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td colspan="2" style="border-bottom:hidden;">
+                        <b>GSTIN No :&nbsp;{{frappe.db.get_value('Address',{'address_title':doc.company},'gstin') or ""}}</b>
+                    </td>
+                </tr>
+               <tr>
+                    <td colspan="2" style="border-top:hidden;">        
+                        <b>Other References :</b>
+                    </td>
+                </tr>
+                
+        </table> 
+        <table width=100% style="border-collapse:collapse;margin-top:5px;padding:0px;border-bottom:hidden;" class="tab1 mr-0 ml-0">
+            
+                <tr class= "remove-top-border">
+                    <td class= "remove-top-border" colspan="2" style="border-bottom:hidden;width:60%;font-size:10px;border-top: 1px solid black !important;">
+                        <b>Consignee</b>
+                </td>
+                <td colspan="2" style="width:40%;font-size:10px;border-bottom:hidden;border-top: 1px solid black !important;" class= "remove-top-border" >
+                        <b>Buyer if Other  than consignee</b>
+                </td>
+                </tr>
+                <tr class= "remove-top-border">
+                <td class="remove-top-border" colspan="2" 
+                    style="width:60%; font-size:10px; border-bottom:1px solid black !important;">
+                    <div>
+                    {% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
+                        {% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
+                        {% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
+                        {% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
+                        {% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
+                        {% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
+                        
+                        {% if address_title %}
+                            {{ address_title }}<br>
+                        {% endif %}
+                        {% if address_line1 %}
+                            {{ address_line1 }}<br>
+                        {% endif %}
+                        {% if address_line2 %}
+                            {{ address_line2 }}<br>
+                        {% endif %}
+                        {% if city %}
+                            {{ city }}<br>
+                        {% endif %}
+                        {% if state %}
+                            {{ state }}<br>
+                        {% endif %}
+                        {% if country %}
+                            {{ country }}
+                        {% endif %}
+    </div>
+                </td>
+                        
 
 
-					
-					<td class="remove-top-border" colspan="2" style="width:40%; font-size:10px; border-bottom:1px solid black !important;">
-						<div>
-						{% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
-						{% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
-						{% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
-						{% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
-						{% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
-						{% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
-						
-						{% if address_title %}
-							{{ address_title }}<br>
-						{% endif %}
-						{% if address_line1 %}
-							{{ address_line1 }}<br>
-						{% endif %}
-						{% if address_line2 %}
-							{{ address_line2 }}<br>
-						{% endif %}
-						{% if city %}
-							{{ city }}<br>
-						{% endif %}
-						{% if state %}
-							{{ state }}<br>
-						{% endif %}
-						{% if country %}
-							{{ country }}
-						{% endif %}
-						
-						</div>
-					</td>
-				</tr>
-				<tr>
-					
-					<td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Pre Carriage by:</b></td>
-					<td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Place of receipt by pre-carrier</b></td>
-					<td style="width:40%;font-size:10px;border-bottom:hidden;">
-						<b>Country of Origin of Goods</b></td>
-					<!--<td style="width:25%;font-size:10px;">-->
-					<!--    <b>Country of Final Destination</b></td>-->
-					<!--</tr>-->
-					<!--<td style="width:20%;font-size:10px;border-bottom:hidden;">-->
-					<!--    <b>Country of Final Destination</b></td>-->
-				<tr>
-					<td style="width:30%;font-size:10px;border-bottom: 1px solid black !important;">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"recommended_ffw")or ""}}</td>
-					<td style="width:30%;font-size:10px;border-bottom: 1px solid black !important;">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"custom_place_of_receipt_by_precarrier") or ""}}</td>
-					<td style="width:40%;font-size:10px;border-bottom: 1px solid black !important;">
-						{% if doc.cargo_type == 'Air' %}
-						{{doc.pol_country_airport or ""}}
-						{% elif doc.cargo_type == 'Sea' %}
-						{{doc.pol_country_seaport or ""}}
-						{% else %}
-						{{doc.pol_country_airport or ""}}
-						{% endif %}
-					</td>
+                    
+                    <td class="remove-top-border" colspan="2" style="width:40%; font-size:10px; border-bottom:1px solid black !important;">
+                        <div>
+                        {% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
+                        {% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
+                        {% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
+                        {% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
+                        {% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
+                        {% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
+                        
+                        {% if address_title %}
+                            {{ address_title }}<br>
+                        {% endif %}
+                        {% if address_line1 %}
+                            {{ address_line1 }}<br>
+                        {% endif %}
+                        {% if address_line2 %}
+                            {{ address_line2 }}<br>
+                        {% endif %}
+                        {% if city %}
+                            {{ city }}<br>
+                        {% endif %}
+                        {% if state %}
+                            {{ state }}<br>
+                        {% endif %}
+                        {% if country %}
+                            {{ country }}
+                        {% endif %}
+                        
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    
+                    <td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Pre Carriage by:</b></td>
+                    <td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Place of receipt by pre-carrier</b></td>
+                    <td style="width:40%;font-size:10px;border-bottom:hidden;">
+                        <b>Country of Origin of Goods</b></td>
+                    <!--<td style="width:25%;font-size:10px;">-->
+                    <!--    <b>Country of Final Destination</b></td>-->
+                    <!--</tr>-->
+                    <!--<td style="width:20%;font-size:10px;border-bottom:hidden;">-->
+                    <!--    <b>Country of Final Destination</b></td>-->
+                <tr>
+                    <td style="width:30%;font-size:10px;border-bottom: 1px solid black !important;">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"recommended_ffw")or ""}}</td>
+                    <td style="width:30%;font-size:10px;border-bottom: 1px solid black !important;">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"custom_place_of_receipt_by_precarrier") or ""}}</td>
+                    <td style="width:40%;font-size:10px;border-bottom: 1px solid black !important;">
+                        {% if doc.cargo_type == 'Air' %}
+                        {{doc.pol_country_airport or ""}}
+                        {% elif doc.cargo_type == 'Sea' %}
+                        {{doc.pol_country_seaport or ""}}
+                        {% else %}
+                        {{doc.pol_country_airport or ""}}
+                        {% endif %}
+                    </td>
 
-					
-				</tr>
-				<tr>
-					
-					<td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Vessels / Flight No.</b></td>
-					<td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Port of Loading</b></td>
-					<td style="width:40%;font-size:10px;border-bottom:hidden;">
-						<b>Terms of Delivery & Payment</b></td>
-					
-				</tr>
-				<tr>
-					<td style="width:30%;font-size:10px;">BY&nbsp;{{doc.cargo_type or ""}}</td>
-					<td style="width:30%;font-size:10px;">
-						{% if doc.cargo_type == 'Sea' %}
-							{{doc.pol_city_seaport or ""}}
-						{% else %}
-							{{doc.pol_city_airport or ""}}
-						{% endif %}
-					</td>
-					<td style="width:40%;font-size:10px;border-bottom:hidden;">
-						By&nbsp;{{doc.cargo_type or ""}}
-					</td>
-					
-					
-				</tr>
-				<tr>
-					
-					<td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Port Of Discharge</b></td>
-					<td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Final Destination</b></td>
-					<td style="width:40%;font-size:10px;border-bottom:hidden;">
-						<b>Payment</b></td>
-					
-				</tr>
-				<tr>
-					<td style="width:30%;font-size:10px;border-bottom: 1px solid black !important;">
-						
-							{{ doc.final_destination or "" }}
-						
-					</td>
-					<td style="width:30%;font-size:10px;border-bottom: 1px solid black !important;">
-						
-							{{ doc.final_destination or "" }}
-					</td>
-					<td colspan="2" style="width:40%;font-size:10px;border-bottom:hidden;">
-						{{frappe.db.get_value("Sales Invoice",{"name":doc.order_no},"terms") or ""}}
-					</td>
-					
-					
-				</tr>
-				<tr>
-					<td colspan="2" style="font-size:10px;border-bottom:hidden;">
-						<b>General Description of the below mentioned Products is Automobile</b>
-					</td>
-					
-					<td colspan="2" style="font-size:10px;border-bottom:hidden;">
-						<!--<b>Incoterms</b>-->
-					</td>
-				</tr>
-			   <tr>
-					<td colspan="2" style="font-size:10px;">
-						<b>Components</b>
-					</td>
-					
-					<td colspan="2" style="font-size:10px;">
-						<!--{{doc.incoterm or ""}}-->
-					</td>
-				</tr>
-		</table>
-		</div>
-	</div>
+                    
+                </tr>
+                <tr>
+                    
+                    <td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Vessels / Flight No.</b></td>
+                    <td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Port of Loading</b></td>
+                    <td style="width:40%;font-size:10px;border-bottom:hidden;">
+                        <b>Terms of Delivery & Payment</b></td>
+                    
+                </tr>
+                <tr>
+                    <td style="width:30%;font-size:10px;">BY&nbsp;{{doc.cargo_type or ""}}</td>
+                    <td style="width:30%;font-size:10px;">
+                        {% if doc.cargo_type == 'Sea' %}
+                            {{doc.pol_city_seaport or ""}}
+                        {% else %}
+                            {{doc.pol_city_airport or ""}}
+                        {% endif %}
+                    </td>
+                    <td style="width:40%;font-size:10px;border-bottom:hidden;">
+                        By&nbsp;{{doc.cargo_type or ""}}
+                    </td>
+                    
+                    
+                </tr>
+                <tr>
+                    
+                    <td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Port Of Discharge</b></td>
+                    <td style="width:30%;font-size:10px;border-bottom:hidden;"><b>Final Destination</b></td>
+                    <td style="width:40%;font-size:10px;border-bottom:hidden;">
+                        <b>Payment</b></td>
+                    
+                </tr>
+                <tr>
+                    <td style="width:30%;font-size:10px;border-bottom: 1px solid black !important;">
+                        
+                            {% if doc.cargo_type == 'Sea' %}
+                            {{doc.pod_seaport or ""}}
+                        {% else %}
+                            {{doc.pod_airport or ""}}
+                        {% endif %}
+                        
+                    </td>
+                    <td style="width:30%;font-size:10px;border-bottom: 1px solid black !important;">
+                        
+                            {{ doc.final_destination or "" }}
+                    </td>
+                    <td colspan="2" style="width:40%;font-size:10px;border-bottom:hidden;">
+                        {{frappe.db.get_value("Sales Invoice",{"name":doc.order_no},"terms") or ""}}
+                    </td>
+                    
+                    
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size:10px;border-bottom:hidden;">
+                        <b>General Description of the below mentioned Products is Automobile</b>
+                    </td>
+                    
+                    <td colspan="2" style="font-size:10px;border-bottom:hidden;">
+                        <!--<b>Incoterms</b>-->
+                    </td>
+                </tr>
+               <tr>
+                    <td colspan="2" style="font-size:10px;">
+                        <b>Components</b>
+                    </td>
+                    
+                    <td colspan="2" style="font-size:10px;">
+                        <!--{{doc.incoterm or ""}}-->
+                    </td>
+                </tr>
+        </table>
+        </div>
+    </div>
 </div>
 
 <div class="container">
-	<div class="row">
-		<div class="col-xs-12 p-0">
-			<table width=100% style="border-collapse:collapse;font-size:10px; " class="tab2 mr-0 ml-0">
-			   <thead style="display: table-header-group;" >    
-				<tr style="border-bottom:1px solid black;border-top:none;">
-					<td rowspan="2" style="width:2%; vertical-align: middle; text-align: center;"><b>PD</b></td>
-					<td rowspan="2" style="width:2%; vertical-align: middle; text-align: center;"><b>Boxes</b></td>
-				
-					<td rowspan="2" style="width:5%; vertical-align: middle; text-align: center;"><b>Item Code</b></td>
-					<td rowspan="2" style=" vertical-align: middle; text-align: center;"><b>Description of Goods</b></td>
-					<td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>Order No. & PO</b></td>
-					<td style="width:8%; vertical-align: middle; text-align: center;border-bottom:hidden;"><b>HSN</b></td>
-					<td style="width:5%; vertical-align: middle; text-align: center;border-bottom:hidden;"><b>Qty</b></td>
-					<td style="width:5%; vertical-align: middle; text-align: center;border-bottom:hidden;"><b>Rate</b></td>
-					<td style="width:5%; vertical-align: middle; text-align: center;border-bottom:hidden;"><b>Amount</b></td>
-				</tr>
+    <div class="row">
+        <div class="col-xs-12 p-0">
+            <table width=100% style="border-collapse:collapse;font-size:10px; " class="tab2 mr-0 ml-0">
+               <thead style="display: table-header-group;" >    
+                <tr style="border-bottom:1px solid black;border-top:none;">
+                    <td rowspan="2" style="width:2%; vertical-align: middle; text-align: center;"><b>PD</b></td>
+                    <td rowspan="2" style="width:2%; vertical-align: middle; text-align: center;"><b>Boxes</b></td>
+                
+                    <td rowspan="2" style="width:5%; vertical-align: middle; text-align: center;"><b>Item Code</b></td>
+                    <td rowspan="2" style=" vertical-align: middle; text-align: center;"><b>Description of Goods</b></td>
+                    <td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>Order No. & PO</b></td>
+                    <td style="width:8%; vertical-align: middle; text-align: center;border-bottom:hidden;"><b>HSN</b></td>
+                    <td style="width:5%; vertical-align: middle; text-align: center;border-bottom:hidden;"><b>Qty</b></td>
+                    <td style="width:5%; vertical-align: middle; text-align: center;border-bottom:hidden;"><b>Rate</b></td>
+                    <td style="width:5%; vertical-align: middle; text-align: center;border-bottom:hidden;"><b>Amount</b></td>
+                </tr>
 
-				<tr style="border-bottom:1px solid black;">
-					<td style="width:5%;vertical-align: middle;"><b><center>Code</center></b></td>
-					<td style="width:5%;vertical-align: middle;"><b><center>Nos</center></b></td>
-					<td style="width:5%;vertical-align: middle;"><b><center>{{doc.currency or ""}}</center></b></td>
-					<td style="width:5%;vertical-align: middle;"><b><center>{{doc.currency or ""}}</center></b></td>
-				</tr>
-				
-			</thead>   
-				<!--<tr style="border-bottom:1px solid black;">-->
-				<!--    <td rowspan="2"><b><center>Parts/BOX</center></b></td>-->
-				<!--    <td rowspan="2"><b><center>Item Code</center></b></td>-->
-				<!--    <td rowspan="2"><b><center>Description of Goods</center></b></td>-->
-				<!--    <td rowspan="2"><b><center>HSN Code</center></b></td>-->
-				<!--    <td rowspan="2"><b><center>Quality Nos</center></b></td>-->
-				<!--    <td rowspan="2"><b><center>Remark</center></b></td>-->
-				<!--</tr>-->
-				<!--<tr style="border-bottom:1px solid black;">-->
-				<!--    <td><b><center>Pallet Details</center></b></td>-->
-				<!--    <td><b><center>Boxes</center></b></td>-->
-				<!--</tr>-->
-				
-				
-				
-				{%- for i in doc.product_description_so -%}
-				 <tr style="border-bottom:none !important; border-top:none;">
-					<td class="no-border-1" style="text-align:center;">{{i.custom_no_of_pallets or ""}}</td>
-					<td class="no-border-1" style="text-align:center;">{{i.custom_no_of_boxes or ""}}</td>
-					<td class="no-border-1">{{i.item_code or ""}}</td>
-					<td class="no-border-1" style="font-size:10px;">{{i.description or ""}}</td>
-					<td class="no-border-1">{{i.custom_customers_po_number or ""}}</td>
-					<td class="no-border-1" style="text-align:center;">{{i.gst_hsn_code or ""}}</td>
-					<td class="no-border-1"  style="text-align:center;">{{ ("%.2f"|format(i.qty|float)).rstrip('0').rstrip('.') if i.qty else "" }}</td>
-					<td class="no-border-1" style="text-align:right;">{{i.rate or ""}}</td>
-					<td class="no-border-1" style="text-align:right;">{{i.amount or ""}}</td>
-					
-				</tr>
-		  
-				
-				{%- endfor-%}
-				
-				{% set p_total = doc.product_description_so | map(attribute="custom_no_of_pallets") | sum %}
-				{% set b_total = doc.product_description_so | map(attribute="custom_no_of_boxes") | sum %}
-				{% set q_total = doc.product_description_so | map(attribute="qty") | sum %}
-				
-				
-				<tr style="border-bottom:none !important;">
-					<td colspan="1" class="no-border">
-						<center><p><b>{{p_total}}</b></p></center>
-					</td>
-					<td colspan="1" class="no-border">
-					   <center><p><b>{{b_total}}</b></p></center> 
-					</td>
-					<td colspan="4" class="no-border">
-					</td>
-					<td colspan="1" class="no-border" style="text-align:center;">
-					   <b>{{q_total}}</b>
-					</td>
-					<td colspan="2" class="no-border">
-						
-					</td>
-				</tr>
-				
-				<tr style="border-bottom:none !important; border-top:none !important" >
-					<td colspan="9" class="no-border">
-						<p>This Shipment under duty draw back </p>
-					</td>
-				</tr>
-				
-				<tr style="border-top:none !important; border-bottom:none;">
-					<td colspan="3" style="text-align:right; " class="no-border">
-						<p><b><u>COUNTRY OF ORIGIN :{{doc.pol_country_airport or ""}}</u></b></p>
-					</td>
-					<td colspan="6" class="no-border">
-						
-					</td>
-				</tr>
-				
-				<tr >
-					<td colspan="3" style="width:32%;border-left:none;border-right:none;">
-						<b>Total Gross Weight&nbsp;&nbsp;{{doc.gross_wt}}KGS</b>
-					</td>
-					<td colspan="3"  style="width:32%;text-align:center;border-left:none;border-right:hidden;">
-						<b style=" left:50px;" >Total Net Weight&nbsp;&nbsp;{{doc.net_wt}}KGS</b> 
-					</td>
-					<td colspan="3"  style="width:36%;text-align:center;border-left:hidden;">   
-						<b style=" left:350px;">Total No.of Packaged:{{p_total}}Nos</b>
-					</td>
-				</tr>
+                <tr style="border-bottom:1px solid black;">
+                    <td style="width:5%;vertical-align: middle;"><b><center>Code</center></b></td>
+                    <td style="width:5%;vertical-align: middle;"><b><center>Nos</center></b></td>
+                    <td style="width:5%;vertical-align: middle;"><b><center>{{doc.currency or ""}}</center></b></td>
+                    <td style="width:5%;vertical-align: middle;"><b><center>{{doc.currency or ""}}</center></b></td>
+                </tr>
+                
+            </thead>   
+                <!--<tr style="border-bottom:1px solid black;">-->
+                <!--    <td rowspan="2"><b><center>Parts/BOX</center></b></td>-->
+                <!--    <td rowspan="2"><b><center>Item Code</center></b></td>-->
+                <!--    <td rowspan="2"><b><center>Description of Goods</center></b></td>-->
+                <!--    <td rowspan="2"><b><center>HSN Code</center></b></td>-->
+                <!--    <td rowspan="2"><b><center>Quality Nos</center></b></td>-->
+                <!--    <td rowspan="2"><b><center>Remark</center></b></td>-->
+                <!--</tr>-->
+                <!--<tr style="border-bottom:1px solid black;">-->
+                <!--    <td><b><center>Pallet Details</center></b></td>-->
+                <!--    <td><b><center>Boxes</center></b></td>-->
+                <!--</tr>-->
+                
+                
+                
+                {%- for i in doc.product_description_so -%}
+                 <tr style="border-bottom:none !important; border-top:none;">
+                    <td class="no-border-1" style="text-align:center;">{{i.custom_no_of_pallets or ""}}</td>
+                    <td class="no-border-1" style="text-align:center;">{{i.custom_no_of_boxes or ""}}</td>
+                    <td class="no-border-1">{{i.item_code or ""}}</td>
+                    <td class="no-border-1" style="font-size:10px;">{{i.description or ""}}</td>
+                    <td class="no-border-1">{{i.custom_customers_po_number or ""}}</td>
+                    <td class="no-border-1" style="text-align:center;">{{i.gst_hsn_code or ""}}</td>
+                    <td class="no-border-1"  style="text-align:center;">{{ ("%.2f"|format(i.qty|float)).rstrip('0').rstrip('.') if i.qty else "" }}</td>
+                    <td class="no-border-1" style="text-align:right;">{{i.rate or ""}}</td>
+                    <td class="no-border-1" style="text-align:right;">{{i.amount or ""}}</td>
+                    
+                </tr>
+          
+                
+                {%- endfor-%}
+                
+                {% set p_total = doc.product_description_so | map(attribute="custom_no_of_pallets") | sum %}
+                {% set b_total = doc.product_description_so | map(attribute="custom_no_of_boxes") | sum %}
+                {% set q_total = doc.product_description_so | map(attribute="qty") | sum %}
+                
+                
+                <tr style="border-bottom:none !important;">
+                    <td colspan="1" class="no-border">
+                        <center><p><b>{{p_total}}</b></p></center>
+                    </td>
+                    <td colspan="1" class="no-border">
+                       <center><p><b>{{b_total}}</b></p></center> 
+                    </td>
+                    <td colspan="4" class="no-border">
+                    </td>
+                    <td colspan="1" class="no-border" style="text-align:center;">
+                       <b>{{q_total}}</b>
+                    </td>
+                    <td colspan="2" class="no-border">
+                        
+                    </td>
+                </tr>
+                
+                <tr style="border-bottom:none !important; border-top:none !important" >
+                    <td colspan="9" class="no-border">
+                        <p>This Shipment under duty draw back </p>
+                    </td>
+                </tr>
+                
+                <tr style="border-top:none !important; border-bottom:none;">
+                    <td colspan="3" style="text-align:right; " class="no-border">
+                        <p><b><u>COUNTRY OF ORIGIN :{{doc.pol_country_airport or ""}}</u></b></p>
+                    </td>
+                    <td colspan="6" class="no-border">
+                        
+                    </td>
+                </tr>
+                
+                <tr >
+                    <td colspan="3" style="width:32%;border-left:none;border-right:none;">
+                        <b>Total Gross Weight&nbsp;&nbsp;{{doc.gross_wt}}KGS</b>
+                    </td>
+                    <td colspan="3"  style="width:32%;text-align:center;border-left:none;border-right:hidden;">
+                        <b style=" left:50px;" >Total Net Weight&nbsp;&nbsp;{{doc.net_wt}}KGS</b> 
+                    </td>
+                    <td colspan="3"  style="width:36%;text-align:center;border-left:hidden;">   
+                        <b style=" left:350px;">Total No.of Packaged:{{p_total}}Nos</b>
+                    </td>
+                </tr>
 
-				
-			</table>
-			
-			
-			
-		  
-			
-		</div>
-	</div>
-	
+                
+            </table>
+            
+            
+            
+          
+            
+        </div>
+    </div>
+    
    </div> 
 
 <style>
-	@media print {
-		.declaration-container {
-			page-break-inside: avoid;
-			break-inside: avoid;
-		}
+    @media print {
+        .declaration-container {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
 
-		.declaration-row {
-			border: 1px solid black;
-			border-top: 1px solid black;
-		}
+        .declaration-row {
+            border: 1px solid black;
+            border-top: 1px solid black;
+        }
 
-		/* If using wkhtmltopdf, avoid relying on @page:first */
-	}
+        /* If using wkhtmltopdf, avoid relying on @page:first */
+    }
 
-	.qrcode {
-		width: 120px;
-		height: 120px;
-	}
+    .qrcode {
+        width: 120px;
+        height: 120px;
+    }
 
-	.text-center {
-		text-align: center;
-	}
+    .text-center {
+        text-align: center;
+    }
 </style>
 
 {% set is_first_page = false %} {# Or dynamically determine this in your logic #}
 
    <table style="border: 1px solid black; border-collapse: collapse; width: 100%;">
-	<tr style="border-bottom:none;">
-		<td colspan="4" style="border: 1px solid black;border-bottom:none;">
-			<table style="border-collapse: collapse;font-size:10px; ">
-				<tr>
-					<td rowspan="2" style="border: 1px solid black; text-align: center; vertical-align: middle;">
-						<b>Box Dimensions</b><br><br>
-						<b>(mm)</b>
-					</td>
-					<td style="border: 1px solid black; text-align: center;"><b>Length</b></td>
-					<td style="border: 1px solid black; text-align: center;"><b>Width</b></td>
-					<td style="border: 1px solid black; text-align: center;"><b>Height</b></td>
-				</tr>
-				<tr>
+   <tr style="border:none;">
+            <td colspan="4" style="border: 1px solid black; border-bottom: none; border-right: 1px solid transparent !important;width: 50%;">
 
-					<td style="border: 1px solid black; text-align: center;">
-						{{ frappe.db.get_value("Box Summary", {'parent': doc.name}, "total_length") or "" }}<br>&nbsp;
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ frappe.db.get_value("Box Summary", {'parent': doc.name}, "total_breadth") or "" }}<br>&nbsp;
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ frappe.db.get_value("Box Summary", {'parent': doc.name}, "total_height") or "" }}<br>&nbsp;
-					</td>
-				</tr>
-				<tr>
-					<td style="border: 1px solid black; text-align: center;vertical-align: middle;">
-						<b>Pallet Dimension</b><br><br>
-						<b>(mm)</b>
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ frappe.db.get_value("Pallet Summary", {'parent': doc.name}, "total_length") or "" }}
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ frappe.db.get_value("Pallet Summary", {'parent': doc.name}, "total_breadth") or "" }}
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ frappe.db.get_value("Pallet Summary", {'parent': doc.name}, "total_height") or "" }}
-					</td>
-				</tr>
-			</table>
-		</td>
-	</tr>
+                <table style="border-collapse: collapse; font-size: 9px; table-layout: fixed;">
+                    <colgroup>
+                        <col style="width: 100px;">
+                        <col style="width: 70px;">
+                        <col style="width: 70px;">
+                        <col style="width: 70px;">
+                    </colgroup>
+                
+                    <tr>
+                        <td style="border: 1px solid black; text-align: center;"><b>No of Pallets</b></td>
+                        <td style="border: 1px solid black; text-align: center;"><b>Length</b></td>
+                        <td style="border: 1px solid black; text-align: center;"><b>Width</b></td>
+                        <td style="border: 1px solid black; text-align: center;"><b>Height</b></td>
+                    </tr>
+                
+                    {%- for row in doc.product_description_so -%}
+                    <tr>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height }}</td>
+                    </tr>
+                    {%- endfor -%}
+                </table>
+            </td>
+            <td colspan="4" style="border: 1px solid black; border-bottom: none; border-left: 1px solid transparent !important;">
+            <table style="border-collapse: collapse; font-size: 9px; table-layout: fixed;">
+                <colgroup>
+                    <col style="width: 100px;">
+                    <col style="width: 70px;">
+                    <col style="width: 70px;">
+                    <col style="width: 70px;">
+                </colgroup>
+                <tr>
+                    <td style="border: 1px solid black; text-align: center; vertical-align: middle;">
+                        <b>No of Boxes</b>
+                    </td>
+                    <td style="border: 1px solid black; text-align: center;"><b>Length</b></td>
+                    <td style="border: 1px solid black; text-align: center;"><b>Width</b></td>
+                    <td style="border: 1px solid black; text-align: center;"><b>Height</b></td>
+                </tr>
+                {%- for row in doc.product_description_so -%}
+                <tr>
 
-	<tr style="border-top:none;">
-		<td colspan="8" style="border: 1px solid black;border-top:none; padding-top: 15px;font-size:10px;">
-			<div class="col-12 remove-top-border remove-bottom-border p-0">
-			<strong><u>DECLARATION</u></strong><br>
-			We declare that this packing list shows the actual<br>
-			Weight of the goods<br>
-			Described and that all particulars are true and correct
-		</div>
-		</td>
-	</tr>
+                    <td style="border: 1px solid black; text-align: center;">
+                        {{ row.custom_no_of_boxes or 0 }}
+                    </td>
+                    <td style="border: 1px solid black; text-align: center;">
+                        {{ row.custom_box_length or "" }}
+                    </td>
+                    <td style="border: 1px solid black; text-align: center;">
+                        {{ row.custom_box_breadth or "" }}
+                    </td>
+                    <td style="border: 1px solid black; text-align: center;">
+                        {{ row.custom_box_height or "" }}
+                    </td>
+                </tr>
+                {%- endfor-%}
+            </table>
+        </td>
+    </tr>
+
+    <tr style="border-top:none;">
+        <td colspan="8" style="border: 1px solid black;border-top:none; padding-top: 15px;font-size:10px;">
+            <div class="col-12 remove-top-border remove-bottom-border p-0">
+            <strong><u>DECLARATION</u></strong><br>
+            We declare that this packing list shows the actual<br>
+            Weight of the goods<br>
+            Described and that all particulars are true and correct
+        </div>
+        </td>
+    </tr>
 </table>
 
 
@@ -6859,10 +6890,10 @@ def create_html_lr_export(doc):
 
 
 
-		
-	"""
-	html = render_template(template, {"doc": doc})
-	return {"html": html}
+        
+    """
+    html = render_template(template, {"doc": doc})
+    return {"html": html}
 
 @frappe.whitelist()
 def packing_list(sales_invoice):
@@ -7923,569 +7954,593 @@ def create_html_address(doc):
 
 @frappe.whitelist()
 def create_html_packing(doc):
-	doc = frappe.parse_json(doc)
-	template = """
-		<style>
-		.tab1,
-		.tab1 tr,
-		.tab1 td{
-			border:1px solid black;
-		}
+    doc = frappe.parse_json(doc)
+    template = """
+        <style>
+        .tab1,
+        .tab1 tr,
+        .tab1 td{
+            border:1px solid black;
+        }
 
-		.tab2,
-		.tab2 tr,
-		.tab2 td{
-			border:1px solid black;
-			border-bottom:none;
+        .tab2,
+        .tab2 tr,
+        .tab2 td{
+            border:1px solid black;
+            border-bottom:none;
 
-		}
+        }
 
-		.tab3,
-		.tab3 tr,
-		.tab3 td{
-			border:1px solid black;
-			border-bottom:none;
-			border:none;
-		}
+        .tab3,
+        .tab3 tr,
+        .tab3 td{
+            border:1px solid black;
+            border-bottom:none;
+            border:none;
+        }
 
-		.no-border{
-			border:none !important;
-		}
+        .no-border{
+            border:none !important;
+        }
 
-		.no-border-1{
-			border-top:none !important;
-			border-bottom:none !important;
-		}
+        .no-border-1{
+            border-top:none !important;
+            border-bottom:none !important;
+        }
 
-		/*.tab2 tr{*/
-		/*    page-break-inside:avoid; */
-		/*    page-break-after:auto;*/
-		/*}*/
-
-
-		.page-break {
-			page-break-before: always;
-			break-before: page;
-		}
-
-		.in-words-row {
-			page-break-inside: avoid;
-			break-inside: avoid;
-			border-bottom:none;
-			border-top: 1px solid black;
-		}
+        /*.tab2 tr{*/
+        /*    page-break-inside:avoid; */
+        /*    page-break-after:auto;*/
+        /*}*/
 
 
-		</style>
-		<div class="container">
-			<div class="row ">
-				<div class="col-xs-12 p-0 " >
-					
-				<table width=100% style="border-collapse:collapse;border-bottom: none;" class="tab1 mr-0 ml-0" >
-					<tr>
-							<td colspan="3">
-							<center><p style="font-size:20px;"><b>PACKING LIST</b></p></center> 
-							</td>
-						</tr>
-					<tr>
-						<td rowspan="4" style="width:30%" >
-								<p><b>Factory Address</b></p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_title")or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_line1") or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_line2") or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"city")or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"state")or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"country")or ""}}</p>
-							</td>
-							<td rowspan="4"  style="width:30%"> 
-								<p>
-									<b>Exporter</b></p>
-									<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_title")or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_line1") or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_line2") or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"city")or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"state")or ""}}</p>
-								<p>{{frappe.db.get_value("Address",{'address_title':doc.company},"country")or ""}}</p>
-								
-							</td>
-							<td  class="col-xs-5" >
-								<span><b>Invoice No & Date:</b></span>
-								<span style="float:right;"><b>Exporter IEC</b></span><br>
-								
-								<span><b>{{doc.name}}&nbsp;&nbsp;{{ frappe.format(doc.posting_date) or ""  }}</b></span>
-								<span style="float:right;"><b>{{frappe.db.get_value('Company',{'name':doc.company},"custom_exporter_iec")or ""}}</b></span>
-							</td>
-					</tr>
-					<tr>
-							<td>
-								
-								<span><b>Buyer's Order No & PO :</b></span> &nbsp; 
-									
-								<span><b>{{doc.po_no or ""}}</b></span>
-								
-							</td>
-						</tr>
-						
-						<tr>
-							<td>
-								<p><b>CIN No:{{frappe.db.get_value('Customer',{'name':doc.customer},"custom_cin_number")or ""}}</b></p>
-							</td>
-						</tr>
-						
-						<tr>
-							<td>
-								<p><b>GSTIN No :&nbsp;{{frappe.db.get_value('Address',{'address_title':doc.company},'gstin') or ""}}</b></p>
-								<p><b>Other References :</b></p>
-							</td>
-						</tr>
-						<!--<tr>-->
-						<!--    <td colspan="3"><b><center><b>INVOICE</b></center></b></td>-->
-						<!--</tr>-->
-						<!--<tr>-->
-						<!--    <td colspan="2" style="width:60%">-->
-						<!--        E-WAY No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{doc.ewaybill or ""}}<br>-->
-						<!--        E_WAY Date &nbsp;&nbsp;:{{frappe.db.get_value("e-Waybill Log",{"name":doc.ewaybill},"created_on") or ""}}<br>-->
-						<!--        ACK No. &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('e-Invoice Log', {'sales_invoice': doc.name}, 'acknowledgement_number') or ""}}<br>-->
-						<!--        ACK Date &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('e-Invoice Log', {'sales_invoice': doc.name}, 'acknowledged_on') or ""}}<br>-->
-						<!--        IRN No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{doc.irn or ""}}-->
-								
-						<!--    </td>-->
-						<!--    <td style="width:40%">-->
-								
-						<!--        Invoice No  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{doc.name}}<br>-->
-						<!--        Invoice Date &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{frappe.format(doc.posting_date,{'fieldtype':'Date'}) or ""}}<br>-->
-						<!--        Exporter IEC &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{frappe.db.get_value('Company',{'name':doc.company},"custom_exporter_iec")or ""}}<br>-->
-							<!--Order No. & PO :-->
-							<!--          {% for row in doc.custom_sales_orders %}-->
-							<!--              <span>{{ row.sales_order or "" }} {{ row.po_no or "" }}</span>{% if not loop.last %}, {% endif %}-->
-							<!--          {% endfor %}-->
-							<!--      <br>-->
+        .page-break {
+            page-break-before: always;
+            break-before: page;
+        }
 
-						<!--        Vendor Code &nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('Company',{'name':doc.company},"custom_vendor_code")or ""}}<br>-->
-						<!--        CIN No&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('Company',{'name':doc.company},"custom_cin_number")or ""}}<br>-->
-						<!--        GSTIN No &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('Address',{'address_title':doc.company},'gstin') or ""}} -->
-								
-						<!--    </td>-->
-						<!--</tr>-->
-						
-				</table> 
-				<table width=100% style="border-collapse:collapse;margin-top:5px;padding:0px;border-bottom:none;" class="tab1 mr-0 ml-0">
-					
-						<tr>
-							<td colspan="2" style="width:60%">
-								<b>Consignee</b>
-								{% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
-								{% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
-								{% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
-								{% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
-								{% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
-								{% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
-								
-								{% if address_title %}
-									<br>{{ address_title }}
-								{% endif %}
-								{% if address_line1 %}
-									<br>{{ address_line1 }}
-								{% endif %}
-								{% if address_line2 %}
-									<br>{{ address_line2 }}
-								{% endif %}
-								{% if city %}
-									<br>{{ city }}
-								{% endif %}
-								{% if state %}
-									<br>{{ state }}
-								{% endif %}
-								{% if country %}
-									<br>{{ country }}
-								{% endif %}
-							</td>
-
-							
-							<td style="width:40%">
-								<b>Buyer if Other  than consignee</b>
-								{% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
-								{% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
-								{% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
-								{% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
-								{% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
-								{% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
-								
-								{% if address_title %}
-									<br>{{ address_title }}
-								{% endif %}
-								{% if address_line1 %}
-									<br>{{ address_line1 }}
-								{% endif %}
-								{% if address_line2 %}
-									<br>{{ address_line2 }}
-								{% endif %}
-								{% if city %}
-									<br>{{ city }}
-								{% endif %}
-								{% if state %}
-									<br>{{ state }}
-								{% endif %}
-								{% if country %}
-									<br>{{ country }}
-								{% endif %}
-								
-								
-							</td>
-						</tr>
-						
-						<tr>
-							<td><b>Pre Carriage by:</b><br>
-							
-							{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"recommended_ffw")or ""}}
-							
-							
-							</td>
-							<td><b>Place of receipt by pre-carrier</b><br>
-							{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"custom_place_of_receipt_by_precarrier") or "NA"}}
-							
-							
-							</td>
-							<td><b>Country of Origin of Goods</b><br>
-							{% if doc.custom_cargo_mode == 'Air' %}
-								<span style="position:absolute;top:23px; left:7px; bottom:2px; ">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_country_airport")or ""}}</span>
-								{% elif doc.custom_cargo_mode == 'Sea' %}
-								<span style="position:absolute;top:23px; left:7px; bottom:2px; ">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_country_seaport")or ""}}</span>
-								{% else %}
-								<span style="position:absolute;top:23px; left:7px; bottom:2px; ">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_country_airport")or ""}}</span>
-								{% endif %}</td>
-							
-							</td>
-						</tr>
-						
-						<tr>
-							<td>
-								<b>Vessels / Flight No.</b><br>
-								BY&nbsp;{{doc.custom_cargo_mode or ""}}
-							</td>
-							{% if doc.custom_cargo_mode == 'Sea' %}
-							<td>
-								<b>Port of Loading</b><br>
-								{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_city_seaport") or ""}}
-							</td>
-							{% else %}
-							<td>
-								<b>Port of Loading</b><br>
-								{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_city_airport") or ""}}
-							</td>
-							{% endif %}
-							<td rowspan="3" style="border-bottom:none;">
-								<b>Terms of Delivery & Payment</b><br>
-								By&nbsp;{{doc.custom_cargo_mode or ""}}<br>
-								
-								<b>Payment</b><br>
-								
-								{{frappe.db.get_value("Customer",{'name':doc.customer},"payment_terms") or " "}}<br>
-								
-								<b>Incoterms</b><br>
-								{{doc.incoterm or ""}}
-							</td>
-						</tr>
-						<tr>
-							{% if doc.custom_cargo_mode == 'Air' %}
-								<td>
-									<b>Port Of Discharge</b><br>
-									{{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "pod_city_airport") or "" }}
-								</td>
-								<td>
-									<b>Final Destination</b><br>
-									{{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "final_destination") or "" }}
-								</td>
-							{% elif doc.custom_cargo_mode == 'Sea' %}
-								<td>
-									<b>Port Of Discharge</b><br>
-									{{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "pod_city_seaport") or "" }}
-								</td>
-								<td>
-									<b>Final Destination</b><br>
-									{{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "final_destination") or "" }}
-								</td>
-							{% else %}
-							<td>
-									<b>Port Of Discharge</b><br>
-									{{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "pod_city_airport") or "" }}
-								</td>
-								<td>
-									<b>Final Destination</b><br>
-									{{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "final_destination") or "" }}
-								</td>
-							{% endif %}
-						</tr>
-						
-						<tr style="border-bottom:none !important;">
-							<td colspan="2" style="border-bottom:none !important;">
-								<b>General Description of the below mentioned Products is Automobile Components</b>
-							</td>
-						</tr>
-				</table>
-				</div>
-			</div>
-		</div>
+        .in-words-row {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            border-bottom:none;
+            border-top: 1px solid black;
+        }
 
 
-		<div class="container  " style="border-top:none;">
-			<div class="row" style="border-top:none;" >
-				<div class="col-xs-12 p-0" style="border-top:none;">
-					<table width=100% style="border-collapse:collapse;border-top:none;  " class="tab2 mr-0 ml-0">
-					<thead style="display: table-header-group;" >    
-						<tr style="border-bottom:1px solid black;border-top:none;">
-							<td style="width:5%; vertical-align: middle; text-align: center;"><b>Marks & Nos</b></td>
-							<td style="width:5%; vertical-align: middle; text-align: center;"><b>No of packages</b></td>
-						
-							<td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>Item Code</b></td>
-							<td rowspan="2" style="width:40%; vertical-align: middle; text-align: center;"><b>Description of Goods</b></td>
-							<td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>Order No. & PO</b></td>
-							<td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>HSN Code</b></td>
-							<td rowspan="2" style="width:5%; vertical-align: middle; text-align: center;"><b>Quality Nos</b></td>
-							<td rowspan="2" style="width:5%; vertical-align: middle; text-align: center;"><b>Rate&nbsp; {{doc.currency or ""}}</b></td>
-							<td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>Amount&nbsp; {{doc.currency or ""}}</b></td>
-						</tr>
+        </style>
+        <div class="container">
+            <div class="row ">
+                <div class="col-xs-12 p-0 " >
+                    
+                <table width=100% style="border-collapse:collapse;border-bottom: none;" class="tab1 mr-0 ml-0" >
+                    <tr>
+                            <td colspan="3">
+                            <center><p style="font-size:20px;"><b>PACKING LIST</b></p></center> 
+                            </td>
+                        </tr>
+                    <tr>
+                        <td rowspan="4" style="width:30%" >
+                                <p><b>Factory Address</b></p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_title")or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_line1") or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_line2") or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"city")or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"state")or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"country")or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"gstin")or ""}}</p>
+                            </td>
+                            <td rowspan="4"  style="width:30%"> 
+                                <p>
+                                    <b>Exporter</b></p>
+                                    <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_title")or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_line1") or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"address_line2") or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"city")or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"state")or ""}}</p>
+                                <p>{{frappe.db.get_value("Address",{'address_title':doc.company},"gstin")or ""}}</p>
+                                
+                                
+                                
+                            </td>
+                            <td  class="col-xs-5" >
+                                <span><b>Invoice No & Date:</b></span>
+                                <span style="float:right;"><b>Exporter IEC</b></span><br>
+                                
+                                <span><b>{{doc.name}}&nbsp;&nbsp;{{ frappe.format(doc.posting_date) or ""  }}</b></span>
+                                <span style="float:right;"><b>{{frappe.db.get_value('Company',{'name':doc.company},"custom_exporter_iec")or ""}}</b></span>
+                            </td>
+                    </tr>
+                    <tr>
+                    <td colspan="2" style="border-top:hidden;"></td>
+                </tr>
+               <tr>
+                    <td colspan="2" style="border-top:hidden;"></td>
+                </tr>
+                        
+                        <tr>
+                            <td>
+                                <p><b>CIN No:{{frappe.db.get_value('Customer',{'name':doc.customer},"custom_cin_number")or ""}}</b></p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                    <td colspan="2" style="border-top:hidden;"></td>
+                </tr>
+               <tr>
+                    <td colspan="2" style="border-top:hidden;"></td>
+                </tr>
+                        <!--<tr>-->
+                        <!--    <td colspan="3"><b><center><b>INVOICE</b></center></b></td>-->
+                        <!--</tr>-->
+                        <!--<tr>-->
+                        <!--    <td colspan="2" style="width:60%">-->
+                        <!--        E-WAY No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{doc.ewaybill or ""}}<br>-->
+                        <!--        E_WAY Date &nbsp;&nbsp;:{{frappe.db.get_value("e-Waybill Log",{"name":doc.ewaybill},"created_on") or ""}}<br>-->
+                        <!--        ACK No. &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('e-Invoice Log', {'sales_invoice': doc.name}, 'acknowledgement_number') or ""}}<br>-->
+                        <!--        ACK Date &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('e-Invoice Log', {'sales_invoice': doc.name}, 'acknowledged_on') or ""}}<br>-->
+                        <!--        IRN No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{doc.irn or ""}}-->
+                                
+                        <!--    </td>-->
+                        <!--    <td style="width:40%">-->
+                                
+                        <!--        Invoice No  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{doc.name}}<br>-->
+                        <!--        Invoice Date &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{frappe.format(doc.posting_date,{'fieldtype':'Date'}) or ""}}<br>-->
+                        <!--        Exporter IEC &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{frappe.db.get_value('Company',{'name':doc.company},"custom_exporter_iec")or ""}}<br>-->
+                            <!--Order No. & PO :-->
+                            <!--          {% for row in doc.custom_sales_orders %}-->
+                            <!--              <span>{{ row.sales_order or "" }} {{ row.po_no or "" }}</span>{% if not loop.last %}, {% endif %}-->
+                            <!--          {% endfor %}-->
+                            <!--      <br>-->
 
-						<tr style="border-bottom:1px solid black;">
-							<td style="width:5%;vertical-align: middle;"><b><center>PD</center></b></td>
-							<td style="width:5%;vertical-align: middle;"><b><center>Boxes</center></b></td>
-						</tr>
-						
-					</thead>    
-					{% set total_weight = 0 %}
-		{% set custom_no_of_pallets = 0 %}
-		{% set custom_no_of_boxes = 0 %}
+                        <!--        Vendor Code &nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('Company',{'name':doc.company},"custom_vendor_code")or ""}}<br>-->
+                        <!--        CIN No&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('Company',{'name':doc.company},"custom_cin_number")or ""}}<br>-->
+                        <!--        GSTIN No &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('Address',{'address_title':doc.company},'gstin') or ""}} -->
+                                
+                        <!--    </td>-->
+                        <!--</tr>-->
+                        
+                </table> 
+                <table width=100% style="border-collapse:collapse;margin-top:5px;padding:0px;border-bottom:none;" class="tab1 mr-0 ml-0">
+                    
+                        <tr>
+                            <td colspan="2" style="width:60%">
+                                <b>Consignee</b>
+                                {% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
+                                {% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
+                                {% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
+                                {% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
+                                {% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
+                                {% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
+                                
+                                {% if address_title %}
+                                    <br>{{ address_title }}
+                                {% endif %}
+                                {% if address_line1 %}
+                                    <br>{{ address_line1 }}
+                                {% endif %}
+                                {% if address_line2 %}
+                                    <br>{{ address_line2 }}
+                                {% endif %}
+                                {% if city %}
+                                    <br>{{ city }}
+                                {% endif %}
+                                {% if state %}
+                                    <br>{{ state }}
+                                {% endif %}
+                                {% if country %}
+                                    <br>{{ country }}
+                                {% endif %}
+                            </td>
 
-		{%- for i in doc["items"] -%}
-		<tr style="{% if loop.last %}border-bottom:1px solid black;{% else %}border-bottom:none !important;{% endif %} border-top:none;">
-			<td class="no-border-1" style="text-align:center;">{{ i.custom_no_of_pallets or "" }}</td>
-			<td class="no-border-1" style="text-align:center;">{{ i.custom_no_of_boxes or "" }}</td>
-			<td class="no-border-1">{{ i.item_code or "" }}</td>
-			<td class="no-border-1">{{ i.description or "" }}</td>
-			<td class="no-border-1">{{ i.custom_customers_po_number or "" }}</td>
-			<td class="no-border-1" style="text-align:center;">{{ i.gst_hsn_code or "" }}</td>
-			<td class="no-border-1" style="text-align:center;">{{ i.qty or "" }}</td>
-			<td class="no-border-1" style="text-align:right;">{{ i.rate or "" }}</td>
-			<td class="no-border-1" style="text-align:right;">{{ i.amount or "" }}</td>
-		</tr>
+                            
+                            <td style="width:40%">
+                                <b>Buyer if Other  than consignee</b>
+                                {% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
+                                {% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
+                                {% set address_line2 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line2") %}
+                                {% set city = frappe.db.get_value("Address", {'address_title': doc.customer}, "city") %}
+                                {% set state = frappe.db.get_value("Address", {'address_title': doc.customer}, "state") %}
+                                {% set country = frappe.db.get_value("Address", {'address_title': doc.customer}, "country") %}
+                                
+                                {% if address_title %}
+                                    <br>{{ address_title }}
+                                {% endif %}
+                                {% if address_line1 %}
+                                    <br>{{ address_line1 }}
+                                {% endif %}
+                                {% if address_line2 %}
+                                    <br>{{ address_line2 }}
+                                {% endif %}
+                                {% if city %}
+                                    <br>{{ city }}
+                                {% endif %}
+                                {% if state %}
+                                    <br>{{ state }}
+                                {% endif %}
+                                {% if country %}
+                                    <br>{{ country }}
+                                {% endif %}
+                                
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td><b>Pre Carriage by:</b><br>
+                            
+                            {{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"recommended_ffw")or ""}}
+                            
+                            
+                            </td>
+                            <td><b>Place of receipt by pre-carrier</b><br>
+                            {{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"custom_place_of_receipt_by_precarrier") or "NA"}}
+                            
+                            
+                            </td>
+                            <td><b>Country of Origin of Goods</b><br>
+                            {% if doc.custom_cargo_mode == 'Air' %}
+                                <span style="position:absolute;top:23px; left:7px; bottom:2px; ">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_country_airport")or ""}}</span>
+                                {% elif doc.custom_cargo_mode == 'Sea' %}
+                                <span style="position:absolute;top:23px; left:7px; bottom:2px; ">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_country_seaport")or ""}}</span>
+                                {% else %}
+                                <span style="position:absolute;top:23px; left:7px; bottom:2px; ">{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_country_airport")or ""}}</span>
+                                {% endif %}</td>
+                            
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                <b>Vessels / Flight No.</b><br>
+                                BY&nbsp;{{doc.custom_cargo_mode or ""}}
+                            </td>
+                            {% if doc.custom_cargo_mode == 'Sea' %}
+                            <td>
+                                <b>Port of Loading</b><br>
+                                {{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_city_seaport") or ""}}
+                            </td>
+                            {% else %}
+                            <td>
+                                <b>Port of Loading</b><br>
+                                {{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_city_airport") or ""}}
+                            </td>
+                            {% endif %}
+                            <td rowspan="3" style="border-bottom:none;">
+                                <b>Terms of Delivery & Payment</b><br>
+                                By&nbsp;{{doc.custom_cargo_mode or ""}}<br>
+                                
+                                <b>Payment</b><br>
+                                
+                                {{frappe.db.get_value("Customer",{'name':doc.customer},"payment_terms") or " "}}<br>
+                                
+                                <b>Incoterms</b><br>
+                                {{doc.incoterm or ""}}
+                            </td>
+                        </tr>
+                        <tr>
+                            {% if doc.custom_cargo_mode == 'Air' %}
+                                <td>
+                                    <b>Port Of Discharge</b><br>
+                                    {{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "pod_city_airport") or "" }}
+                                </td>
+                                <td>
+                                    <b>Final Destination</b><br>
+                                    {{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "final_destination") or "" }}
+                                </td>
+                            {% elif doc.custom_cargo_mode == 'Sea' %}
+                                <td>
+                                    <b>Port Of Discharge</b><br>
+                                    {{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "pod_city_seaport") or "" }}
+                                </td>
+                                <td>
+                                    <b>Final Destination</b><br>
+                                    {{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "final_destination") or "" }}
+                                </td>
+                            {% else %}
+                            <td>
+                                    <b>Port Of Discharge</b><br>
+                                    {{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "pod_city_airport") or "" }}
+                                </td>
+                                <td>
+                                    <b>Final Destination</b><br>
+                                    {{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "final_destination") or "" }}
+                                </td>
+                            {% endif %}
+                        </tr>
+                        
+                        <tr style="border-bottom:none !important;">
+                            <td colspan="2" style="border-bottom:none !important;">
+                                <b>General Description of the below mentioned Products is Automobile Components</b>
+                            </td>
+                        </tr>
+                </table>
+                </div>
+            </div>
+        </div>
 
-		{% set total_weight = total_weight + (i.total_weight or 0) %}
-		{% set custom_no_of_pallets = custom_no_of_pallets + (i.custom_no_of_pallets or 0) %}
-		{% set custom_no_of_boxes = custom_no_of_boxes + (i.custom_no_of_boxes or 0) %}
 
-		{# Show summary row after last iteration #}
-		{% if loop.last %}
-		<tr style="border:none !important;">
-			<td colspan="1" class="no-border" style="text-align:center;"><b>{{ doc.custom_total_no_of_pallets }}</b></td>
-			<td colspan="1" class="no-border" style="text-align:center;"><b>{{ doc.custom_total_no_of_boxes }}</b></td>
-			<td class="no-border"></td>
-			<td class="no-border"></td>
-			<td class="no-border"></td>
-			<td class="no-border"></td>
-			<td colspan="1" class="no-border" style="text-align:center;"><b>{{ doc.total_qty or 0 }}</b></td>
-			<td class="no-border"></td>
-			<td class="no-border"></td>
-		</tr>
-		{% endif %}
-		{%- endfor -%}
+        <div class="container  " style="border-top:none;">
+            <div class="row" style="border-top:none;" >
+                <div class="col-xs-12 p-0" style="border-top:none;">
+                    <table width=100% style="border-collapse:collapse;border-top:none;  " class="tab2 mr-0 ml-0">
+                    <thead style="display: table-header-group;" >    
+                        <tr style="border-bottom:1px solid black;border-top:none;">
+                            <td style="width:5%; vertical-align: middle; text-align: center;"><b>Marks & Nos</b></td>
+                            <td style="width:5%; vertical-align: middle; text-align: center;"><b>No of packages</b></td>
+                        
+                            <td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>Item Code</b></td>
+                            <td rowspan="2" style="width:40%; vertical-align: middle; text-align: center;"><b>Description of Goods</b></td>
+                            <td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>Order No. & PO</b></td>
+                            <td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>HSN Code</b></td>
+                            <td rowspan="2" style="width:5%; vertical-align: middle; text-align: center;"><b>Quality Nos</b></td>
+                            <td rowspan="2" style="width:5%; vertical-align: middle; text-align: center;"><b>Rate&nbsp; {{doc.currency or ""}}</b></td>
+                            <td rowspan="2" style="width:10%; vertical-align: middle; text-align: center;"><b>Amount&nbsp; {{doc.currency or ""}}</b></td>
+                        </tr>
 
-					
-					
+                        <tr style="border-bottom:1px solid black;">
+                            <td style="width:5%;vertical-align: middle;"><b><center>PD</center></b></td>
+                            <td style="width:5%;vertical-align: middle;"><b><center>Boxes</center></b></td>
+                        </tr>
+                        
+                    </thead>    
+                    {% set total_weight = 0 %}
+        {% set custom_no_of_pallets = 0 %}
+        {% set custom_no_of_boxes = 0 %}
 
-						<tr style="border-bottom:none !important; border-left:none; border-right:none; " >
-							<td colspan="6" class="no-border">
-								This Shipment under duty draw back 
-							</td>
-							
-							<td colspan="3" class="no-border">
-								
-							</td>
-						</tr>
-						
-						<tr style="border-top:none !important; border-bottom:none;">
-							<td colspan="3" style="text-align:right; " class="no-border">
-								<b><u>COUNTRY OF ORIGIN :{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_country_airport")or ""}}</u></b>
-							</td>
-							<td colspan="6" class="no-border">
-								
-							</td>
-						</tr>
-						
-						<tr style="border-top:none !important; border-bottom:none;">
-							
-							<td colspan="3" style="border-left:none;border-right:none;">
-								<b>Total Gross Weight:{{'{0:.2f}'.format(doc.custom_total_gross_weight) or ""}}</b>
-							</td>
-							<td colspan="3"  style="text-align:center;border-left:none;border-right:none;">
-								<b>Total Net Weight:{{'{0:.2f}'.format(doc.grand_total) or ""}}</b>
-							</td>
-							<td colspan="3"  style="text-align:center;border-left:none;border-right:none;">
-								<b>Total No.of Packaged:{{'{0:.2f}'.format(doc.total_net_weight) or ""}}</b>
-							</td>
-						</tr>
-						
-					</table>
-					
-				</div>
-			</div>
-			
-		</div>
+        {%- for i in doc["items"] -%}
+        <tr style="{% if loop.last %}border-bottom:1px solid black;{% else %}border-bottom:none !important;{% endif %} border-top:none;">
+            <td class="no-border-1" style="text-align:center;">{{ i.custom_no_of_pallets or "" }}</td>
+            <td class="no-border-1" style="text-align:center;">{{ i.custom_no_of_boxes or "" }}</td>
+            <td class="no-border-1">{{ i.item_code or "" }}</td>
+            <td class="no-border-1">{{ i.description or "" }}</td>
+            <td class="no-border-1">{{ i.custom_customers_po_number or "" }}</td>
+            <td class="no-border-1" style="text-align:center;">{{ i.gst_hsn_code or "" }}</td>
+            <td class="no-border-1" style="text-align:center;">{{ i.qty or "" }}</td>
+            <td class="no-border-1" style="text-align:right;">{{ i.rate or "" }}</td>
+            <td class="no-border-1" style="text-align:right;">{{ i.amount or "" }}</td>
+        </tr>
 
-		<style>
-			@media print {
-				.declaration-container {
-					page-break-inside: avoid;
-					break-inside: avoid;
-				}
+        {% set total_weight = total_weight + (i.total_weight or 0) %}
+        {% set custom_no_of_pallets = custom_no_of_pallets + (i.custom_no_of_pallets or 0) %}
+        {% set custom_no_of_boxes = custom_no_of_boxes + (i.custom_no_of_boxes or 0) %}
 
-				.declaration-row {
-					border: 1px solid black;
-					border-top: 1px solid black;
-				}
+        {# Show summary row after last iteration #}
+        {% if loop.last %}
+        <tr style="border:none !important;">
+            <td colspan="1" class="no-border" style="text-align:center;"><b>{{ doc.custom_total_no_of_pallets }}</b></td>
+            <td colspan="1" class="no-border" style="text-align:center;"><b>{{ doc.custom_total_no_of_boxes }}</b></td>
+            <td class="no-border"></td>
+            <td class="no-border"></td>
+            <td class="no-border"></td>
+            <td class="no-border"></td>
+            <td colspan="1" class="no-border" style="text-align:center;"><b>{{ doc.total_qty or 0 }}</b></td>
+            <td class="no-border"></td>
+            <td class="no-border"></td>
+        </tr>
+        {% endif %}
+        {%- endfor -%}
 
-				/* If using wkhtmltopdf, avoid relying on @page:first */
-			}
+                    
+                    
 
-			.qrcode {
-				width: 120px;
-				height: 120px;
-			}
+                        <tr style="border-bottom:none !important; border-left:none; border-right:none; " >
+                            <td colspan="6" class="no-border">
+                                This Shipment under duty draw back 
+                            </td>
+                            
+                            <td colspan="3" class="no-border">
+                                
+                            </td>
+                        </tr>
+                        
+                        <tr style="border-top:none !important; border-bottom:none;">
+                            <td colspan="3" style="text-align:right; " class="no-border">
+                                <b><u>COUNTRY OF ORIGIN :{{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pol_country_airport")or ""}}</u></b>
+                            </td>
+                            <td colspan="6" class="no-border">
+                                
+                            </td>
+                        </tr>
+                        {% set ns = namespace(total_pallets=0) %}
+                {% for row in doc["items"] %}
+                    {% set ns.total_pallets = ns.total_pallets + (row.custom_no_of_pallets or 0) %}
+                {% endfor %}
+                        
+                        <tr style="border-top:none !important; border-bottom:none;">
+                            
+                            <td colspan="3" style="border-left:none;border-right:none;">
+                                <b>Total Gross Weight:{{'{0:.2f}'.format(doc.custom_total_gross_weight) or ""}} Kg</b>
+                            </td>
+                            <td colspan="3"  style="text-align:center;border-left:none;border-right:none;">
+                                <b>Total Net Weight:{{'{0:.2f}'.format(doc.total_net_weight) or ""}} Kg</b>
+                            </td>
+                            <td colspan="3"  style="text-align:center;border-left:none;border-right:none;">
+                                <b>Total No.of Packaged:{{'{0:.2f}'.format(ns.total_pallets) or ""}}</b>
+                            </td>
+                        </tr>
+                        
+                    </table>
+                    
+                </div>
+            </div>
+            
+        </div>
 
-			.text-center {
-				text-align: center;
-			}
-		</style>
+        <style>
+            @media print {
+                .declaration-container {
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
 
-		{% set is_first_page = false %} {# Or dynamically determine this in your logic #}
+                .declaration-row {
+                    border: 1px solid black;
+                    border-top: 1px solid black;
+                }
 
-		<!--<div class="container declaration-container" style="border: 1px solid black;">-->
-			<!--<div class="row declaration-row" style="border: 1px solid black; {{ 'border-top:none;' if is_first_page else 'border-top:1px solid black;' }}">-->
-			<!--    <div class="col-12 p-0">-->
-			<!--        <strong><u>DECLARATION</u></strong><br>-->
-			<!--        We declare that this packing list shows the actual<br>-->
-			<!--        Weight of the goods<br>-->
-			<!--        Described and that all particulars are true and correct-->
-			<!--    </div>-->
-			<!--</div>-->
-		<table style="border: 1px solid black; border-collapse: collapse; width: 100%;">
-			<tr style="border-bottom:none;">
-				<td colspan="4" style="border: 1px solid black;border-bottom:none;">
-					<table style="border-collapse: collapse; ">
-						<tr>
-							<td rowspan="2" style="border: 1px solid black; text-align: center; vertical-align: middle;">
-								<b>Box Dimensions</b><br><br>
-								<b>(mm)</b>
-							</td>
-							<td style="border: 1px solid black; text-align: center;"><b>Length</b></td>
-							<td style="border: 1px solid black; text-align: center;"><b>Width</b></td>
-							<td style="border: 1px solid black; text-align: center;"><b>Height</b></td>
-						</tr>
-						<tr>
-							<td style="border: 1px solid black; text-align: center;">
-								{{ frappe.db.get_value("Box Summary", {'parent': doc.name}, "total_length") or "" }}
-							</td>
-							<td style="border: 1px solid black; text-align: center;">
-								{{ frappe.db.get_value("Box Summary", {'parent': doc.name}, "total_breadth") or "" }}
-							</td>
-							<td style="border: 1px solid black; text-align: center;">
-								{{ frappe.db.get_value("Box Summary", {'parent': doc.name}, "total_height") or "" }}
-							</td>
-						</tr>
-						<tr>
-							<td style="border: 1px solid black; text-align: center;">
-								<b>Pallet Dimension</b><br><br>
-								<b>(mm)</b>
-							</td>
-							{% set log_doc =frappe.db.get_value("Logistics Request",{'order_no':doc.name},"name") or "" %}
-							<td style="border: 1px solid black; text-align: center;">
-								{{ frappe.db.get_value("Pallet Summary", {'parent': log_doc}, "total_length") or "" }}
-							</td>
-							<td style="border: 1px solid black; text-align: center;">
-								{{ frappe.db.get_value("Pallet Summary", {'parent': log_doc}, "total_breadth") or "" }}
-							</td>
-							<td style="border: 1px solid black; text-align: center;">
-								{{ frappe.db.get_value("Pallet Summary", {'parent': log_doc}, "total_height") or "" }}
-							</td>
-						</tr>
-					</table>
-				</td>
-			</tr>
+                /* If using wkhtmltopdf, avoid relying on @page:first */
+            }
 
-			<tr style="border-top:none;">
-				<td colspan="8" style="border: none;border-top:none; padding-top: 15px;">
-					<p><b><u>DECLARATION</u></b></p>
-					<p>We declare that this packing list shows the actual</p>
-					<p>weight of the goods</p>
-					<p>described and that all particulars are true and correct.</p>
-				</td>
-			</tr>
-		</table>
+            .qrcode {
+                width: 120px;
+                height: 120px;
+            }
+
+            .text-center {
+                text-align: center;
+            }
+        </style>
+
+        {% set is_first_page = false %} {# Or dynamically determine this in your logic #}
+
+        <!--<div class="container declaration-container" style="border: 1px solid black;">-->
+            <!--<div class="row declaration-row" style="border: 1px solid black; {{ 'border-top:none;' if is_first_page else 'border-top:1px solid black;' }}">-->
+            <!--    <div class="col-12 p-0">-->
+            <!--        <strong><u>DECLARATION</u></strong><br>-->
+            <!--        We declare that this packing list shows the actual<br>-->
+            <!--        Weight of the goods<br>-->
+            <!--        Described and that all particulars are true and correct-->
+            <!--    </div>-->
+            <!--</div>-->
+        <table style="border: 1px solid black; border-collapse: collapse; width: 100%;">
+            <td colspan="4" style="border: 1px solid black; border-bottom: none; border-right: 1px solid transparent !important;width: 50%;">
+
+                <table style="border-collapse: collapse; font-size: 9px; table-layout: fixed;">
+                    <colgroup>
+                        <col style="width: 100px;">
+                        <col style="width: 70px;">
+                        <col style="width: 70px;">
+                        <col style="width: 70px;">
+                    </colgroup>
+                
+                    <tr>
+                        <td style="border: 1px solid black; text-align: center;"><b>No of Pallets</b></td>
+                        <td style="border: 1px solid black; text-align: center;"><b>Length</b></td>
+                        <td style="border: 1px solid black; text-align: center;"><b>Width</b></td>
+                        <td style="border: 1px solid black; text-align: center;"><b>Height</b></td>
+                    </tr>
+                
+                    {% for row in doc["items"] %}
+                    <tr>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </td>
+            <td colspan="4" style="border: 1px solid black; border-bottom: none; border-left: 1px solid transparent !important;">
+            <table style="border-collapse: collapse; font-size: 9px; table-layout: fixed;">
+                <colgroup>
+                    <col style="width: 100px;">
+                    <col style="width: 70px;">
+                    <col style="width: 70px;">
+                    <col style="width: 70px;">
+                </colgroup>
+                <tr>
+                    <td style="border: 1px solid black; text-align: center; vertical-align: middle;">
+                        <b>No of Boxes</b>
+                    </td>
+                    <td style="border: 1px solid black; text-align: center;"><b>Length</b></td>
+                    <td style="border: 1px solid black; text-align: center;"><b>Width</b></td>
+                    <td style="border: 1px solid black; text-align: center;"><b>Height</b></td>
+                </tr>
+                {% for row in doc["items"] %}
+                <tr>
+
+                    <td style="border: 1px solid black; text-align: center;">
+                        {{ row.custom_no_of_boxes or 0 }}
+                    </td>
+                    <td style="border: 1px solid black; text-align: center;">
+                        {{ row.custom_box_length or "" }}
+                    </td>
+                    <td style="border: 1px solid black; text-align: center;">
+                        {{ row.custom_box_breadth or "" }}
+                    </td>
+                    <td style="border: 1px solid black; text-align: center;">
+                        {{ row.custom_box_height or "" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+
+            <tr style="border-top:none;">
+                <td colspan="8" style="border: none;border-top:none; padding-top: 15px;">
+                    <p><b><u>DECLARATION</u></b></p>
+                    <p>We declare that this packing list shows the actual</p>
+                    <p>weight of the goods</p>
+                    <p>described and that all particulars are true and correct.</p>
+                </td>
+            </tr>
+        </table>
 <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:9px; page-break-inside:avoid;">
-	<tr >
-		<td colspan="3" style="padding:2px;">
-			<strong>LUT NO: {{ frappe.db.get_value("Customer", {"name": doc.customer}, "custom_lut_number") or "" }}</strong>
-			<span style="float:right; white-space:nowrap;">For <strong>{{ doc.company }}</strong></span>
-		</td>
-	</tr>
+    <tr >
+        <td colspan="3" style="padding:2px;">
+            <strong>LUT NO: {{ frappe.db.get_value("Customer", {"name": doc.customer}, "custom_lut_number") or "" }}</strong>
+            <span style="float:right; white-space:nowrap;">For <strong>{{ doc.company }}</strong></span>
+        </td>
+    </tr>
 
-	{% set prepared_by = frappe.db.get_value("Employee", {"user_id": doc.owner}, ["custom_digital_signature"]) %}
-	{% set hod = frappe.db.get_value("Employee", {"user_id": doc.custom_hod}, ["custom_digital_signature"]) %}
-	{% set finance = frappe.db.get_value("Employee", {"name": 'S0189'}, ["custom_digital_signature"]) %}
+    {% set prepared_by = frappe.db.get_value("Employee", {"user_id": doc.owner}, ["custom_digital_signature"]) %}
+    {% set hod = frappe.db.get_value("Employee", {"user_id": doc.custom_hod}, ["custom_digital_signature"]) %}
+    {% set finance = frappe.db.get_value("Employee", {"name": 'S0189'}, ["custom_digital_signature"]) %}
 
-	<style>
-		.signature-img {
-			width: 100px;
-			height: 50px;
-			object-fit: contain;
-			border: none;
-		}
-	</style>
+    <style>
+        .signature-img {
+            width: 100px;
+            height: 50px;
+            object-fit: contain;
+            border: none;
+        }
+    </style>
 
-	<!-- Signatures Row -->
-	<tr style="height:60px; text-align:center;">
-		<td style="vertical-align:bottom;">
-			{% if prepared_by %}
-				<img src="{{ prepared_by }}" class="signature-img">
-			{% endif %}
-		</td>
-		<td style="vertical-align:bottom;">
-			{% if hod and doc.workflow_state not in ['Pending For HOD', 'Draft'] %}
-				<img src="{{ hod }}" class="signature-img">
-			{% endif %}
-		</td>
-		<td style="vertical-align:bottom;">
-			{% if finance and doc.workflow_state not in ['Pending For HOD', 'Draft', 'Pending for Finance'] %}
-				<img src="{{ finance }}" class="signature-img">
-			{% endif %}
-		</td>
-	</tr>
+    <!-- Signatures Row -->
+    <tr style="height:60px; text-align:center;">
+        <td style="vertical-align:bottom;">
+            {% if prepared_by %}
+                <img src="{{ prepared_by }}" class="signature-img">
+            {% endif %}
+        </td>
+        <td style="vertical-align:bottom;">
+            {% if hod and doc.workflow_state not in ['Pending For HOD', 'Draft'] %}
+                <img src="{{ hod }}" class="signature-img">
+            {% endif %}
+        </td>
+        <td style="vertical-align:bottom;">
+            {% if finance and doc.workflow_state not in ['Pending For HOD', 'Draft', 'Pending for Finance'] %}
+                <img src="{{ finance }}" class="signature-img">
+            {% endif %}
+        </td>
+    </tr>
 
-	<!-- Dates Row -->
-	<tr style="height:10px; text-align:center;">
-		<td>{{ frappe.utils.format_datetime(doc.creation, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-		<td>{{ frappe.utils.format_datetime(doc.custom_hod_approved_on, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-		<td>{{ frappe.utils.format_datetime(doc.custom_finance_approver_approved_on, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
-	</tr>
+    <!-- Dates Row -->
+    <tr style="height:10px; text-align:center;">
+        <td>{{ frappe.utils.format_datetime(doc.creation, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+        <td>{{ frappe.utils.format_datetime(doc.custom_hod_approved_on, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+        <td>{{ frappe.utils.format_datetime(doc.custom_finance_approver_approved_on, "dd-MM-yyyy HH:mm:ss") or '' }}</td>
+    </tr>
 
-	<!-- Labels Row -->
-	<tr style="font-weight:bold; text-align:center; height:20px;">
-		<td>Prepared by</td>
-		<td>Checked by</td>
-		<td>Authorised Signatory</td>
-	</tr>
-	<tr>
-		<td colspan="3" style="padding:2px;border-top:1px solid black;">
-			<strong>Note:</strong>This document is Digitally Signed.
-		</td>
-	</tr>
+    <!-- Labels Row -->
+    <tr style="font-weight:bold; text-align:center; height:20px;">
+        <td>Prepared by</td>
+        <td>Checked by</td>
+        <td>Authorised Signatory</td>
+    </tr>
+    <tr>
+        <td colspan="3" style="padding:2px;border-top:1px solid black;">
+            <strong>Note:</strong>This document is Digitally Signed.
+        </td>
+    </tr>
 </table>
 
-		<!--</div>-->
+        <!--</div>-->
 
 
-	"""
-	html = render_template(template, {"doc": doc})
-	return {"html": html}
+    """
+    html = render_template(template, {"doc": doc})
+    return {"html": html}
 
 @frappe.whitelist()
 def create_html_QID(doc):
@@ -10886,91 +10941,327 @@ def get_today_value():
 	return today()
 
 @frappe.whitelist()
-def custom_update_items(data, sales_order=None, puchase_order=None):
-    date = frappe.utils.today()
-    month_abbr = frappe.utils.getdate(date).strftime("%b").upper()
-    data = json.loads(data)
-    items = data.get("items_table", [])
+def custom_update_items(data, sales_order=None, purchase_order=None):
+	date = frappe.utils.today()
+	month_abbr = frappe.utils.getdate(date).strftime("%b").upper()
+	data = json.loads(data)
+	items = data.get("items_table", [])
 
-    if not sales_order:
-        return False
+	if sales_order:
+		order_doctype = "Sales Order"
+		order_name = sales_order
+		open_order_doctype = "Open Order"
+		order_number_field = "sales_order_number"
+		order_revision_doctype = "Sales Order Revision"
+		order_schedule = "Sales Order Schedule"
+		delivered_or_received_qty = "delivered_qty"
+	
+	elif purchase_order:
+		order_doctype = "Purchase Order"
+		order_name = purchase_order
+		open_order_doctype = "Purchase Open Order"
+		order_number_field = "purchase_order"
+		order_revision_doctype = "Purchase Order Revision"
+		order_schedule = "Purchase Order Schedule"
+		delivered_or_received_qty = "received_qty"
+	
+	else:
+		return False
 
-    open_order = frappe.get_doc("Open Order", {"sales_order_number": sales_order})
+	open_order = frappe.get_doc(open_order_doctype, {order_number_field: order_name})
 
-    unmatched_items = []
+	unmatched_items = []
 
-    for so_row in items:
-        matched = False
+	for order_row in items:
+		matched = False
 
-        # MATCH BY ITEM CODE
-        for op_row in open_order.open_order_table:
-            if so_row["item_code"] == op_row.item_code:
-                matched = True
+		for op_row in open_order.open_order_table:
+			if order_row["item_code"] == op_row.item_code:
+				matched = True
 
-                # Update docname
-                op_row.docname = so_row.get("docname")
+				# Update docname
+				op_row.docname = order_row.get("docname")
 
-                # Rate changed?
-                if op_row.rate != so_row["rate"]:
-                    old_value = op_row.rate
-                    op_row.rate = so_row["rate"]
+				# Rate changed?
+				if op_row.rate != order_row["rate"]:
+					old_value = op_row.rate
+					op_row.rate = order_row["rate"]
 
-                    # Add Revision Log
-                    next_idx = frappe.db.count("Sales Order Revision", {"parent": sales_order}) + 1
-                    
-                    log = frappe.new_doc("Sales Order Revision")
-                    log.parent = sales_order
-                    log.parenttype = "Sales Order"
-                    log.parentfield = "custom_revision_logs"
-                    log.idx = next_idx
-                    log.item_code = so_row["item_code"]
-                    log.old_value = old_value
-                    log.new_value = so_row["rate"]
-                    log.revised_on = now()
-                    log.revised_by = frappe.session.user
-                    log.insert(ignore_permissions=True)
+					# Add Revision Log
+					next_idx = frappe.db.count(order_revision_doctype, {"parent": order_name}) + 1
+					
+					log = frappe.new_doc(order_revision_doctype)
+					log.parent = order_name
+					log.parenttype = order_doctype
+					log.parentfield = "custom_revision_logs"
+					log.idx = next_idx
+					log.item_code = order_row["item_code"]
+					log.old_value = old_value
+					log.new_value = order_row["rate"]
+					log.revised_on = now()
+					log.revised_by = frappe.session.user
+					log.insert(ignore_permissions=True)
+					if order_doctype == "Purchase Order" and order_number_field == "purchase_order":
+						order_number_field = order_number_field + "_number"
+					# Update Order Schedule
+					if frappe.db.exists(order_schedule, {
+						"item_code": order_row["item_code"],
+						order_number_field: order_name,
+						"schedule_month": month_abbr
+					}):
+						os_doc = frappe.db.get_value(
+							order_schedule,
+							{
+								"item_code": order_row["item_code"],
+								order_number_field: order_name,
+								"schedule_month": month_abbr
+							},
+							["name", "exchange_rate", "qty", delivered_or_received_qty, "pending_qty"],
+							as_dict=True
+						)
+						if os_doc:
+							if order_doctype == "Sales Order":
+								update_vals = {
+									"order_rate": order_row["rate"],
+									"order_rate_inr": os_doc.exchange_rate * order_row["rate"],
+									"schedule_amount": os_doc.qty * order_row["rate"],
+									"schedule_amount_inr": os_doc.qty * order_row["rate"] * os_doc.exchange_rate,
+									"delivered_amount": os_doc.delivered_qty * order_row["rate"],
+									"delivered_amount_inr": os_doc.delivered_qty * order_row["rate"] * os_doc.exchange_rate,
+									"pending_amount": os_doc.pending_qty * order_row["rate"],
+									"pending_amount_inr": os_doc.pending_qty * order_row["rate"] * os_doc.exchange_rate
+								}
+							if order_doctype == "Purchase Order":
+								update_vals = {
+									"order_rate": order_row["rate"],
+									"order_rate_inr": os_doc.exchange_rate * order_row["rate"],
+									"schedule_amount": os_doc.qty * order_row["rate"],
+									"schedule_amount_inr": os_doc.qty * order_row["rate"] * os_doc.exchange_rate,
+									"received_amount": os_doc.received_qty * order_row["rate"],
+									"received_amount_inr": os_doc.received_qty * order_row["rate"] * os_doc.exchange_rate,
+									"pending_amount": os_doc.pending_qty * order_row["rate"],
+									"pending_amount_inr": os_doc.pending_qty * order_row["rate"] * os_doc.exchange_rate
+								}
+							frappe.db.set_value(order_schedule, os_doc.name, update_vals)
+				break  # Matching row handled → stop looping
 
-                    # Update Sales Order Schedule
-                    if frappe.db.exists("Sales Order Schedule", {
-                        "item_code": so_row["item_code"],
-                        "sales_order_number": sales_order,
-                        "schedule_month": month_abbr
-                    }):
-                        sos_doc = frappe.db.get_value(
-                            "Sales Order Schedule",
-                            {
-                                "item_code": so_row["item_code"],
-                                "sales_order_number": sales_order,
-                                "schedule_month": month_abbr
-                            },
-                            ["name", "exchange_rate", "qty", "delivered_qty", "pending_qty"],
-                            as_dict=True
-                        )
+		# AFTER LOOP: If NOT matched → append new row
+		if not matched:
+			open_order.append("open_order_table", {
+				"item_code": order_row["item_code"],
+				"rate": order_row["rate"],
+				"qty": order_row.get("qty") or 1,
+			})
+			unmatched_items.append(order_row["item_code"])
 
-                        if sos_doc:
-                            update_vals = {
-                                "order_rate": so_row["rate"],
-                                "order_rate_inr": sos_doc.exchange_rate * so_row["rate"],
-                                "schedule_amount": sos_doc.qty * so_row["rate"],
-                                "schedule_amount_inr": sos_doc.qty * so_row["rate"] * sos_doc.exchange_rate,
-                                "delivered_amount": sos_doc.delivered_qty * so_row["rate"],
-                                "delivered_amount_inr": sos_doc.delivered_qty * so_row["rate"] * sos_doc.exchange_rate,
-                                "pending_amount": sos_doc.pending_qty * so_row["rate"],
-                                "pending_amount_inr": sos_doc.pending_qty * so_row["rate"] * sos_doc.exchange_rate
-                            }
-                            frappe.db.set_value("Sales Order Schedule", sos_doc.name, update_vals)
+	open_order.disable_update_items = 0
+	open_order.save(ignore_permissions=True)
+	return True
 
-                break  # Matching row handled → stop looping
+@frappe.whitelist()
+def update_tax_category_by_state(doc, method):
+	if doc.state and doc.country == "India":
+		if doc.state == "Tamil Nadu":
+			tax_category = "In-State"
+		else: 
+			tax_category = "Out-State"
+		doc.tax_category = tax_category
+		for row in doc.links:
+			frappe.db.set_value(row.link_doctype, row.link_name, "tax_category", tax_category)
 
-        # AFTER LOOP: If NOT matched → append new row
-        if not matched:
-            open_order.append("open_order_table", {
-                "item_code": so_row["item_code"],
-                "rate": so_row["rate"],
-                "qty": so_row.get("qty") or 1,
-            })
-            unmatched_items.append(so_row["item_code"])
+def bom_connection_from_fg_to_child(doc, method):
+	frappe.db.set_value("BOM Item", {"item_code": doc.item,  "bom_no": ["in", [None, ""]]}, "bom_no", doc.name)
 
-    open_order.disable_update_items = 0
-    open_order.save(ignore_permissions=True)
-    return True
+@frappe.whitelist()
+def supplier_wise_plan_summary(month, year):
+	total_sales_plan = 0
+	# Get distinct supplier groups
+	supplier_groups = frappe.db.get_all(
+		"Purchase Order Schedule",
+		filters={"schedule_month": month},
+		fields=["supplier_group"],
+		distinct=True
+	)
+
+	html = f"""
+	<div style="border: 1px solid gray; color: black;">
+		<h4 style="font-weight: 600; text-align: center; margin-top: 10px;">
+			Supplier Wise Purchase Plan - {month}'{year}
+		</h4>
+		<div style="white-space: nowrap; overflow-x: auto; display:flex; gap:10px; padding-top:10px;">
+	"""
+
+	# Loop supplier groups
+	for sg in supplier_groups:
+
+		html += """
+			<div>
+			<table border="1" cellspacing="0" cellpadding="6" style="min-width:400px;">
+				<tr>
+					<th style="background-color:#ffc000; text-align:center; width: 150px; font-size: 12px; font-weight: bold;">Type</th>
+					<th style="background-color:#ffc000; text-align:center; width: 100px; font-size: 12px; font-weight: bold;">Supplier</th>
+					<th style="background-color:#ffc000; text-align:center; width: 150px; font-size: 12px; font-weight: bold; color: #2206f6;">Schedule Value</th>
+				</tr>
+		"""
+
+		schedules = frappe.db.get_all(
+			"Purchase Order Schedule",
+			filters={"schedule_month": month, "supplier_group": sg.supplier_group},
+			fields=[
+				"supplier_code",
+				"SUM(schedule_amount_inr) as schedule_amount"
+			],
+			group_by="supplier_code",
+			order_by="supplier_code"
+		)
+
+		rowspan = len(schedules) + 1
+		total_amount = 0
+		first_row = True
+
+		for row in schedules:
+			supplier_name = frappe.db.get_value("Supplier", {"supplier_code": row.supplier_code}, "supplier_name")
+			rounded_amount = round(row.schedule_amount)
+			if first_row:
+				html += f"""
+				<tr>
+					<td rowspan="{rowspan}" style="color: #b00d0a; font-weight: bold; width: 150px; text-align: center; font-size: 13px;">{sg.supplier_group}</td>
+					<td style="font-weight: bold; width: 150px; font-size: 13px;">{supplier_name}</td>
+					<td style="text-align:right; font-weight: bold; width: 150px; font-size: 13px;">₹ {fmt_money(int(rounded_amount), precision=0)}</td>
+				</tr>
+				"""
+				first_row = False
+			else:
+				html += f"""
+				<tr>
+					<td style="font-weight: bold; font-size: 13px;">{supplier_name}</td>
+					<td style="text-align:right; font-weight: bold; font-size: 13px;">₹ {fmt_money(int(rounded_amount), precision=0)}</td>
+				</tr>
+				"""
+
+			total_amount += rounded_amount
+		rounded_total_amount = round(total_amount)
+		# Correct subtotal row (4 <td> values)
+		html += f"""
+			<tr>
+				<td style="background-color: #00ffff;">SUB TOTAL</td>
+				<td style="background-color: #00ffff; text-align:right;">₹ {fmt_money(int(rounded_total_amount), precision=0)}</td>
+			</tr>
+		</table>
+		</div>
+		"""
+		total_sales_plan += rounded_total_amount
+
+	html += f"""
+		</div>
+		<div style="text-align: center; background-color: #ffff00; margin-bottom: 0px; min-height: 30px;">
+			<b style="padding-top: 5px;">Total Sales Plan: ₹ {fmt_money(int(total_sales_plan), precision=0)}</b>
+		</div>
+	</div>
+	"""
+
+	return html
+ 
+@frappe.whitelist()
+def custom_get_children(parent=None, is_root=False, **filters):
+	"""Override against bom's get_children method"""
+
+	if not parent or parent == "BOM":
+		# frappe.msgprint(_("Please select a BOM"))
+		return
+
+	if parent:
+		frappe.form_dict.parent = parent
+
+	if frappe.form_dict.parent:
+		bom_doc = frappe.get_cached_doc("BOM", frappe.form_dict.parent)
+		frappe.has_permission("BOM", doc=bom_doc, throw=True)
+
+		bom_items = frappe.get_all(
+			"BOM Item",
+			fields=["item_code", "bom_no as value", "stock_qty","uom","qty", "rate"],
+			filters=[["parent", "=", frappe.form_dict.parent]],
+			order_by="idx",
+		)
+
+		item_names = tuple(d.get("item_code") for d in bom_items)
+
+		items = frappe.get_list(
+			"Item",
+			fields=["image", "description", "name", "stock_uom", "item_name", "is_sub_contracted_item"],
+			filters=[["name", "in", item_names]],
+		)  # to get only required item dicts
+
+		for bom_item in bom_items:
+			# extend bom_item dict with respective item dict
+			bom_item.update(
+				# returns an item dict from items list which matches with item_code
+				next(item for item in items if item.get("name") == bom_item.get("item_code"))
+			)
+
+			bom_item.parent_bom_qty = bom_doc.quantity
+			bom_item.expandable = 0 if bom_item.value in ("", None) else 1
+			bom_item.image = frappe.db.escape(bom_item.image)
+
+		return bom_items
+
+def supplier_naming_before(doc, method):
+	groupWV = ["Import- Bought-Out", "Import- Raw Material", "Local - Bought-Out", "Local - Raw Material", "Outsourcing"]
+	groupWG = ["Transporter", "Manufacturer", "Electrical", "General", "Hardware", "Pharmaceutical", "Services", "Tooling & Fixtures"]
+
+	
+	if doc.supplier_group:
+		
+		if doc.supplier_group in groupWV:
+			doc.naming_series = "WV.####"
+		
+		elif doc.supplier_group in groupWG:
+			doc.naming_series = f"WG.####"  
+		else:
+			doc.naming_series = "WG.####"  
+	else:
+		doc.naming_series = "WG.####"  
+
+   
+	if not doc.supplier_code:
+		doc.supplier_code = doc.naming_series
+ 
+
+def supplier_naming_after(doc,method):
+	
+	if doc.supplier_code != doc.name:
+		doc.supplier_code = doc.name  
+		doc.save()  
+
+@frappe.whitelist()
+def get_calculated_height(doc,method):
+    for i in doc.items:
+        final_height=0
+        pallet=i.custom_pallet
+        box=i.custom_box
+        if pallet and box :
+            pal_doc=frappe.get_doc('Pallet',pallet)
+            box_doc=frappe.get_doc('Box',box)
+            pcount=i.custom_no_of_pallets
+            bcount=i.custom_no_of_boxes
+            if pcount > 0 and bcount > 0:
+                # calculate pallet per box
+                pox_per_pallet=bcount/pcount
+
+                # calculate L*B for both pallet and box
+                pallet_l_b=pal_doc.length*pal_doc.breadth
+                box_l_b=box_doc.length*box_doc.breadth
+
+                # divide L*B of pallet by box
+                p_b_l_b=pallet_l_b/box_l_b
+                p_b_l_b=int(p_b_l_b)
+
+                # multiply p_b_l_b with box height
+                v4=p_b_l_b*box_doc.height
+
+                # add v4 with pallet height
+                v5=v4+pal_doc.height
+
+                final_height= v4+v5+pal_doc.extra_height
+        i.custom_calculated_height=final_height
+        

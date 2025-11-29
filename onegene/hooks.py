@@ -34,9 +34,9 @@ desk_include_js = [
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {"Item" : "public/js/item.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
-# doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
+doctype_tree_js = {"BOM" : "public/js/bom_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
 # Home Pages
@@ -182,6 +182,9 @@ scheduler_events = {
 		"*/15 * * * *" : [
 			"onegene.onegene.custom.update_issue_status_from_teampro"
 		],
+        "0 8 * * *": [
+            "onegene.onegene.custom.zero_ot"
+        ]
 	},
 	# "hourly": [
 	# 	"onegene.tasks.hourly"
@@ -236,6 +239,12 @@ fixtures = [
         "filters": [
             ["module", "=", "ONEGENE"]
         ]
+    },
+    {
+        "dt": "Print Format",
+        "filters": [
+            ["module", "=", "ONEGENE"]
+        ]
     }
 ]
 
@@ -247,9 +256,9 @@ fixtures = [
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-#	"frappe.desk.doctype.event.event.get_events": "onegene.event.get_events"
-# }
+override_whitelisted_methods = {
+	"erpnext.manufacturing.doctype.bom.bom.get_children": "onegene.onegene.custom.custom_get_children"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
@@ -388,7 +397,7 @@ doc_events = {
 	'Sales Invoice': {
 		"validate": ["onegene.onegene.custom.calculate_total_cbm","onegene.onegene.custom.validate_sales_invoice","onegene.onegene.custom.validate_item_rate","onegene.onegene.custom.update_the_changes_to_lr","onegene.onegene.custom.check_approved_lr",
 		"onegene.onegene.custom.update_datetime_and_approver_details_in_Si", "onegene.onegene.custom.update_hod_time",
-        "onegene.onegene.custom.make_url_for_si","onegene.onegene.custom.update_port_in_si","onegene.onegene.custom.trigger_notification_based_on_the_workflow_in_si"],
+        "onegene.onegene.custom.make_url_for_si","onegene.onegene.custom.update_port_in_si","onegene.onegene.custom.trigger_notification_based_on_the_workflow_in_si", "onegene.onegene.event.sales_invoice.set_posting_date_as_creation"],
 		"before_insert": ["onegene.onegene.custom.sales_invoice_custom_autoname","onegene.utils.update_si_name"],
 		"on_submit":["onegene.utils.update_lr_status", "onegene.onegene.custom.mark_qid_for_si"],
 		'after_insert':[
@@ -463,7 +472,8 @@ doc_events = {
 	},
  
 	"Address":{
-		"before_save":"onegene.onegene.custom.customer_address_validate"
+		"before_save":"onegene.onegene.custom.customer_address_validate",
+		"validate": "onegene.onegene.custom.update_tax_category_by_state",
 	},
 	
 	"Purchase Receipt": {
@@ -523,8 +533,14 @@ doc_events = {
 		"on_trash":"onegene.onegene.custom.revert_processed_qty_in_tool",
 	},
 	"Supplier":{
-		"after_insert": "onegene.onegene.supplier_user_creation.supp_user",
-	}
+     
+        "before_insert":"onegene.onegene.custom.supplier_naming_before",
+		"after_insert": ["onegene.onegene.supplier_user_creation.supp_user","onegene.onegene.custom.supplier_naming_after"]
+	},
+
+	"BOM": {
+		"on_submit": "onegene.onegene.custom.bom_connection_from_fg_to_child"
+	},
  
  
 }

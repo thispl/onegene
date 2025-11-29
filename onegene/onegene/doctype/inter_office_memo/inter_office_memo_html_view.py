@@ -33,6 +33,7 @@ def get_schedule_increase_delivery_html(doc):
             "Pending For HOD",
             "Pending for ERP Team",
             "Pending for Production Manager",
+            "Pending for PPC",
             "Pending for Material Manager",
             "Pending for Plant Head",
             "Pending for BMD",
@@ -70,6 +71,7 @@ def get_schedule_increase_delivery_html(doc):
     plant_signature = frappe.db.get_value("Employee", {"user_id": doc.get("plant_head")}, "custom_digital_signature")
     bmd_signature = frappe.db.get_value("Employee", {"name": 'BMD01'}, "custom_digital_signature")
     pm_signature = frappe.db.get_value("Employee", {"user_id": doc.get("production_manager")}, "custom_digital_signature")
+    ppc_signature = frappe.db.get_value("Employee", {"user_id": doc.get("ppc")}, "custom_digital_signature")
     # Step 2: Convert result to dictionary for lookup in Jinja
     schedule_totals_item = {d.item_group: d.total_schedule_item for d in schedule_sums_item}
     template = """
@@ -204,10 +206,10 @@ def get_schedule_increase_delivery_html(doc):
                 <td style="text-align:center;">{{ loop.index }}</td>
                 <td style="text-align:left;">{{ row.customer_type or '' }}</td>
                 <td style="text-align:left;">{{ row.customer_code }}</td>
-                <td style="text-align:right;">{{ frappe.utils.fmt_money(row.current_schedule_value, 2, currency="INR") }}</td>
-                <td style="text-align:right;">{{ frappe.utils.fmt_money(row.revised_schedule_value, 2, currency="INR") }}</td>
+                <td style="text-align:right;">{{ frappe.utils.fmt_money(row.current_schedule_value, 1, currency="INR") }}</td>
+                <td style="text-align:right;">{{ frappe.utils.fmt_money(row.revised_schedule_value, 1, currency="INR") }}</td>
                 <td style="text-align:right;">
-                    {{ frappe.utils.fmt_money(row.difference_value, 2, currency="INR") }} {{ arrow | safe }}
+                    {{ frappe.utils.fmt_money(row.difference_value, 1, currency="INR") }} {{ arrow | safe }}
                 </td>
             </tr>
         {% endfor %}
@@ -232,10 +234,10 @@ def get_schedule_increase_delivery_html(doc):
             <td style="text-align:center;">{{ loop.index }}</td>
             <td style="text-align:left;">{{ data.customer_type or '' }}</td>
             <td style="text-align:left;">{{ code }}</td>
-            <td style="text-align:right;">{{ frappe.utils.fmt_money(current_val, 2, currency="INR") }}</td>
-            <td style="text-align:right;">{{ frappe.utils.fmt_money(revised_val, 2, currency="INR") }}</td>
+            <td style="text-align:right;">{{ frappe.utils.fmt_money(current_val, 1, currency="INR") }}</td>
+            <td style="text-align:right;">{{ frappe.utils.fmt_money(revised_val, 1, currency="INR") }}</td>
             <td style="text-align:right;">
-                {{ frappe.utils.fmt_money(diff_val, 2, currency="INR") }} {{ arrow | safe }}
+                {{ frappe.utils.fmt_money(diff_val, 1, currency="INR") }} {{ arrow | safe }}
             </td>
         </tr>
     {% endfor %}
@@ -244,7 +246,7 @@ def get_schedule_increase_delivery_html(doc):
     <tr>
         <td colspan="5" style="text-align:center;font-size:13px;font-weight:bold;">Total</td>
         <td style="text-align:right;font-size:13px;font-weight:bold;">
-            {{ frappe.utils.fmt_money(ns.total_difference, 2, currency="INR") }}
+            {{ frappe.utils.fmt_money(ns.total_difference, 1, currency="INR") }}
         </td>
     </tr>
     
@@ -291,10 +293,10 @@ def get_schedule_increase_delivery_html(doc):
         <tr>
             <td style="text-align:center;">{{ loop.index }}</td>
             <td style="text-align:left;">{{ row.item_group }}</td>
-            <td style="text-align:right;">{{ frappe.utils.fmt_money(row.current_schedule_value, 2,currency="INR") }}</td>
-            <td style="text-align:right;">{{ frappe.utils.fmt_money(row.revised_schedule_value, 2,currency="INR") }}</td>
+            <td style="text-align:right;">{{ frappe.utils.fmt_money(row.current_schedule_value, 1,currency="INR") }}</td>
+            <td style="text-align:right;">{{ frappe.utils.fmt_money(row.revised_schedule_value, 1,currency="INR") }}</td>
             <td style="text-align:right;">
-                {{ frappe.utils.fmt_money(row.difference_value, 2,currency="INR") }} {{ arrow | safe }}
+                {{ frappe.utils.fmt_money(row.difference_value, 1,currency="INR") }} {{ arrow | safe }}
             </td>
         </tr>
     {% endfor %}
@@ -317,10 +319,10 @@ def get_schedule_increase_delivery_html(doc):
         <tr>
             <td style="text-align:center;">{{ loop.index }}</td>
             <td style="text-align:left;">{{ group }}</td>
-            <td style="text-align:right;">{{ frappe.utils.fmt_money(current_val, 2,currency="INR") }}</td>
-            <td style="text-align:right;">{{ frappe.utils.fmt_money(revised_val, 2,currency="INR") }}</td>
+            <td style="text-align:right;">{{ frappe.utils.fmt_money(current_val, 1,currency="INR") }}</td>
+            <td style="text-align:right;">{{ frappe.utils.fmt_money(revised_val, 1,currency="INR") }}</td>
             <td style="text-align:right;">
-                {{ frappe.utils.fmt_money(diff_val, 2,currency="INR") }} {{ arrow | safe }}
+                {{ frappe.utils.fmt_money(diff_val, 1,currency="INR") }} {{ arrow | safe }}
             </td>
         </tr>
     {% endfor %}
@@ -329,14 +331,14 @@ def get_schedule_increase_delivery_html(doc):
     <tr>
         <td colspan="4" style="text-align:center;font-size:13px;font-weight:bold;">Total</td>
         <td style="text-align:right;font-size:13px;font-weight:bold;">
-            {{ frappe.utils.fmt_money(ns.total_difference1, 2,currency="INR") }}
+            {{ frappe.utils.fmt_money(ns.total_difference1, 1,currency="INR") }}
         </td>
     </tr>
     
 </table>
 <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Total Sales Plan</span>
-    <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ frappe.utils.fmt_money(doc.total_sales_plan, 2,currency="INR") }}</span>
+    <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ frappe.utils.fmt_money(doc.total_sales_plan, 1,currency="INR") }}</span>
 </div>
 
     <br>
@@ -362,13 +364,14 @@ def get_schedule_increase_delivery_html(doc):
 
         <table>
             <tr>
-                <td style="text-align:center;font-weight:bold;font-size:15px;width:14.28%;background-color:#a5a3ac">Prepared</td>
-                <td style="text-align:center;font-weight:bold;font-size:15px;width:14.28%;background-color:#a5a3ac">HOD</td>
-                <td style="text-align:center;font-weight:bold;font-size:15px;width:14.28%;background-color:#a5a3ac">ERP</td>
-                <td style="text-align:center;font-weight:bold;font-size:15px;width:14.28%;background-color:#a5a3ac">Production HOD</td>
-                <td style="text-align:center;font-weight:bold;font-size:15px;width:14.28%;background-color:#a5a3ac">Material Manager</td>
-                <td style="text-align:center;font-weight:bold;font-size:15px;width:14.28%;background-color:#a5a3ac">Plant Head</td>
-                <td style="text-align:center;font-weight:bold;font-size:15px;width:14.28%;background-color:#a5a3ac">BMD</td>
+                <td style="text-align:center;font-weight:bold;font-size:15px;width:12.5%;background-color:#a5a3ac">Prepared</td>
+                <td style="text-align:center;font-weight:bold;font-size:15px;width:12.5%;background-color:#a5a3ac">HOD</td>
+                <td style="text-align:center;font-weight:bold;font-size:15px;width:12.5%;background-color:#a5a3ac">ERP</td>
+                <td style="text-align:center;font-weight:bold;font-size:15px;width:12.5%;background-color:#a5a3ac">Production HOD</td>
+                <td style="text-align:center;font-weight:bold;font-size:15px;width:12.5%;background-color:#a5a3ac">PPC</td>
+                <td style="text-align:center;font-weight:bold;font-size:15px;width:12.5%;background-color:#a5a3ac">Material Manager</td>
+                <td style="text-align:center;font-weight:bold;font-size:15px;width:12.5%;background-color:#a5a3ac">Plant Head</td>
+                <td style="text-align:center;font-weight:bold;font-size:15px;width:12.5%;background-color:#a5a3ac">BMD</td>
             </tr>
 
             <tr style="height:80px;">
@@ -390,6 +393,11 @@ def get_schedule_increase_delivery_html(doc):
                 <td style="text-align:center;">
                     {% if py.show_till("Pending for Production Manager") %}
                         {{ show_signature(pm_signature, doc.production_manager_approved_on, 'Pending for Production Manager', doc.workflow_state, stop_state) }}
+                    {% endif %}
+                </td>
+                <td style="text-align:center;">
+                    {% if py.show_till("Pending for PPC") %}
+                        {{ show_signature(ppc_signature, doc.ppc_approved_on, 'Pending for PPC', doc.workflow_state, stop_state) }}
                     {% endif %}
                 </td>
                 <td style="text-align:center;">
@@ -429,6 +437,7 @@ def get_schedule_increase_delivery_html(doc):
         "plant_signature" : plant_signature,
         "bmd_signature":bmd_signature,
         "pm_signature":pm_signature,
+        "ppc_signature":ppc_signature,
         "schedule_totals_item": schedule_totals_item,
         "py": {"show_till": show_till}
     })
@@ -625,14 +634,15 @@ def get_schedule_revise_delivery_html(doc):
             {% else %}
                 {% set arrow = '' %}
             {% endif %}
+            {%set supplier_name=frappe.db.get_value("Supplier",{"supplier_code":row.supplier_code},"supplier_name")%}
             <tr>
                 <td style="text-align:center;">{{ loop.index }}</td>
                 <td style="text-align:left;">{{ row.supplier_type or '' }}</td>
-                <td style="text-align:left;">{{ row.supplier_code }}</td>
-                <td style="text-align:right;">{{ frappe.utils.fmt_money(row.current_schedule_value, 2, currency="INR") }}</td>
-                <td style="text-align:right;">{{ frappe.utils.fmt_money(row.revised_schedule_value, 2, currency="INR") }}</td>
+                <td style="text-align:left;">{{ supplier_name or '' }}</td>
+                <td style="text-align:right;">{{ frappe.utils.fmt_money(row.current_schedule_value, 1, currency="INR") }}</td>
+                <td style="text-align:right;">{{ frappe.utils.fmt_money(row.revised_schedule_value, 1, currency="INR") }}</td>
                 <td style="text-align:right;">
-                    {{ frappe.utils.fmt_money(row.difference_value, 2, currency="INR") }} {{ arrow | safe }}
+                    {{ frappe.utils.fmt_money(row.difference_value, 1, currency="INR") }} {{ arrow | safe }}
                 </td>
             </tr>
         {% endfor %}
@@ -659,10 +669,10 @@ def get_schedule_revise_delivery_html(doc):
             <td style="text-align:center;">{{ ns.counter }}</td>
             <td style="text-align:left;">{{ data.supplier_type or '' }}</td>
             <td style="text-align:left;">{{ data.supplier_name or '' }}</td>
-            <td style="text-align:right;">{{ frappe.utils.fmt_money(current_val, 2, currency="INR") }}</td>
-            <td style="text-align:right;">{{ frappe.utils.fmt_money(revised_val, 2, currency="INR") }}</td>
+            <td style="text-align:right;">{{ frappe.utils.fmt_money(current_val, 1, currency="INR") }}</td>
+            <td style="text-align:right;">{{ frappe.utils.fmt_money(revised_val, 1, currency="INR") }}</td>
             <td style="text-align:right;">
-                {{ frappe.utils.fmt_money(diff_val, 2, currency="INR") }} {{ arrow | safe }}
+                {{ frappe.utils.fmt_money(diff_val, 1, currency="INR") }} {{ arrow | safe }}
             </td>
         </tr>
         {% set ns.counter = ns.counter + 1 %}
@@ -671,7 +681,7 @@ def get_schedule_revise_delivery_html(doc):
     <tr>
         <td colspan="5" style="text-align:center;font-size:13px;font-weight:bold;">Total</td>
         <td style="text-align:right;font-size:13px;font-weight:bold;">
-            {{ frappe.utils.fmt_money(ns.total_difference, 2, currency="INR") }}
+            {{ frappe.utils.fmt_money(ns.total_difference, 1, currency="INR") }}
         </td>
     </tr>
 </table><br>

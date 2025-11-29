@@ -135,8 +135,21 @@ def item_price_revision_iom(docname):
                     if row.po_no == i_so:
                         for op_row in op_doc.open_order_table:
                             if op_row.item_code == row.part_no:
+                                old_value = op_row.rate
                                 op_row.rate = row.new_price
-                                
+                                # Revision in PO
+                                next_idx = frappe.db.count("Purchase Order Revision", {"parent": i_so}) + 1
+                                log = frappe.new_doc("Purchase Order Revision")
+                                log.parent = i_so
+                                log.parenttype = "Purchase Order"
+                                log.parentfield = "custom_revision_logs"
+                                log.idx = next_idx  # <-- IMPORTANT
+                                log.item_code = row.part_no
+                                log.old_value = old_value
+                                log.new_value = row.new_price
+                                log.revised_on = now()
+                                log.revised_by = iom_doc.owner
+                                log.insert(ignore_permissions=True)
                                 if frappe.db.exists("Purchase Order Schedule",{"item_code":row.part_no,"purchase_order_number":i_so}):
                                     pos_doc = frappe.db.get_value(
                                         "Purchase Order Schedule",
@@ -187,8 +200,20 @@ def item_price_revision_iom(docname):
 
                         for op_row in op_doc.open_order_table:
                             if op_row.item_code == row.part_no:
+                                old_value = op_row.rate
                                 op_row.rate = row.new_price
-                                
+                                next_idx = frappe.db.count("Purchase Order Revision", {"parent": i_so}) + 1
+                                log = frappe.new_doc("Purchase Order Revision")
+                                log.parent = i_so
+                                log.parenttype = "Purchase Order"
+                                log.parentfield = "custom_revision_logs"
+                                log.idx = next_idx  # <-- IMPORTANT
+                                log.item_code = row.part_no
+                                log.old_value = old_value
+                                log.new_value = row.new_price
+                                log.revised_on = now()
+                                log.revised_by = iom_doc.owner
+                                log.insert(ignore_permissions=True)
                                 if frappe.db.exists("Purchase Order Schedule", {"item_code": row.part_no, "purchase_order_number": i_so}):
                                     pos_doc = frappe.db.get_value(
                                         "Purchase Order Schedule",

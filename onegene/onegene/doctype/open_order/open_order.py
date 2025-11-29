@@ -35,10 +35,10 @@ class OpenOrder(Document):
 		if not self.disable_update_items:
 			order_open = frappe.get_doc("Open Order",{"sales_order_number":self.sales_order_number})
 			get_so_qty = []
-			for i in order_open.open_order_table:
+			for i in self.open_order_table:
 				get_so_qty.append(frappe._dict({"item_code":i.item_code,"qty":i.qty,"warehouse":i.warehouse,"item_name":i.item_name,"rate":i.rate,"amount":i.amount, "docname": i.docname}))
 			json_data = json.dumps(get_so_qty)
-			update_child_qty_rate("Sales Order", json_data, order_open.sales_order_number)
+			update_child_qty_rate("Sales Order", json_data, self.sales_order_number)
         
 @frappe.whitelist()
 def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, child_docname="items"):
@@ -287,11 +287,9 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 					child_item.precision("discount_percentage"),
 				)
 				child_item.discount_amount = flt(child_item.price_list_rate) - flt(child_item.rate)
-
-				if parent_doctype in sales_doctypes:
-					child_item.margin_type = ""
-					child_item.margin_rate_or_amount = 0
-					child_item.rate_with_margin = 0
+				child_item.margin_type = ""
+				child_item.margin_rate_or_amount = 0
+				child_item.rate_with_margin = 0
 
 		child_item.flags.ignore_validate_update_after_submit = True
 		if new_child_flag:
@@ -419,7 +417,7 @@ def set_order_defaults(
 	child_item.stock_uom = item.stock_uom
 	child_item.uom = trans_item.get("uom") or item.stock_uom
 	# child_item.warehouse = get_item_warehouse(item, p_doc, overwrite_warehouse=True)
-	child_item.warehouse = frappe.db.get_value("Item", item.name, "custom_warehouse")
+	child_item.warehouse = frappe.db.get_value("Item", item.name, "custom_warehouse") or "Stores - WAIP"
 	conversion_factor = flt(
 		get_conversion_factor(item.item_code, child_item.uom).get("conversion_factor")
 	)
@@ -431,7 +429,7 @@ def set_order_defaults(
 		child_item.base_amount = 1
 	if child_doctype == "Sales Order Item":
 		# child_item.warehouse = get_item_warehouse(item, p_doc, overwrite_warehouse=True)
-		child_item.warehouse = frappe.db.get_value("Item", item.name, "custom_warehouse")
+		child_item.warehouse = frappe.db.get_value("Item", item.name, "custom_warehouse") or "Stores - WAIP"
 		if not child_item.warehouse:
 			frappe.throw(
 				_("Cannot find {} for item {}. Please set the same in Item Master or Stock Settings.").format(

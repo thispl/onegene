@@ -536,7 +536,7 @@ class CustomStockEntry(StockEntry):
 		if self.purpose not in ("Manufacture", "Repack"):
 			return
 		
-		if self.disable_auto_set_process_loss_qty:
+		if getattr(self, "disable_auto_set_process_loss_qty", 0):
 			return
 
 		precision = self.precision("process_loss_qty")

@@ -10,13 +10,16 @@ frappe.ui.form.on('Logistics Request', {
 			location.reload();
 		}
 	},
-	date_of_shipment(frm){
-		if (frm.doc.date_of_shipment){
-			if (frm.doc.date_of_shipment < frappe.datetime.now_date()) {
-			frm.set_value('date_of_shipment','');
-			frappe.msgprint('Date of shipment cannot be a past date')
-		}
-		}
+	date_of_shipment(frm){ // comented for temporary
+		
+		// if (frm.doc.date_of_shipment){
+		// 	if (!frappe.user.has_role("System Manager")) {
+		// 		if (frm.doc.date_of_shipment < frappe.datetime.now_date()) {
+		// 			frm.set_value('date_of_shipment','');
+		// 			frappe.msgprint('Date of shipment cannot be a past date')
+		// 		}
+		// 	}
+		// }
 		
 	},
 	recommended_ffw(frm) {
@@ -158,7 +161,6 @@ frappe.ui.form.on('Logistics Request', {
 						if (frm.doc.po_so == 'Sales Invoice'){
 							frm.set_value('cargo_type', r.message.custom_cargo_mode)
 							frm.set_value('product_description_so', r.message.items)
-							console.log(r.message.tems)
 							frm.set_value('inventory_destination', 'Direct to Customer')
 							frm.refresh_fields('product_description_so')
 						}
@@ -177,7 +179,7 @@ frappe.ui.form.on('Logistics Request', {
 		}
 	},
 	refresh: function (frm) {
-		if (!frm.doc.__islocal &&  frm.doc.logistic_type == "Export" && frm.doc.owner == frappe.session.user) {
+		if (!frm.doc.__islocal &&  frm.doc.logistic_type == "Export" && (frm.doc.owner == frappe.session.user || frappe.user.has_role("System Manager"))) {
 		     
 		     
 		     	frm.add_custom_button(__("Export Packing List"), function () {
@@ -223,7 +225,7 @@ frappe.ui.form.on('Logistics Request', {
 					frm.set_df_property('date_of_delivery','read_only',1)
 					frm.set_df_property('receive_by_name','read_only',1)
 				}	
-				frm.set_df_property('document_attached','read_only',1)
+				// frm.set_df_property('document_attached','read_only',1)
 			}
 		 }
 		 if(frm.doc.recommended_ffw){
@@ -309,7 +311,7 @@ frappe.ui.form.on('Logistics Request', {
                         }
                     });
                 },__("Report View"));
-                    if(frm.doc.owner == frappe.session.user){
+                    if(frm.doc.owner == frappe.session.user || frappe.user.has_role("System Manager")){
                     frm.add_custom_button(__("Export Invoice"), function () {
                         var print_format = "Export Invoice Print New";
                         window.open(frappe.urllib.get_full_url("/api/method/frappe.utils.print_format.download_pdf?"
@@ -540,6 +542,7 @@ frappe.ui.form.on('Logistics Request', {
 										args: {
 											doctype: "Sales Invoice",
 											name: frm.doc.order_no,
+											transporter:frm.doc.recommended_ffw,
 										},
 										callback: function(r) {
 											if (!r.exc) {
@@ -644,6 +647,7 @@ frappe.ui.form.on('Logistics Request', {
 									args: {
 										doctype: "Sales Invoice",
 										name: frm.doc.order_no,
+										transporter:frm.doc.recommended_ffw,
 									},
 									callback: function(r) {
 										if (!r.exc) {
@@ -926,6 +930,7 @@ frappe.ui.form.on('Logistics Request', {
 									args: {
 										doctype: "Sales Invoice",
 										name: frm.doc.order_no,
+										transporter:frm.doc.recommended_ffw,
 									},
 									
 									
@@ -984,7 +989,7 @@ frappe.ui.form.on('Logistics Request', {
 		}
 
 		if(!frm.doc.__islocal){
-			if(frm.doc.recommended_ffw && frm.doc.owner == frappe.session.user){
+			if(frm.doc.recommended_ffw && (frm.doc.owner == frappe.session.user || frappe.user.has_role("System Manager"))){
 				frm.add_custom_button(__("FFW"), function() {
 				var f_name = frm.doc.name
 				var print_format = "FFW New";
@@ -1719,6 +1724,7 @@ frappe.ui.form.on('Logistics Request', {
 									args: {
 										doctype: "Sales Invoice",
 										name: frm.doc.order_no,
+										transporter:frm.doc.recommended_ffw,
 									},
 									callback: function(r) {
 										if (!r.exc) {

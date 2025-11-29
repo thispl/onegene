@@ -162,9 +162,9 @@ def _process_upload(file, records):
 						doc.schedule_amount = s_qty * doc.order_rate
 						doc.delivered_amount = doc.delivered_qty * doc.order_rate
 						doc.pending_amount = pending_qty * doc.order_rate
-						doc.schedule_amount_company_currency = s_qty * doc.order_rate_inr
-						doc.delivered_amount_company_currency = doc.delivered_qty * doc.order_rate_inr
-						doc.pending_amount_company_currency = pending_qty * doc.order_rate_inr
+						doc.schedule_amount_inr = s_qty * doc.order_rate_inr
+						doc.delivered_amount_inr = doc.delivered_qty * doc.order_rate_inr
+						doc.pending_amount_inr = pending_qty * doc.order_rate_inr
 
 
 						doc.save(ignore_permissions=True)
@@ -195,11 +195,12 @@ def _process_upload(file, records):
 					open_order = frappe.get_doc("Open Order", {
 						"sales_order_number": doc.sales_order_number
 					})
-					item_qty = frappe.db.get_value("Sales Order Schedule", {
+					rows = frappe.db.get_all("Sales Order Schedule", {
 						"sales_order_number": doc.sales_order_number,
 						"item_code": doc.item_code,
 						"docstatus": 1
 					}, ["qty"])
+					item_qty = sum([r.qty for r in rows])
 					item_qty = 1 if item_qty == 0 else item_qty
 					matching_row = next((row for row in open_order.open_order_table if row.item_code == doc.item_code), None)
 					if matching_row:

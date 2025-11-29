@@ -16,6 +16,7 @@ class AdvanceShippingNote(Document):
 		frappe.db.set_value(self.doctype, self.name, "scan_barcode", url)
 		
 	def validate(self):
+		validate_items_table(self)
 		get_month(self)
 		get_address(self)
 		validate_supplier_dn_item_table(self)
@@ -43,8 +44,13 @@ class AdvanceShippingNote(Document):
 		for row in self.item_table:   
 			if row.no_of_bins <= 0:
 				frappe.throw("Bin value must be greater than 0")
+    
+def validate_items_table(self):
+    item_table_count = len(self.item_table) if self.item_table else 0
+    end_bit_scrap_count = len(self.end_bit_scrap) if self.end_bit_scrap else 0
+    if item_table_count == 0 and end_bit_scrap_count == 0:
+    	frappe.throw("Please fill at least one table: <b>Item Table</b> or <b>End Bit Scrap & Return</b>.")
 
-		
 @frappe.whitelist()
 def get_month(self):
 	if self.datetime:

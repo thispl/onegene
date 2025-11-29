@@ -70,10 +70,10 @@ frappe.ui.form.on("Purchase Order Schedule", {
 
         if(frm.doc.purchase_order_number){
 
-            frappe.db.get_value('Purchase Order', frm.doc.purchase_order_number, 'custom_is_jobcard__subcontracted', (r) => {
+            frappe.db.get_value('Purchase Order', frm.doc.purchase_order_number, 'custom_po_type', (r) => {
 
-                if(r && r.custom_is_jobcard__subcontracted){
-                    frm.set_value('po_type',"Job Order")
+                if(r && r.custom_po_type){
+                    frm.set_value('po_type',r.custom_po_type)
                 }
                 else{
                     frm.set_value('po_type',"Purchase Order")
@@ -98,23 +98,110 @@ frappe.ui.form.on("Purchase Order Schedule", {
                 }
             };
         });
+
         // Schedule Summary
         if(!frm.doc.__islocal){
-        frappe.call({
-            method: "onegene.onegene.doctype.purchase_order_schedule.purchase_order_schedule.get_schedule_summary_html",
-            args: {
-                "supplier_code": frm.doc.supplier_code,
-                "purchase_order": frm.doc.purchase_order_number,
-                "item_code": frm.doc.item_code,
-            },
-            callback(r) {
-                if (r.message) {
-                    frm.fields_dict.schedule_summary.$wrapper.html(r.message)
-                }
-            }
-        });
-    }
+            frappe.call({
+                method: "onegene.onegene.doctype.purchase_order_schedule.purchase_order_schedule.get_schedule_summary_html",
+                args: {
+                    "supplier_code": frm.doc.supplier_code,
+                    "purchase_order": frm.doc.purchase_order_number,
+                    "item_code": frm.doc.item_code,
+                },
+                callback(r) {
+                    if (r.message) {
+                        frm.fields_dict.schedule_summary.$wrapper.html(r.message);
 
+                        frm.fields_dict.schedule_summary.$wrapper.find(".schedule-row").on("click", function () {
+                                
+                            let schedule_name = $(this).data("schedule");
+
+                            frappe.call({
+                                method: "onegene.onegene.doctype.purchase_order_schedule.purchase_order_schedule.get_received_breakdown",
+                                args: {
+                                    doctype: "Purchase Order Schedule",
+                                    docname: schedule_name,
+                                    party: frm.doc.supplier_name,
+                                    item_code: frm.doc.item_code,
+                                },
+                                callback(res) {
+                                    if (!res.message || res.message.length === 0) {
+                                        frappe.msgprint("No breakdown available.");
+                                        return;
+                                    }
+
+                                    let html = `
+                                        <style>
+                                        .breakdown-wrapper {
+                                            max-height: 400px;
+                                            overflow-y: auto;
+                                        }
+                                        .breakdown-table thead th {
+                                            position: sticky;
+                                            top:0;
+                                            background: #f7f7f7;
+                                            z-index: 10;
+                                        }
+                                        .breakdown-table tfoot td {
+                                            position: sticky;
+                                            bottom: 0;
+                                            background: #f7f7f7;
+                                            font-weight: 500;
+                                        }
+                                        </style>
+
+                                        <div class="breakdown-wrapper">
+                                        <table class="table table-bordered breakdown-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:50%">Advance Shipping Note</th>
+                                                    <th style="width:25%">Date</th>
+                                                    <th style="width:25%" class="text-right">Received Qty</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                        `;
+
+                                        let total_qty = 0;
+
+                                        res.message.forEach(row => {
+                                            total_qty += Number(row.qty);
+
+                                            html += `
+                                                <tr>
+                                                    <td>${row.name}</td>
+                                                    <td>${formatDateDMY(row.date)}</td>
+                                                    <td class="text-right"><b>${formatIndianNumber(row.qty)}</b></td>
+                                                </tr>
+                                            `;
+                                        });
+
+                                        html += `
+                                            </tbody>
+
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="2" class="text-right"><b>Total</b></td>
+                                                    <td class="text-right"><b>${formatIndianNumber(total_qty)}</b></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                        </div>
+                                    `;
+                                    frappe.msgprint({
+                                        title: `Received Qty Breakdown - ${schedule_name}`,
+                                        indicator: "green",
+                                        message: html
+                                    });
+                                }
+                            });
+
+                        });
+                    }
+                }
+            });
+        }
     },
     setup(frm) {
         toggle_qty_read_only(frm);
@@ -274,4 +361,19 @@ function toggle_revise_button(frm) {
         });
         dialog.show();
     }).addClass('btn-danger');
+}
+
+function formatDateDMY(dateStr) {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+
+function formatIndianNumber(x) {
+    if (x == null) return "";
+    x = Number(x);
+    return x.toLocaleString("en-IN");
 }

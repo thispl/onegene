@@ -743,7 +743,7 @@ def create_html_EI(sales_invoice):
 				<table width=100% style="border-collapse:collapse;margin-top:5px;padding:0px;border-bottom:none;" class="tab1 mr-0 ml-0">
 					
 						<tr>
-							<td colspan="2" style="width:60%">
+							<td colspan="2" style="width:50%">
 								<b>Consignee</b>
 								{% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
 								{% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
@@ -773,7 +773,7 @@ def create_html_EI(sales_invoice):
 							</td>
 
 							
-							<td style="width:40%">
+							<td style="width:50%">
 								<b>Buyer if Other  than consignee</b>
 								{% set address_title = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_title") %}
 								{% set address_line1 = frappe.db.get_value("Address", {'address_title': doc.customer}, "address_line1") %}
@@ -869,7 +869,11 @@ def create_html_EI(sales_invoice):
 			{% elif doc.custom_cargo_mode == 'Sea' %}
 				<td>
 					<b>Port Of Discharge</b><br>
-					{{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "final_destination") or "" }}
+					{% if doc.custom_cargo_mode == 'Sea' %}
+                            {{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pod_seaport") or ""}}
+                        {% else %}
+                            {{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pod_airport") or ""}}
+                        {% endif %}
 				</td>
 				<td>
 					<b>Final Destination</b><br>
@@ -878,7 +882,11 @@ def create_html_EI(sales_invoice):
 			{% else %}
 			<td>
 					<b>Port Of Discharge</b><br>
-					{{ frappe.db.get_value("Logistics Request", {'order_no': doc.name}, "pod_city_airport") or "" }}
+					{% if doc.custom_cargo_mode == 'Sea' %}
+                            {{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pod_seaport") or ""}}
+                        {% else %}
+                            {{frappe.db.get_value("Logistics Request",{'order_no':doc.name},"pod_airport") or ""}}
+                        {% endif %}
 				</td>
 				<td>
 					<b>Final Destination</b><br>

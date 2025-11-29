@@ -2,10 +2,14 @@ import frappe
 from collections import defaultdict
 from datetime import datetime
 from frappe.utils import now
+import textwrap
 
 @frappe.whitelist()
 def revise_schedule(docname):
     iom = frappe.get_doc("Inter Office Memo", docname)
+    new_count = 0
+    update_count = 0
+    skipped_count = 0
     
     # SALES ORDER SCHEDULE
     if iom.approval_schdule_increase:
@@ -77,7 +81,7 @@ def revise_schedule(docname):
                                         log.insert(ignore_permissions=True)
                                         
                                         frappe.db.set_value("Sales Order Schedule", sos.name, update_vals)
-                                    
+                                        update_count += 1
                                     else:
                                         current_year = datetime.now().year
                                         schedule_month = iom.schedule_month
@@ -130,14 +134,43 @@ def revise_schedule(docname):
                                         child.db_insert()
                                         
                                         frappe.db.set_value("Sales Order Schedule", sos.name, "docstatus", 1)
- 
+                                        new_count += 1
+                                else:
+                                    skipped_count += 1
                                 break
 
                 # Save Open Order
                 open_order.disable_update_items = 0
                 open_order.save(ignore_permissions=True)
 
-        # Mark IOM as revised
+        response_data = f"""
+            <div style="max-width: 420px;
+                margin: 20px auto;
+                background: #ffffff;
+                border-radius: 12px;
+                padding: 20px 24px;
+                box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+                font-family: Inter, sans-serif;
+                border: 1px solid #e7e7e7;">
+                <div style="font-size: 18px; font-weight: 600; color: #333;">
+                    Last Updated On
+                </div>
+
+                <div style="margin-top: 6px; font-size: 13px; color: #666;">
+                    {now()}
+                </div>
+
+                <hr style="margin: 12px 0; border: 0; border-top: 1px solid #eee;">
+
+                <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+                    <li style="color:#4caf50;">New documents created: {new_count}</li>
+                    <li style="color:#2196f3;">Updated in existing document: {update_count}</li>
+                    <li style="color:#999;">Skipped documents: {skipped_count}</li>
+                </ul>
+            </div>
+        """
+        clean_html = textwrap.dedent(response_data).strip()
+        frappe.db.set_value("Inter Office Memo", docname, "response_data", clean_html)
         frappe.db.set_value("Inter Office Memo", docname, "item_Schedule_revised", 1)
         frappe.db.commit()
 
@@ -156,10 +189,8 @@ def revise_schedule(docname):
             purchase_order = po["purchase_order"]  # extract string from dict
             if frappe.db.exists("Purchase Open Order", {"purchase_order": purchase_order}):
                 open_order = frappe.get_doc("Purchase Open Order", {"purchase_order": purchase_order})
-                print(open_order.name)
                 for iom_row in iom.schedule_revised:
                     if purchase_order == iom_row.purchase_order:
-                        print(purchase_order)
                         for op_row in open_order.open_order_table:
                             if iom_row.part_no == op_row.item_code:
                                 qty = iom_row.revised_schedule_value
@@ -214,7 +245,7 @@ def revise_schedule(docname):
                                         log.insert(ignore_permissions=True)
                                         
                                         frappe.db.set_value("Purchase Order Schedule", pos.name, update_vals)
-                                    
+                                        update_count += 1
                                     else:
                                         current_year = datetime.now().year
                                         schedule_month = iom.schedule_month
@@ -226,7 +257,7 @@ def revise_schedule(docname):
                                         exchange_rate = frappe.db.get_value("Sales Order", purchase_order, "conversion_rate")
                                         
                                         
-                                        po_type = frappe.db.get_value("Purchase Order",{"name":purchase_order},"custom_is_jobcard__subcontracted")
+                                        po_type = frappe.db.get_value("Purchase Order",{"name":purchase_order},"custom_po_type")
                                         pos = frappe.get_doc({
                                             "doctype": "Purchase Order Schedule",
                                             "supplier_code": iom_row.supplier_code,
@@ -251,7 +282,7 @@ def revise_schedule(docname):
                                             "pending_amount_inr": qty * order_rate_inr,
                                             "order_rate_inr": order_rate_inr,
                                             "exchange_rate": exchange_rate,
-                                            "po_type": "Job Order" if po_type else "Purchase Order"
+                                            "po_type": po_type
                                         })
 
                                         pos.db_insert()
@@ -270,14 +301,43 @@ def revise_schedule(docname):
                                         child.db_insert()
                                         
                                         frappe.db.set_value("Purchase Order Schedule", pos.name, "docstatus", 1)
- 
+                                        new_count += 1
+                                else:
+                                    skipped_count += 1
                                 break
 
                 # Save Purchase Open Order
                 open_order.disable_update_items = 0
                 open_order.save(ignore_permissions=True)
 
-        # Mark IOM as revised
+        response_data = f"""
+            <div style="max-width: 420px;
+                margin: 20px auto;
+                background: #ffffff;
+                border-radius: 12px;
+                padding: 20px 24px;
+                box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+                font-family: Inter, sans-serif;
+                border: 1px solid #e7e7e7;">
+                <div style="font-size: 18px; font-weight: 600; color: #333;">
+                    Last Updated On
+                </div>
+
+                <div style="margin-top: 6px; font-size: 13px; color: #666;">
+                    {now()}
+                </div>
+
+                <hr style="margin: 12px 0; border: 0; border-top: 1px solid #eee;">
+
+                <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+                    <li style="color:#4caf50;">New documents created: {new_count}</li>
+                    <li style="color:#2196f3;">Updated in existing document: {update_count}</li>
+                    <li style="color:#999;">Skipped documents: {skipped_count}</li>
+                </ul>
+            </div>
+        """
+        clean_html = textwrap.dedent(response_data).strip()
+        frappe.db.set_value("Inter Office Memo", docname, "response_data", clean_html)
         frappe.db.set_value("Inter Office Memo", docname, "item_Schedule_revised", 1)
         frappe.db.commit()
 
