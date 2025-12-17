@@ -13,8 +13,12 @@ def supp_user(doc,method):
             new_user_doc.first_name = doc.supplier_name
             new_user_doc.username = doc.supplier_code
             new_user_doc.supplier_group = doc.supplier_group
-            new_user_doc.role_profile_name = "Supplier"
+            if doc.supplier_group =="Outsourcing":
+                new_user_doc.role_profile_name = "OUTSOURCING"
+            else:         
+                new_user_doc.role_profile_name = "Supplier"
             new_user_doc.module_profile = "Supplier"
+            new_user_doc.user_category = "Supplier"
             new_user_doc.send_welcome_email = 1
             new_user_doc.new_password ="wonjin@321"
             new_user_doc.insert()
@@ -186,3 +190,14 @@ def supp_user_exist(doc=None, method=None):
                 **user_perm_values
             })
             new_perm.insert(ignore_permissions=True)
+
+
+
+@frappe.whitelist()
+def delete_supp_user(doc,method):
+    
+    if doc.email_id:
+        
+        if frappe.db.exists("User",doc.email_id):
+            frappe.delete_doc("User",doc.email_id , ignore_missing=True)
+            frappe.msgprint(f"User {doc.supplier_code} is successfully deleted")

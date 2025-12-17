@@ -169,20 +169,6 @@ before_workflow_action: async (frm) => {
         }
     }
 },
-
-   
-
-
-    
-
-   default_source_warehouse(frm){
-    if(frm.doc.default_source_warehouse){
-        console.log(frm.doc.material_request);
-    }
-   }
-
-    
-
 });
 
 frappe.ui.form.on("Material Transfer Items", {

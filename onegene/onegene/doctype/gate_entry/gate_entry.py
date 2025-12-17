@@ -43,9 +43,40 @@ class GateEntry(Document):
                     doc.vehicle_no=self.vehicle_number
                     doc.driver_name=self.driver_name
                     doc.received_date_time=self.entry_time
-                doc.save(ignore_permission=True)
+                doc.save(ignore_permissions=True)
        
                 
         self.submit()
 
 
+@frappe.whitelist()
+def get_calculated_height(doc,method):
+    for i in doc.items:
+        final_height=0
+        pallet=i.custom_pallet
+        box=i.custom_box
+        if pallet and box :
+            pal_doc=frappe.get_doc('Pallet',pallet)
+            box_doc=frappe.get_doc('Box',box)
+            pcount=i.custom_no_of_pallets
+            bcount=i.custom_no_of_boxes
+            if pcount > 0 and bcount > 0:
+                # calculate pallet per box
+                pox_per_pallet=bcount/pcount
+
+                # calculate L*B for both pallet and box
+                pallet_l_b=pal_doc.length*pal_doc.breadth
+                box_l_b=box_doc.length*box_doc.breadth
+
+                # divide L*B of pallet by box
+                p_b_l_b=pallet_l_b/box_l_b
+                p_b_l_b=int(p_b_l_b)
+
+                # multiply p_b_l_b with box height
+                v4=p_b_l_b*box_doc.height
+
+                # add v4 with pallet height
+                v5=v4+pal_doc.height
+
+                final_height= v5+pal_doc.extra_height
+        i.custom_calculated_height=final_height

@@ -17,6 +17,7 @@
  ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "columns": 2,
    "fieldname": "part_no",
    "fieldtype": "Link",
@@ -26,6 +27,7 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "part_no.item_name",
    "fetch_if_empty": 1,
    "fieldname": "part_name",
@@ -35,6 +37,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "qty",
    "fieldtype": "Float",
@@ -43,6 +46,7 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fetch_from": "part_no.gst_hsn_code",
    "fetch_if_empty": 1,
@@ -54,6 +58,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "gst",
    "fieldtype": "Link",
@@ -63,10 +68,12 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "column_break_nyor",
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "columns": 3,
    "fieldname": "reason_for_request",
    "fieldtype": "Small Text",
@@ -78,7 +85,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-09-29 17:22:28.230530",
+ "modified": "2025-12-01 18:48:35.356814",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Approval for Sales Order DC",

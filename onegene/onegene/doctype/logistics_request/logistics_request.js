@@ -224,7 +224,25 @@ frappe.ui.form.on('Logistics Request', {
 					frm.set_df_property('attachment','read_only',1)
 					frm.set_df_property('date_of_delivery','read_only',1)
 					frm.set_df_property('receive_by_name','read_only',1)
-				}	
+				}
+				if((frm.doc.status != "Draft" && frm.doc.status != "SMD Approved" && frm.doc.status!='Scheduled')
+				|| frappe.user.has_role == "Accounts User"){
+					frm.set_df_property('etd','read_only',1)
+					frm.set_df_property('eta','read_only',1)
+				}
+				
+				if(frm.doc.status=='Rejected by Finance' && frm.doc.reopened==1){
+			frm.set_df_property('logistics_ops_section', 'read_only', 0);
+			frm.set_df_property('customer_incoterms','read_only',0)
+			frm.set_df_property('date_of_shipment','read_only',0)
+			frm.set_df_property('pol_seaport','read_only',0)
+			frm.set_df_property('pod_seaport','read_only',0)
+			frm.set_df_property('final_destination','read_only',0)
+			frm.set_df_property('transit_time','read_only',0)
+			frm.set_df_property('etd','read_only',0)
+			console.log('etd')
+			frm.set_df_property('eta','read_only',0)
+		}	
 				// frm.set_df_property('document_attached','read_only',1)
 			}
 		 }

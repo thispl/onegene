@@ -578,58 +578,94 @@ def get_item_tax_and_sales_template_for_tad(hsn_code, supplier, company):
 def get_gate_items_geu(entry_document, entry_id):
     entry_doc = frappe.get_doc(entry_document, entry_id)
     items = []
+    scrap_items =[]
     si_no = 0
+    ref_no=''
+    security_name=''
+    vehicle_number=''
+    driver_name=''
     if entry_document=='General DC' and entry_doc.is_return==1:
+        party_type=entry_doc.party_type
+        party=entry_doc.party
         for e in entry_doc.items_:
             si_no = si_no +1
-        
             items.append({
                 "item_code": e.item_code,
                 "item_name": e.item_name,
                 "qty": e.qty,
                 "uom": e.uom,
                 'box':e.box,
+                "pallet":0,
                 
             })
     elif entry_document=='Advance Shipping Note':
+        party_type="Supplier"
+        party=entry_doc.supplier
+        ref_no=entry_doc.confirm_supplier_dn
+        security_name=entry_doc.security_name
+        vehicle_number=entry_doc.vehicle_no
+        driver_name=entry_doc.security_name
         for e in entry_doc.item_table:
             si_no = si_no +1
-            if not e.no_of_bins:
-                box=0
-            else:
-                box=int(e.no_of_bins)
+        
             items.append({
                 "item_code": e.item_code,
                 "item_name": e.item_name,
                 "qty": e.dis_qty,
                 "uom": e.uom,
-                'box':int(box) or 0,
+                'box':int(e.no_of_bins) or 0,
+                "pallet":0,
+
                 
+            })
+        for s in entry_doc.end_bit_scrap:
+            scrap_items.append({
+                "item_name": s.item_name,
+                "qty": s.qty,
+                "uom": s.uom,
+                'actual_qty':s.actual_qty,
             })
     else:
         for e in entry_doc.items:
             si_no = si_no +1
             if entry_document=='Sales Invoice':
+                party_type="Customer"
+                party=entry_doc.customer
                 items.append({
                     "item_code": e.item_code,
                     "item_name": e.item_name,
                     "qty": e.qty,
                     "uom": e.uom,
-                    'box':e.custom_no_of_boxes
+                    'box':int(e.custom_no_of_boxes) or 0,
+                    'pallet':int(e.custom_no_of_pallets) or 0,
+
                     
                 })
             else:
+                party_type=entry_doc.party_type
+                party=entry_doc.party
                 items.append({
                     "item_code": e.item_code,
                     "item_name": e.item_name,
                     "qty": e.qty,
                     "uom": e.uom,
                     'box':e.box,
+                    'pallet':0
                     
                 })
         # frappe.log_error(message=str(si_no),title="si_no")    
 
-    return items
+    return {
+        "items": items,
+        "party_type": party_type,
+        "party": party,
+        "ref_no":ref_no,
+        "security_name":security_name,
+        "vehicle_number":vehicle_number,
+        "driver_name":driver_name,
+        "scrap_items":scrap_items
+        
+    }
 
 
 

@@ -734,7 +734,6 @@ def create_html_EI(sales_invoice):
 
 								Vendor Code &nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('Customer',{'name':doc.customer},"custom_vendor_code")or ""}}<br>
 								CIN No&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('Customer',{'name':doc.customer},"custom_cin_number")or ""}}<br>
-								GSTIN No &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{{frappe.db.get_value('Address',{'address_title':doc.company},'gstin') or ""}} 
 								
 							</td>
 						</tr>

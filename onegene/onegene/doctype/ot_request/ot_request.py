@@ -100,7 +100,11 @@ def get_employees(dept=None,category=None):
     return emp_list
 @frappe.whitelist()
 #Return the Employee Name and Designation by passing the Employee Code
-def get_details(name,dep=None):
+def get_details(name,dep=None, ot_requested_date=None):
+    if not ot_requested_date:
+        frappe.throw("OT Requested Date not found")
+        return
+        
     dept=frappe.db.get_value("Employee", {'name': name}, ['department'])
     if dep:
         dept=frappe.db.get_value("Employee", {'name': name}, ['department'])
@@ -112,9 +116,18 @@ def get_details(name,dep=None):
             # frappe.throw("Staff category not allowed for OT request")
             return 'OK'
         else:
-            emp = frappe.db.get_value("Employee", {'name': name}, ['employee_name', 'designation'])
-            return emp  
-    
+            emp = frappe.db.get_value("Employee", {'name': name}, ['employee_name', 'designation', 'employee_category'], as_dict=1)
+            ot_limit_details = frappe.db.get_value("Employee Category", emp.employee_category, ['custom_limit_ot', 'custom_ot_limit'], as_dict=1)
+            total_ot = get_total_ot(name, ot_requested_date)
+            return {
+                "employee_name": emp.employee_name,
+                "designation": emp.designation,
+                "employee_category": emp.employee_category,
+                "limit_ot": ot_limit_details.custom_limit_ot,
+                "ot_limit": ot_limit_details.custom_ot_limit,
+                "total_ot": total_ot,
+            }
+
 @frappe.whitelist()
 def get_total_requested_ot(department, ot_date, shift, exclude_doc=None):
     total = 0
@@ -188,3 +201,23 @@ def make_ot_table(department):
         </div>
     '''
     return data
+
+def get_total_ot(name, ot_requested_date):
+    month_start_date = get_month_start(ot_requested_date)
+    total_ot = frappe.db.sql("""
+            SELECT SUM(otc.requested_ot_hours) as total_ot_requested
+            FROM `tabOT Request` ot
+            INNER JOIN `tabOT Request Child` otc 
+                ON ot.name = otc.parent
+            WHERE 
+                (ot.docstatus != 2 OR ot.workflow_state NOT IN ('Rejected', 'Cancelled'))
+                AND otc.employee_code = %s AND ot.ot_requested_date BETWEEN %s AND %s
+            """, (name, month_start_date, ot_requested_date), as_dict=1)[0]['total_ot_requested'] or 0
+    return total_ot
+
+def get_month_start(date_value):
+    from datetime import datetime
+
+    if isinstance(date_value, str):
+        date_value = datetime.strptime(date_value, "%Y-%m-%d")
+    return date_value.replace(day=1).date()

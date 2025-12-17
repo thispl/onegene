@@ -207,6 +207,7 @@
   },
   {
    "allow_on_submit": 1,
+   "depends_on": "eval: frappe.session.user == \"amar.p@groupteampro.com\"",
    "fieldname": "schedule_trace",
    "fieldtype": "Table",
    "hidden": 1,
@@ -499,7 +500,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-25 13:11:39.900429",
+ "modified": "2025-12-15 11:22:53.815034",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Advance Shipping Note",

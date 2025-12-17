@@ -133,3 +133,69 @@ def get_quality_inspection_data(qid):
 	uom = frappe.db.get_value("Item", item_code, "stock_uom")
 	item_name = frappe.db.get_value("Quality Inspection", quality_inspection,['item_name'])
 	return item_code, accepted_qty, rack, location, uom, item_name, quality_inspection
+
+@frappe.whitelist()
+def get_inspection_ids(exclude_qids):
+	""" QID data will be fetched from the Quality Inspection
+	"""
+	options = []
+	exclude_qids = frappe.parse_json(exclude_qids) if exclude_qids else []
+
+	if frappe.db.exists("User Permission", {"user": frappe.session.user, "allow": "Item Group"}):
+		item_groups = [d[0] for d in frappe.db.get_all(
+			"User Permission",
+			{"user": frappe.session.user, "allow": "Item Group"},
+			"for_value",
+			as_list=1
+		)]
+
+		if item_groups:
+			qids = frappe.db.sql("""
+				SELECT p.name AS parent, c.qid_data, c.quantity
+				FROM `tabQuality Inspection` p
+				INNER JOIN `tabQuality Inspection QID` c ON c.parent = p.name
+				WHERE c.store_receipt = 0
+				AND p.custom_item_group IN %(groups)s
+				AND p.docstatus = 1
+				AND p.workflow_state != 'Rejected'
+				{exclude_clause}
+			""".format(
+				exclude_clause="AND c.qid_data NOT IN %(exclude_qids)s" if exclude_qids else ""
+			), {
+				"groups": tuple(item_groups),
+				"exclude_qids": tuple(exclude_qids)
+			}, as_dict=1)
+
+			for q in qids:
+				options.append({
+					"label": f"""{q.qid_data}<br>
+						<span style='font-size: 11px; color: #888;'>
+							Qty: {q.quantity}, Quality Inspection: {q.parent}
+						</span>""",
+					"value": q.qid_data
+				})
+
+	else:
+		qids = frappe.db.sql("""
+			SELECT p.name AS parent, c.qid_data, c.quantity
+			FROM `tabQuality Inspection` p
+			INNER JOIN `tabQuality Inspection QID` c ON c.parent = p.name
+			WHERE c.store_receipt = 0
+			AND p.docstatus = 1
+			AND p.workflow_state != 'Rejected'
+			{exclude_clause}
+		""".format(
+			exclude_clause="AND c.qid_data NOT IN %(exclude_qids)s" if exclude_qids else ""
+		), {
+			"exclude_qids": tuple(exclude_qids)
+		}, as_dict=1)
+
+		for q in qids:
+			options.append({
+				"label": f"""{q.qid_data}<br>
+					<span style='font-size: 11px; color: #888;'>
+						Qty: {q.quantity}, Quality Inspection: {q.parent}
+					</span>""",
+				"value": q.qid_data
+			})
+	return options

@@ -76,7 +76,7 @@ class SalesOrderSchedule(Document):
 		
 			self.schedule_year = self.schedule_date.year
 			self.schedule_month = self.schedule_date.strftime("%b").upper()
-		doc = frappe.db.get_value("Sales Order Schedule",{"item_code":self.item_code, "customer_name":self.customer_name,"schedule_month":self.schedule_month,"schedule_year":self.schedule_year},["name", "item_code", "schedule_month"], 
+		doc = frappe.db.get_value("Sales Order Schedule",{"item_code":self.item_code, "customer_name":self.customer_name,"schedule_month":self.schedule_month,"schedule_year":self.schedule_year, "sales_order_number": self.sales_order_number, "docstatus": 1},["name", "item_code", "schedule_month"], 
 	as_dict=True )
 		if doc:
 	  
@@ -422,7 +422,7 @@ def revise_schedule_qty(name, revised_qty, remarks):
 	doc.delivered_amount = flt(doc.delivered_qty) * flt(doc.order_rate)
 	doc.pending_amount = (flt(revised_qty) - flt(doc.delivered_qty)) * flt(doc.order_rate)
 	doc.save(ignore_permissions=True)
-	# frappe.db.set_value("Purchase Order Schedule", name, "pending_qty", flt(revised_qty) - flt(doc.delivered_qty))
+	# frappe.db.set_value("Sales Order Schedule", name, "pending_qty", flt(revised_qty) - flt(doc.delivered_qty))
 
 	self = frappe.get_doc("Sales Order Schedule", name)
 	if self.order_type == "Open" and frappe.db.exists("Sales Order", {'name': self.sales_order_number, 'docstatus': 1}):
@@ -660,3 +660,56 @@ def update_exchange_rates(month, data):
 
     frappe.db.commit()
     return "ok"
+
+
+@frappe.whitelist()
+def make_order_schedule(sales_order_number, item_code, docname):
+    schedules = frappe.db.get_all(
+        "Sales Order Schedule",
+        {"sales_order_number": sales_order_number, "item_code": item_code, "name": ["!=", docname]},
+        ["name", "pending_qty"],
+        order_by="schedule_date desc",
+        limit=1
+    )
+
+    if not schedules:
+        return 0, 0, 0
+
+    schedule = schedules[0]
+    new_schedule_qty = schedule.get("pending_qty") or 0
+
+    order_rate = frappe.db.get_value(
+        "Sales Order Item",
+        {"parent": sales_order_number, "item_code": item_code},
+        "rate"
+    )
+
+    exchange_rate = frappe.db.get_value(
+        "Sales Order",
+        sales_order_number,
+        "conversion_rate"
+    )
+
+    return new_schedule_qty, exchange_rate, order_rate
+
+
+@frappe.whitelist()
+def validate_schedule_qty(sales_order_number, item_code, schedule_qty, docname):
+    schedules = frappe.db.get_all(
+        "Sales Order Schedule",
+        {"sales_order_number": sales_order_number, "item_code": item_code, "name": ["!=", docname]},
+        ["name", "pending_qty"],
+        order_by="schedule_date desc",
+        limit=1
+    )
+
+    if not schedules:
+        return True 
+
+    schedule = schedules[0]
+    pending_qty = schedule.get("pending_qty") or 0
+
+    if int(schedule_qty) > int(pending_qty):
+        return "error"
+
+    return True

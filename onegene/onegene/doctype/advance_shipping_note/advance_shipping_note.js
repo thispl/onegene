@@ -88,7 +88,7 @@ frappe.ui.form.on("Advance Shipping Note", {
             }
         }
         frappe.db.get_value("User", frappe.session.user, "role_profile_name", (r) => {
-            if (r && r.role_profile_name === "OUTSOURCING") {
+            if (r && (r.role_profile_name === "Supplier" || r.role_profile_name === "OUTSOURCING")) {
                 frm.set_df_property("dispatched_qty", "hidden", 1);
                 frm.set_df_property("received_qty", "hidden", 1);
 
@@ -131,7 +131,7 @@ frappe.ui.form.on("Advance Shipping Note", {
     setup(frm) {
         frm.trigger('set_query');
         frappe.db.get_value("User", frappe.session.user, "role_profile_name", (r) => {
-            if (r && r.role_profile_name === "OUTSOURCING") {
+            if (r && (r.role_profile_name === "Supplier" || r.role_profile_name === "OUTSOURCING")) {
                 frm.set_df_property("dispatched_qty", "hidden", 1);
                 frm.set_df_property("received_qty", "hidden", 1);
 
@@ -187,7 +187,7 @@ frappe.ui.form.on("Advance Shipping Note", {
         `);
     
         frappe.db.get_value("User", frappe.session.user, "role_profile_name", (r) => {
-            if (r && r.role_profile_name === "OUTSOURCING") {
+            if (r && (r.role_profile_name === "Supplier" || r.role_profile_name === "OUTSOURCING")) {
                 frm.set_df_property("dispatched_qty", "hidden", 1);
                 frm.set_df_property("received_qty", "hidden", 1);
     

@@ -24,13 +24,13 @@ class AdvanceShippingNote(Document):
 		entry_time = now_datetime()
 		params = {
 			"entry_time": entry_time.isoformat(),
-			"document_id": self.confirm_supplier_dn or '',
+			"document_id": self.name,
 			"entry_document": 'Advance Shipping Note',
 			"entry_type": 'Inward',
 			"vehicle_number":self.vehicle_no or '',
 			"party_type":"Supplier",
 			"party":self.supplier,
-			"ref":self.name,
+			"ref":self.confirm_supplier_dn or '',
 			"security_name":self.security_name or '',
 			"driver_name":self.driver_name or '',
 			"supplier_dc_number":self.supplier_delivery_note or '',

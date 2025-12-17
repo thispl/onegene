@@ -31,7 +31,7 @@ frappe.ui.form.on('Sales Order Schedule', {
     },
 	refresh(frm) {
         toggle_qty_read_only(frm);
-        if (frm.doc.docstatus == 1 && !(frm.doc.pending_qty == 0)) {
+        if (frm.doc.docstatus == 1 && !(frm.doc.pending_qty == 0) && frm.doc.order_type != "Fixed") {
              if (frappe.user.has_role("System Manager")) {
             toggle_revise_button(frm);
              }
@@ -94,7 +94,39 @@ frappe.ui.form.on('Sales Order Schedule', {
 				}
 			})
 		}
-	}
+	},
+    make_fixed_order(frm) {
+        if (frm.doc.sales_order_number && frm.doc.order_type == "Fixed" && frm.doc.item_code && frm.doc.__islocal) {
+            frappe.call({
+                method: "onegene.onegene.doctype.sales_order_schedule.sales_order_schedule.make_order_schedule",
+                args: {
+                    sales_order_number: frm.doc.sales_order_number,
+                    item_code: frm.doc.item_code,
+                    docname: frm.doc.name,
+                },
+                callback(r) {
+                    if (r && r.message) {
+                        const schedule_qty = r.message[0];
+                        const exchange_rate = r.message[1];
+                        const order_rate = r.message[2]; 
+                        const order_rate_inr = order_rate * exchange_rate; 
+                        const schedule_amount = order_rate * schedule_qty; 
+                        const schedule_amount_inr = order_rate_inr * schedule_qty; 
+
+                        frm.set_value("qty", schedule_qty);
+                        frm.set_value("exchange_rate", exchange_rate);
+                        frm.set_value("order_rate", order_rate);
+                        frm.set_value("order_rate_inr", order_rate_inr);
+                        frm.set_value("schedule_amount", schedule_amount);
+                        frm.set_value("schedule_amount_inr", schedule_amount_inr);
+                        frm.set_value("pending_amount", schedule_amount);
+                        frm.set_value("pending_amount_inr", schedule_amount_inr);
+
+                    }
+                }
+            })
+        }
+    }
 });
 
 function toggle_qty_read_only(frm) {

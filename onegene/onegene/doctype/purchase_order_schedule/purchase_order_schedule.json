@@ -114,13 +114,12 @@
    "options": "\nFixed\nOpen"
   },
   {
-   "depends_on": "eval:doc.order_type == \"Open\" || doc.docstatus == 1",
    "fieldname": "schedule_month",
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Schedule Month",
-   "mandatory_depends_on": "eval:doc.order_type == \"Open\"",
-   "options": "JAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC"
+   "options": "JAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC",
+   "reqd": 1
   },
   {
    "fieldname": "schedule_year",
@@ -187,14 +186,16 @@
    "default": "0",
    "fieldname": "received_qty",
    "fieldtype": "Float",
-   "label": "Received Qty"
+   "label": "Received Qty",
+   "no_copy": 1
   },
   {
    "allow_on_submit": 1,
    "default": "0",
    "fieldname": "pending_qty",
    "fieldtype": "Float",
-   "label": "Pending Qty"
+   "label": "Pending Qty",
+   "no_copy": 1
   },
   {
    "fieldname": "column_break_bibq",
@@ -206,6 +207,7 @@
    "fieldname": "schedule_amount",
    "fieldtype": "Currency",
    "label": "Schedule Amount",
+   "no_copy": 1,
    "options": "currency",
    "read_only": 1
   },
@@ -215,6 +217,7 @@
    "fieldname": "received_amount",
    "fieldtype": "Currency",
    "label": "Received Amount",
+   "no_copy": 1,
    "options": "currency",
    "read_only": 1
   },
@@ -224,6 +227,7 @@
    "fieldname": "pending_amount",
    "fieldtype": "Currency",
    "label": "Pending Amount",
+   "no_copy": 1,
    "options": "currency",
    "read_only": 1
   },
@@ -236,7 +240,8 @@
   {
    "fieldname": "created_by",
    "fieldtype": "Read Only",
-   "label": "Created By"
+   "label": "Created By",
+   "no_copy": 1
   },
   {
    "fieldname": "column_break_nsxl",
@@ -245,7 +250,8 @@
   {
    "fieldname": "remarks",
    "fieldtype": "Small Text",
-   "label": "Remarks"
+   "label": "Remarks",
+   "no_copy": 1
   },
   {
    "fieldname": "amended_from",
@@ -267,6 +273,7 @@
    "fieldname": "revision",
    "fieldtype": "Table",
    "label": "Revision",
+   "no_copy": 1,
    "options": "Purchase Order Schedule Revision",
    "read_only": 1
   },
@@ -303,6 +310,7 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Child Name",
+   "no_copy": 1,
    "set_only_once": 1
   },
   {
@@ -334,11 +342,11 @@
    "no_copy": 1
   },
   {
-   "depends_on": "eval:doc.docstatus == 1",
    "fieldname": "schedule_date",
    "fieldtype": "Date",
    "in_standard_filter": 1,
-   "label": "Schedule Date"
+   "label": "Schedule Date",
+   "no_copy": 1
   },
   {
    "allow_on_submit": 1,
@@ -378,6 +386,7 @@
    "fieldname": "schedule_amount_inr",
    "fieldtype": "Currency",
    "label": "Schedule Amount (INR)",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -386,6 +395,7 @@
    "fieldname": "received_amount_inr",
    "fieldtype": "Currency",
    "label": "Received Amount (INR)",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -394,6 +404,7 @@
    "fieldname": "pending_amount_inr",
    "fieldtype": "Currency",
    "label": "Pending Amount (INR)",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -430,7 +441,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-28 19:45:25.018889",
+ "modified": "2025-12-03 18:19:33.987457",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Purchase Order Schedule",

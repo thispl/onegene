@@ -290,7 +290,44 @@ def get_schedule_increase_delivery_html(doc):
     </tr>
     
 </table>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
     <br>
    
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}

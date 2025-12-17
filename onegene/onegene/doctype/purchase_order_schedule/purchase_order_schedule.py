@@ -129,10 +129,10 @@ class PurchaseOrderSchedule(Document):
 
 	def validate(self):
 		
-		po_schedule = frappe.db.get_value("Purchase Order Schedule",{"item_code":self.item_code,"purchase_order_number":self.purchase_order_number,"schedule_month":self.schedule_month},["name", "item_code", "schedule_month", "docstatus"],as_dict=True)
+		po_schedule = frappe.db.get_value("Purchase Order Schedule",{"item_code":self.item_code,"purchase_order_number":self.purchase_order_number,"schedule_month":self.schedule_month, "docstatus": 1},["name", "item_code", "schedule_month", "docstatus"],as_dict=True)
 		
 		if po_schedule and po_schedule.docstatus != 2:
-			if self.is_new() or po_schedule.name != self.name:
+			if (self.is_new() or po_schedule.name != self.name):
 				# frappe.throw(
 				# 	f"Purchase Order Schedule for the item {po_schedule.item_code} is already available for the Month {po_schedule.schedule_month}. Instead of this you can revise qty in {po_schedule.name}"
 				# )
@@ -295,6 +295,7 @@ class PurchaseOrderSchedule(Document):
 				"purchase_order_number": self.purchase_order_number,
 				"supplier_code": self.supplier_code,
 				"item_code": self.item_code,
+				"schedule_month": self.schedule_month,
 				"docstatus": 1
 			}, ["qty"]))
 
@@ -628,6 +629,7 @@ def get_received_breakdown(doctype, docname, party, item_code):
 				INNER JOIN `tabSupplier-DN Item` sdni
 					ON sdni.parent = asn.name 
 				WHERE asn.supplier = %s AND sdni.item_code = %s AND
+					workflow_state NOT IN ("Cancelled", "Draft") AND
 					DATE(asn.datetime) BETWEEN %s AND %s
 				ORDER BY asn.datetime
 				""",(party, item_code, start_date, end_date), as_dict=1)
@@ -668,5 +670,56 @@ def update_received_qty():
 		}
 
 		frappe.db.set_value("Purchase Order Schedule", pos.name, update_vals)
-	return 200    
-		
+	return 200  
+  
+@frappe.whitelist()
+def make_order_schedule(purchase_order_number, item_code, docname):
+    schedules = frappe.db.get_all(
+        "Purchase Order Schedule",
+        {"purchase_order_number": purchase_order_number, "item_code": item_code, "name": ["!=", docname]},
+        ["name", "pending_qty"],
+        order_by="schedule_date desc",
+        limit=1
+    )
+
+    if not schedules:
+        return 0, 0, 0
+
+    schedule = schedules[0]
+    new_schedule_qty = schedule.get("pending_qty") or 0
+
+    order_rate = frappe.db.get_value(
+        "Purchase Order Item",
+        {"parent": purchase_order_number, "item_code": item_code},
+        "rate"
+    )
+
+    exchange_rate = frappe.db.get_value(
+        "Purchase Order",
+        purchase_order_number,
+        "conversion_rate"
+    )
+
+    return new_schedule_qty, exchange_rate, order_rate
+
+
+@frappe.whitelist()
+def validate_schedule_qty(purchase_order_number, item_code, schedule_qty, docname):
+    schedules = frappe.db.get_all(
+        "Purchase Order Schedule",
+        {"purchase_order_number": purchase_order_number, "item_code": item_code, "name": ["!=", docname]},
+        ["name", "pending_qty"],
+        order_by="schedule_date desc",
+        limit=1
+    )
+
+    if not schedules:
+        return True 
+
+    schedule = schedules[0]
+    pending_qty = schedule.get("pending_qty") or 0
+
+    if int(schedule_qty) > int(pending_qty):
+        return "error"
+
+    return True

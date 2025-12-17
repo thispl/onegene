@@ -25,6 +25,7 @@
   "section_break_mkna",
   "items",
   "gate_entry_item",
+  "end_bit_scrap",
   "no_of_box"
  ],
  "fields": [
@@ -147,13 +148,21 @@
    "fieldtype": "Data",
    "label": "Supplier DC Number",
    "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "end_bit_scrap",
+   "fieldtype": "Table",
+   "label": "End Bit Scrap & Return",
+   "options": "Supplier-DN Scrap",
+   "read_only": 1
   }
  ],
  "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-11-21 14:44:00.154292",
+ "modified": "2025-12-09 10:20:09.826568",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Gate Entry Update",

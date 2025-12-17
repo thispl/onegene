@@ -18,25 +18,25 @@ frappe.ui.form.on("Store Receipt", {
             }
         }, 300);
 
+        // QID data will be loaded from the Quality Inspection which are went to Store Receipt
         if (frm.fields_dict['inspection_id']) {
             frm.fields_dict['inspection_id'].input.onfocus = function() {
-                // Collect QIDs already in the item table
                 const exclude_qids = (frm.doc.item || []).map(row => row.qid).filter(Boolean);
-
                 // Fetch options excluding those QIDs
-                frm.call("get_inspection_ids", {
-                    exclude_qids: exclude_qids
-                }).then(({ message: inspection_ids }) => {
-                    frm.fields_dict.inspection_id.set_data(inspection_ids);
+                let result = exclude_qids
+                    .flatMap(item => item.split(',')); 
+                frappe.call({
+                    method: "onegene.onegene.doctype.store_receipt.store_receipt.get_inspection_ids",
+                    args: {
+                        "exclude_qids": result,
+                    },
+                    callback: function(r) {
+                        if (r.message) {
+                            frm.fields_dict.inspection_id.set_data(r.message);
+                        }
+                    }
                 });
-                
-                // setTimeout(() => {
-                // frm.fields_dict['inspection_id'].df.onchange = function() {
-                //     // Force blur (remove focus) after selecting a value
-                //     frm.fields_dict['inspection_id'].input.blur();
-                // };
-                // }, 300)
-            };
+            }
         }
 
         

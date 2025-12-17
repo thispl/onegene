@@ -23,6 +23,7 @@
  ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "part_no",
    "fieldtype": "Link",
@@ -32,6 +33,7 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 2,
    "fetch_from": "part_no.item_name",
    "fetch_if_empty": 1,
@@ -43,20 +45,23 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "po_no",
    "fieldtype": "Data",
    "hidden": 1,
    "label": "PO No"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "po_date",
    "fieldtype": "Date",
    "hidden": 1,
    "label": "PO Date"
   },
   {
+   "allow_on_submit": 1,
    "columns": 2,
-   "fetch_from": "po_no.total_qty",
+   "fetch_from": ".total_qty",
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -64,6 +69,7 @@
    "precision": "2"
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fetch_from": ".grand_total",
    "fieldname": "po_price",
@@ -75,10 +81,12 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "column_break_drmu",
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "po_no.base_grand_total",
    "fieldname": "po_priceinr",
    "fieldtype": "Currency",
@@ -87,6 +95,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fetch_from": "part_no.gst_hsn_code",
    "fetch_if_empty": 1,
@@ -98,6 +107,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "gst",
    "fieldtype": "Link",
    "hidden": 1,
@@ -106,19 +116,24 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "value",
    "fieldtype": "Currency",
    "label": "Value",
    "options": "currency",
-   "precision": "5"
+   "precision": "5",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "value_inr",
    "fieldtype": "Currency",
    "label": "Value (INR)",
-   "precision": "5"
+   "precision": "5",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 2,
    "fetch_from": "part_no.stock_uom",
    "fetch_if_empty": 1,
@@ -133,7 +148,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-08 10:49:29.977200",
+ "modified": "2025-12-04 16:44:08.277899",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Approval for New Business PO",

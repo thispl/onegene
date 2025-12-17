@@ -4,10 +4,11 @@ const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[C]{1}[0-9A-Z]{1}
 const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
 frappe.ui.form.on("Inter Office Memo", {
-    supplier_accept_debit_value(frm){
-    frm.set_value("supplier_not_accept_debit_value",frm.doc.tot_short_value-frm.doc.supplier_accept_debit_value)
+     supplier_accept_debit_value(frm) {
+        frm.set_df_property("remarks","reqd",1)
+        frm.set_value("supplier_not_accept_debit_value", frm.doc.tot_short_value - frm.doc.supplier_accept_debit_value)
     }
-,  
+    ,
 
   new_supplier_group(frm){
         if((frm.doc.iom_type=="Approval for New Supplier Registration")){
@@ -338,16 +339,9 @@ frappe.ui.form.on("Inter Office Memo", {
     },
     order_type(frm) {
         if (frm.doc.iom_type == "Approval for New Business PO" || frm.doc.iom_type == "Approval for New Business SO") {
-            // frm.clear_table("approval_business_po");
-            // frm.refresh_field("approval_business_po");
-
-            // // Make qty field read-only when order_type = Open Order
-            // frm.fields_dict['approval_business_po'].grid.toggle_enable(
-            //     'qty',
-            //     frm.doc.order_type !== 'Open Order'
-            // );
-            frm.fields_dict['approval_business_po'].grid.update_docfield_property('qty', 'read_only', frm.doc.order_type === 'Open Order');
-            frm.fields_dict['custom_approval_for_new_business_po'].grid.update_docfield_property('qty', 'read_only', frm.doc.order_type === 'Open Order');
+           
+            // frm.fields_dict['approval_business_po'].grid.update_docfield_property('qty', 'read_only', frm.doc.order_type === 'Open Order');
+            // frm.fields_dict['custom_approval_for_new_business_po'].grid.update_docfield_property('qty', 'read_only', frm.doc.order_type === 'Open Order');
 
         }
     },
@@ -371,13 +365,15 @@ frappe.ui.form.on("Inter Office Memo", {
         }
     },
     iom_type(frm) {
-         if (frm.doc.iom_type === "Approval for Schedule Revised") {
+         if (frm.doc.iom_type === "Approval for Schedule Revised"|| frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 let month_abbr = frappe.datetime.str_to_obj(frappe.datetime.get_today())
                     .toLocaleString("en-US", { month: "short" })
                     .toUpperCase();
 
                 frm.set_value("schedule_month",month_abbr);
+                frm.set_value("new_month", month_abbr);
                 frm.refresh_field("schedule_month")
+                 frm.refresh_field("new_month")
         }
         if (frm.doc.iom_type === "Approval for New Supplier Registration") {
 const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
@@ -755,7 +751,7 @@ const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
         d.refresh();
     }
         $.each(frm.fields_dict, function(fieldname, field) {
-            if (fieldname!="schedule_month" && fieldname !== 'department_from' &&fieldname!= 'currency' &&fieldname!='company' && fieldname !== 'iom_type' && fieldname!="department_to" && fieldname!="reports_to") {
+            if (fieldname != "new_month" && fieldname!="schedule_month" && fieldname !== 'department_from' &&fieldname!= 'currency' &&fieldname!='company' && fieldname !== 'iom_type' && fieldname!="department_to" && fieldname!="reports_to") {
                 if (frm.doc[fieldname]) {
                     frm.set_value(fieldname, null);
                 }
@@ -838,7 +834,15 @@ if (finance_types.includes(frm.doc.iom_type)) {
     frm.set_value("department_to", "");
 }
 
+if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
+            frm.set_value("department_to", "M P L & Purchase - WAIP");
+            toggle_phy_stock(frm);
 
+
+        }
+        else {
+            frm.set_value("department_to", "");
+        }
         frm.clear_table("taxes")
         frm.refresh_field("taxes")
         if (frm.doc.iom_type == "Approval for Stock Change Request - Stock Reconciliation" || frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Business Visit" || frm.doc.iom_type=="Approval for New Supplier Registration") {
@@ -1604,6 +1608,14 @@ if (finance_types.includes(frm.doc.iom_type)) {
             if (frm.doc.iom_type === "Approval for Schedule Revised") {
                 frm.set_df_property('customer', 'read_only', 1);
             }
+            frm.set_df_property("approval_remarks", 'read_only', 0);
+            frm.set_df_property("total_erp_value", 'read_only', 1);
+            frm.set_df_property("total_phy_value", 'read_only', 1);
+            frm.set_df_property("tot_short_value", 'read_only', 1);
+            frm.set_df_property("total_shortage_value", 'read_only', 1);
+            frm.set_df_property("total_excess_value", 'read_only', 1);
+            frm.set_df_property("supplier_not_accept_debit_value", 'read_only', 1);
+            toggle_phy_stock(frm);
 
             frm.set_intro(__(""));
         } else {
@@ -1611,7 +1623,17 @@ if (finance_types.includes(frm.doc.iom_type)) {
             $.each(frm.fields_dict, function(fieldname, field) {
                 frm.set_df_property(fieldname, 'read_only', 1);
             });
-
+            frm.set_df_property("approval_remarks", 'read_only', 0);
+            frm.set_df_property("total_erp_value", 'read_only', 1);
+            frm.set_df_property("total_phy_value", 'read_only', 1);
+            frm.set_df_property("tot_short_value", 'read_only', 1);
+            frm.set_df_property("total_shortage_value", 'read_only', 1);
+            frm.set_df_property("total_excess_value", 'read_only', 1);
+            frm.set_df_property("supplier_not_accept_debit_value", 'read_only', 1);
+            toggle_phy_stock(frm);
+            if(frm.doc.workflow_state=="Pending for Supplier"){
+            frm.set_df_property("remarks", 'read_only', 0);
+            }
             frm.set_intro(__("Only the user who prepared this document can edit it."));
         }
 
@@ -8555,13 +8577,14 @@ frappe.ui.form.on('Supplier Stock Reconciliation', {
        cal_shortage_val(frm)
     }
 })
-function cal_shortage_val(frm){
+function cal_shortage_val(frm) {
     let tot_shortage = 0;
     let total_excess = 0;
 
     (frm.doc.supplier_stock_reconciliation || []).forEach(row => {
         if (row.value < 0) {
-            tot_shortage += (row.value);
+            // tot_shortage += (row.value);
+            tot_shortage += Math.abs(row.value);   
         } else {
             total_excess += (row.value);
         }
@@ -8574,7 +8597,7 @@ function cal_shortage_val(frm){
     frm.refresh_field("tot_short_value");
     frm.refresh_field("total_shortage_value");
     frm.refresh_field("total_excess_value");
-    frm.set_value("supplier_not_accept_debit_value",tot_shortage-frm.doc.supplier_accept_debit_value)
+    frm.set_value("supplier_not_accept_debit_value", tot_shortage - frm.doc.supplier_accept_debit_value)
 }
 frappe.ui.form.on('Proto Sample SO IOM', { 
     
@@ -8892,3 +8915,79 @@ frappe.ui.form.on('Proto Sample SO IOM', {
         }
     }
 });
+function toggle_phy_stock(frm) {
+    let is_read_only = !frm.doc.workflow_state || frm.doc.workflow_state !== "Pending for Supplier";
+    let read_only = frm.doc.workflow_state == "Pending for Supplier"
+    let is_mandatory = frm.doc.workflow_state === "Pending for Supplier";
+    frm.fields_dict["supplier_stock_reconciliation"].grid.update_docfield_property(
+        "phy_stock", "read_only", is_read_only
+    );
+    frm.set_df_property("remarks","read_only",read_only)
+    frm.fields_dict["supplier_stock_reconciliation"].grid.update_docfield_property(
+        "item_code", "read_only", read_only
+    );
+    frm.fields_dict["supplier_stock_reconciliation"].grid.update_docfield_property(
+        "erp_stock", "read_only", read_only
+    );
+    frm.fields_dict["supplier_stock_reconciliation"].grid.update_docfield_property(
+        "rate", "read_only", read_only
+    );
+
+
+    frm.set_df_property("supplier_accept_debit_value", "read_only", is_read_only);
+
+    frm.fields_dict["supplier_stock_reconciliation"].grid.update_docfield_property(
+        "phy_stock", "reqd", is_mandatory
+    );
+    frm.fields_dict["supplier_stock_reconciliation"].grid.update_docfield_property(
+        "reason_for_difference", "read_only", is_mandatory
+    );
+
+    if (is_mandatory && !frm.doc.supplier_accept_debit_value) {
+        frm.set_df_property("supplier_accept_debit_value", "reqd", 1);
+    } else {
+        frm.set_df_property("supplier_accept_debit_value", "reqd", 0);
+    }
+    frm.fields_dict["supplier_stock_reconciliation"].grid.update_docfield_property(
+        "reason_for_difference", "read_only", is_read_only
+    );
+    frm.refresh_field("supplier_stock_reconciliation");
+    frm.refresh_field("supplier_accept_debit_value");
+}
+
+frappe.ui.form.on('Employee Travel Visit Details', {
+    employee_code: function (frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        if (!row.employee_code) return;
+        frappe.db.get_value(
+            'Employee',
+            row.employee_code,
+            ['employee_name', 'department', 'designation']
+        ).then(r => {
+            if (r.message) {
+                frappe.model.set_value(cdt, cdn, 'employee_name', r.message.employee_name);
+                frappe.model.set_value(cdt, cdn, 'department', r.message.department);
+                frappe.model.set_value(cdt, cdn, 'designation', r.message.designation);
+            }
+        });
+    }
+});
+
+function toggle_order_type(frm) {
+    let is_read_only = frm.doc.order_type !== "Fixed Order";
+    if(is_read_only===1){
+        frm.fields_dict["approval_business_po"].grid.update_docfield_property(
+            "qty", "read_only", is_read_only
+        );
+    }
+    else{
+
+        frm.fields_dict["approval_business_po"].grid.update_docfield_property(
+            "qty", "read_only", 0
+        );
+    }
+    frm.fields_dict["custom_approval_for_new_business_po"].grid.update_docfield_property(
+        "qty", "read_only", is_read_only
+    );
+  
+}

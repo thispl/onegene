@@ -61,6 +61,13 @@ frappe.ui.form.on("Gate Entry Update", {
     document_id(frm){
 
         fetch_items(frm);
+        if (frm.doc.entry_document == "Sales Invoice" && frm.doc.document_id) {
+            frappe.db.get_doc("Sales Invoice", frm.doc.document_id)
+                .then(doc => {
+                    frm.set_value("ref_no", doc.lr_no || "");
+                    frm.set_value("vehicle_number", doc.vehicle_no || "");
+                })
+        }
 
 
         if (frm.doc.document_id && frm.doc.entry_document){
@@ -214,7 +221,8 @@ frappe.ui.form.on("Gate Entry Update", {
                                 ref_no: frm.doc.ref_no,
                                 dc_no: frm.doc.supplier_dc_number,
                                 security_name: frm.doc.security_name,
-                                items: frm.doc.gate_entry_item
+                                items: frm.doc.gate_entry_item,
+                                end_bit_scrap:frm.doc.end_bit_scrap
                             },
                             freeze: true,
                             freeze_message: 'Updating Entry...',
@@ -297,15 +305,41 @@ function fetch_items(frm) {
             },
             callback: function(r) {
                 if (r.message) {
+
+                    frm.set_value("party_type", r.message.party_type || "");
+                    frm.set_value("party", r.message.party || "");
+                    frm.set_value("ref_no", r.message.ref_no || "");
+                    frm.set_value("security_name", r.message.security_name || "");
+                    frm.set_value("vehicle_number", r.message.vehicle_number || "");
+                    frm.set_value("driver_name", r.message.driver_name || "");
                     frm.clear_table("gate_entry_item");
-                    r.message.forEach(function(item){
-                        let row = frm.add_child("gate_entry_item");
-                        row.item_code = item.item_code;
-                        row.qty = item.qty;
-                        row.item_name = item.item_name;
-                        row.uom = item.uom;
-                        row.box = item.box;
-                    });
+
+                    if (r.message.items && r.message.items.length > 0) {
+                        r.message.items.forEach(function (item) {
+                            let row = frm.add_child("gate_entry_item");
+                            row.item_code = item.item_code;
+                            row.qty = item.qty;
+                            row.item_name = item.item_name;
+                            row.uom = item.uom;
+                            row.box = item.box;
+                            row.pallet = item.pallet;
+                        });
+                    }
+                    frm.clear_table("end_bit_scrap");
+                    if (r.message.scrap_items && r.message.scrap_items.length > 0) {
+                        r.message.scrap_items.forEach(function(item){
+                            let row = frm.add_child("end_bit_scrap");
+                            row.actual_qty = item.actual_qty;
+                            row.qty = item.qty;
+                            row.item_name = item.item_name;
+                            row.uom = item.uom;
+                        });
+                        frm.refresh_field("end_bit_scrap");
+                    }
+
+                    frm.refresh_field("gate_entry_item");
+                } else {
+                    frm.clear_table("gate_entry_item");
                     frm.refresh_field("gate_entry_item");
                 }
             }

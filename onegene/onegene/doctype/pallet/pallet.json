@@ -17,6 +17,8 @@
   "column_break_vrsp",
   "height",
   "column_break_oaxr",
+  "extra_height",
+  "column_break_xdxy",
   "dimension_uom",
   "section_break_oxis",
   "pallet_dimensions_table",
@@ -113,11 +115,21 @@
    "fieldtype": "Data",
    "label": "Pallet No",
    "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "extra_height",
+   "fieldtype": "Float",
+   "label": "Extra Height"
+  },
+  {
+   "fieldname": "column_break_xdxy",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-06-09 17:17:29.386627",
+ "modified": "2025-11-30 18:52:32.542898",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Pallet",

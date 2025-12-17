@@ -14,8 +14,12 @@ class GateEntryUpdate(Document):
 # from frappe.utils import toda
 
 @frappe.whitelist()
-def create_gate_entry(entry_type,entry_document,document_id,gate_qty,no_of_box,vehicle_number=None,driver_name=None,party_type=None,party=None,entry_time=None,ref_no=None,dc_no=None,security_no=None,security_name=None,items=None):
+def create_gate_entry(entry_type,entry_document,document_id,gate_qty,no_of_box,vehicle_number=None,driver_name=None,party_type=None,party=None,entry_time=None,ref_no=None,dc_no=None,security_no=None,security_name=None,items=None,end_bit_scrap=None):
 	gate=frappe.new_doc('Gate Entry')
+	if party_type =="Customer":
+		gate.customer_code = frappe.db.get_value("Customer",{"name":party},"customer_code") or ""
+	else:
+		gate.supplier_code = frappe.db.get_value("Supplier",{"name":party},"supplier_code") or ""
 	gate.entry_type=entry_type or ""
 	gate.entry_against=entry_document or ""
 	gate.entry_id=document_id or ""
@@ -52,7 +56,16 @@ def create_gate_entry(entry_type,entry_document,document_id,gate_qty,no_of_box,v
 				"uom": i.get("uom"),
 				"box": i.get("box") or ""
 			})
-
+	if end_bit_scrap:
+		if isinstance(end_bit_scrap, str):
+			end_bit_scrap = json.loads(end_bit_scrap)
+		for i in end_bit_scrap:
+			gate.append("end_bit_scrap", {
+				"item_name": i.get("item_name"),
+				"qty": i.get("qty"),
+				"uom": i.get("uom"),
+				"actual_qty": i.get("actual_qty") or 0,
+			})
 	gate.insert(ignore_permissions=True)
 	return gate.name
 

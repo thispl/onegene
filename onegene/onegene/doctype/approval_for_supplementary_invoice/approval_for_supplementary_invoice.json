@@ -26,6 +26,7 @@
  ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "part_no",
    "fieldtype": "Link",
@@ -34,6 +35,7 @@
    "options": "Item"
   },
   {
+   "allow_on_submit": 1,
    "columns": 2,
    "fetch_from": "part_no.item_name",
    "fetch_if_empty": 1,
@@ -44,6 +46,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "po_no",
    "fieldtype": "Link",
@@ -52,6 +55,7 @@
    "options": "Sales Order"
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fetch_from": ".order_type",
    "fieldname": "qty",
@@ -60,6 +64,7 @@
    "label": "Qty"
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fetch_from": ".grand_total",
    "fieldname": "po_price",
@@ -70,6 +75,7 @@
    "precision": "5"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "po_no.base_grand_total",
    "fetch_if_empty": 1,
    "fieldname": "invoiced_priceinr",
@@ -78,6 +84,7 @@
    "precision": "5"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "gst",
    "fieldtype": "Link",
    "hidden": 1,
@@ -86,6 +93,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "new_price",
    "fieldtype": "Currency",
@@ -95,6 +103,7 @@
    "precision": "5"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "revised_priceinr",
    "fieldtype": "Currency",
    "label": "Revised Price(INR)",
@@ -102,10 +111,12 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "column_break_drmu",
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "difference",
    "fieldtype": "Float",
@@ -116,6 +127,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "difference_inr",
    "fieldtype": "Currency",
    "label": "Difference (INR)",
@@ -123,6 +135,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "supplementary_value",
    "fieldtype": "Currency",
    "label": "Supplementary Value",
@@ -131,6 +144,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "supplementary_value_inr",
    "fieldtype": "Currency",
    "label": "Supplementary Value (INR)",
@@ -138,6 +152,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "reason_for_request",
    "fieldtype": "Small Text",
@@ -145,6 +160,7 @@
    "label": "Reason for Request"
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fetch_from": "part_no.gst_hsn_code",
    "fetch_if_empty": 1,
@@ -159,7 +175,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-31 12:14:36.800915",
+ "modified": "2025-12-01 18:53:51.002880",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Approval for Supplementary Invoice",

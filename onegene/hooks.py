@@ -216,12 +216,12 @@ scheduler_events = {
 }
 
 fixtures = [
-    {
-        "dt": "Custom Field",
-        "filters": [
-            ["module", "=", "ONEGENE"]
-        ]
-    },
+    # {
+    #     "dt": "Custom Field",
+    #     "filters": [
+    #         ["module", "=", "ONEGENE"]
+    #     ]
+    # },
     {
         "dt": "Client Script",
         "filters": [
@@ -234,12 +234,12 @@ fixtures = [
             ["module", "=", "ONEGENE"]
         ]
     },
-    {
-        "dt": "Property Setter",
-        "filters": [
-            ["module", "=", "ONEGENE"]
-        ]
-    },
+    # {
+    #     "dt": "Property Setter",
+    #     "filters": [
+    #         ["module", "=", "ONEGENE"]
+    #     ]
+    # },
     {
         "dt": "Print Format",
         "filters": [
@@ -339,6 +339,7 @@ doc_events = {
                      ]
 	},
 	"Sales Order":{
+		"after_insert" : ["onegene.onegene.custom.mark_order_created_in_iom"],
 		"validate": [
 			# "onegene.onegene.custom.validate_schedule_item_table",
 			"onegene.onegene.custom.create_cutomer_po",
@@ -349,6 +350,7 @@ doc_events = {
 				"onegene.onegene.custom.create_sales_order_schedule_from_so"
 				],
 		"on_cancel": ["onegene.onegene.custom.cancel_order_schedule_on_so_cancel"],
+		"on_trash": "onegene.onegene.custom.unmark_order_created_in_iom",
 		# "on_update": "onegene.onegene.custom.return_total_schedule",
 	},
 	"Sales Order Schedule Item": {
@@ -396,7 +398,7 @@ doc_events = {
 	},
 	'Sales Invoice': {
 		"validate": ["onegene.onegene.custom.calculate_total_cbm","onegene.onegene.custom.validate_sales_invoice","onegene.onegene.custom.validate_item_rate","onegene.onegene.custom.update_the_changes_to_lr","onegene.onegene.custom.check_approved_lr",
-		"onegene.onegene.custom.update_datetime_and_approver_details_in_Si", "onegene.onegene.custom.update_hod_time",
+		"onegene.onegene.custom.update_datetime_and_approver_details_in_Si", "onegene.onegene.custom.update_hod_time","onegene.onegene.custom.get_calculated_height",
         "onegene.onegene.custom.make_url_for_si","onegene.onegene.custom.update_port_in_si","onegene.onegene.custom.trigger_notification_based_on_the_workflow_in_si", "onegene.onegene.event.sales_invoice.set_posting_date_as_creation"],
 		"before_insert": ["onegene.onegene.custom.sales_invoice_custom_autoname","onegene.utils.update_si_name"],
 		"on_submit":["onegene.utils.update_lr_status", "onegene.onegene.custom.mark_qid_for_si"],
@@ -464,8 +466,12 @@ doc_events = {
 			"onegene.onegene.custom.reload_po",
 			"onegene.onegene.doctype.mr_scheduling.mr_scheduling.update_schedule_qty_in_material_request"
 		],
-		"after_insert":'onegene.onegene.doctype.mr_scheduling.mr_scheduling.update_po_number',
-		"on_trash":'onegene.onegene.doctype.mr_scheduling.mr_scheduling.remove_po_number'
+		"after_insert": [
+    		'onegene.onegene.doctype.mr_scheduling.mr_scheduling.update_po_number',
+			"onegene.onegene.custom.mark_order_created_in_iom"
+        ],
+		"on_trash":['onegene.onegene.doctype.mr_scheduling.mr_scheduling.remove_po_number',
+            "onegene.onegene.custom.unmark_order_created_in_iom"]
 	},
 	"Purchase Order Schedule Item": {
 		"on_trash": "onegene.onegene.custom.delete_purchase_order_schedule",
@@ -535,12 +541,16 @@ doc_events = {
 	"Supplier":{
      
         "before_insert":"onegene.onegene.custom.supplier_naming_before",
-		"after_insert": ["onegene.onegene.supplier_user_creation.supp_user","onegene.onegene.custom.supplier_naming_after"]
+		"after_insert": ["onegene.onegene.supplier_user_creation.supp_user","onegene.onegene.custom.supplier_naming_after"],
+		"on_trash":"onegene.onegene.supplier_user_creation.delete_supp_user"
 	},
 
 	"BOM": {
 		"on_submit": "onegene.onegene.custom.bom_connection_from_fg_to_child"
 	},
+    "Customer":{
+        "validate":"onegene.onegene.custom.update_customer_tax_category"
+	}
  
  
 }

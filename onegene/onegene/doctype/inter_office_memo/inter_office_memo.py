@@ -15,6 +15,21 @@ from frappe.utils import now_datetime
 
 class InterOfficeMemo(Document):
     # pass
+    def after_insert(self):
+        employee_name = frappe.db.get_value(
+            "Employee",
+            {"user_id": self.owner},
+            "employee_name"
+        )
+        if employee_name:
+            frappe.db.set_value(
+                "Inter Office Memo",
+                self.name,
+                "created_by_name",
+                employee_name
+            )
+
+
     def on_update(self):
         if not self.has_value_changed("workflow_state"):
             return
@@ -897,6 +912,16 @@ class InterOfficeMemo(Document):
 
             if not self.month and self.date_time:
                 self.month = month_short
+        if self.supplier_stock_reconciliation:
+            tot_erp_stock=0
+            tot_phy_stock=0
+            for i in self.supplier_stock_reconciliation:
+                if i.erp_stock and i.rate:
+                    tot_erp_stock+=(i.erp_stock*i.rate)
+                if i.phy_stock and i.rate:
+                    tot_phy_stock+=(i.phy_stock*i.rate)
+            self.total_erp_value=tot_erp_stock
+            self.total_phy_value=tot_phy_stock
         if self.price_revision_po:
             total_new_price_value=0
             total_new_price_value_inr=0
@@ -918,6 +943,10 @@ class InterOfficeMemo(Document):
                             frappe.throw("Kindly enter Physical Stock in Supplier Stock Reconciliation")
                         if not i.reason_for_difference:
                             frappe.throw("Kindly enter Reason for Difference in Supplier Stock Reconciliation")
+                if not self.supplier_accept_debit_value:
+                    frappe.throw("Kindly enter Supplier Accept Debit Value")
+                if not self.remarks:
+                    frappe.throw("Kindly enter Remarks")
                 self.supplier_user=frappe.session.user
                 self.supplier_approved_on=now_datetime()
             if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for ERP Team":
@@ -1046,7 +1075,7 @@ class InterOfficeMemo(Document):
                     result = frappe.db.sql("""
                         SELECT SUM(schedule_amount_inr)
                         FROM `tabSales Order Schedule`
-                        WHERE schedule_month=%s
+                        WHERE schedule_month=%s AND docstatus = 1
                     """, (self.schedule_month))
                     schedule_amt = result[0][0] if result and result[0][0] else 0
                     current_schedule += i.difference_value_inr if i.difference_value_inr else 0
@@ -1087,7 +1116,7 @@ class InterOfficeMemo(Document):
                     result = frappe.db.sql("""
                         SELECT SUM(schedule_amount_inr)
                         FROM `tabPurchase Order Schedule`
-                        WHERE schedule_month=%s
+                        WHERE schedule_month=%s AND docstatus = 1
                     """, (self.schedule_month))
                     schedule_amt = result[0][0] if result and result[0][0] else 0
                     current_schedule += i.difference_value if i.difference_value else 0
@@ -2779,7 +2808,7 @@ def get_schedule_qty(sales_order, item_code):
 def get_so_qty(sales_order, item_code):
     result = frappe.db.get_value(
         "Sales Order Schedule",
-        {"name":sales_order, "item_code": item_code},
+        {"name":sales_order, "item_code": item_code,"docstatus":1},
         ["qty"],  
         as_dict=True
     )
@@ -2793,7 +2822,7 @@ def get_so_qty(sales_order, item_code):
 def get_so_schedule_qty(sales_order, item_code):
     result = frappe.db.get_value(
         "Sales Order Schedule",
-        {"sales_order_number":sales_order, "item_code": item_code},
+        {"sales_order_number":sales_order, "item_code": item_code,"docstatus":1},
         ["qty" , "order_rate"],  
         as_dict=True
     )
@@ -2808,7 +2837,7 @@ def get_so_schedule_qty(sales_order, item_code):
 def get_so_schedule_qty_amount(sales_order, item_code, schedule_month):
     result = frappe.db.get_value(
         "Sales Order Schedule",
-        {"sales_order_number": sales_order, "item_code": item_code, "schedule_month": schedule_month},
+        {"sales_order_number": sales_order, "item_code": item_code, "schedule_month": schedule_month,"docstatus":1},
         ["qty", "schedule_amount", "order_rate"],
         as_dict=True
     )
@@ -2840,7 +2869,7 @@ def get_so_schedule_qty_amount(sales_order, item_code, schedule_month):
 def get_po_schedule_qty_amount(purchase_order, item_code, schedule_month):
     result = frappe.db.get_value(
         "Purchase Order Schedule",
-        {"purchase_order_number":purchase_order, "item_code": item_code, "schedule_month": schedule_month},
+        {"purchase_order_number":purchase_order, "item_code": item_code, "schedule_month": schedule_month,"docstatus":1},
         ["qty" , "schedule_amount","order_rate"],  
         as_dict=True
     )
@@ -2876,7 +2905,7 @@ def get_po_schedule_qty_amount(purchase_order, item_code, schedule_month):
 def get_po_schedule_qty(purchase_order, item_code):
     result = frappe.db.get_value(
         "Purchase Order Schedule",
-        {"purchase_order_number":purchase_order, "item_code": item_code},
+        {"purchase_order_number":purchase_order, "item_code": item_code,"docstatus":1},
         ["qty"],  
         as_dict=True
     )
@@ -3122,6 +3151,44 @@ def get_tools_and_dies_invoice(doc):
 <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Incoterms</span>
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.wonjin_incoterms or 'NA' }}</span>
+</div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
+
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
 </div>
 
      <table>
@@ -3475,7 +3542,44 @@ def get_tooling_invoice_html(doc):
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Incoterms</span>
     <span >:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.wonjin_incoterms or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 
 
         <br>
@@ -3817,7 +3921,44 @@ def get_new_business_po_html(doc):
     <span >:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.wonjin_incoterms or 'NA' }}</span>
 </div>
 
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
@@ -4123,7 +4264,44 @@ def get_supplementary_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -4400,7 +4578,44 @@ def get_price_revision_html(doc):
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Incoterms</span>
     <span >:    &nbsp;&nbsp;&nbsp;&nbsp;{{ doc.wonjin_incoterms or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 
 
         <br>
@@ -4725,8 +4940,46 @@ def get_credit_note_html(doc):
         <td colspan=1 style="text-align:right; white-space:nowrap;font-weight:bold">{{frappe.utils.fmt_money(doc.cn_value or 0, currency = doc.currency)}}</td>
     </tr>
     </table>
+
     <br>
-    
+    <div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
+
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -5023,7 +5276,44 @@ def get_schedule_increase_material_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -5383,7 +5673,44 @@ def get_proto_sample_marketing_html(doc):
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Mode Of Dispatch</span>
     <span >:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 
 
         <br>
@@ -5664,23 +5991,73 @@ def get_debit_note_html(doc):
 <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Valid From</span>
     <span>:&nbsp;&nbsp;&nbsp;
-        {{ frappe.utils.formatdate(doc.approval_debit_note[0].valid_from, "dd-MM-yyyy") 
-           if doc.approval_debit_note and doc.approval_debit_note[0].valid_from else 'NA' }}
+
+    {% if doc.validate_from %}
+        {{ frappe.utils.formatdate(doc.validate_from, "dd-MM-yyyy") }}
+    {% elif doc.approval_debit_note and doc.approval_debit_note[0].valid_from %}
+        {{ frappe.utils.formatdate(doc.approval_debit_note[0].valid_from, "dd-MM-yyyy") }}
+    {% else %}
+        NA
+    {% endif %}
+
     </span>
 </div>
+
 
 <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Valid To</span>
     <span>:&nbsp;&nbsp;&nbsp;
-        {{ frappe.utils.formatdate(doc.approval_debit_note[0].valid_to, "dd-MM-yyyy") 
-           if doc.approval_debit_note and doc.approval_debit_note[0].valid_to else 'NA' }}
+      {% if doc.valid_to %}
+        {{ frappe.utils.formatdate(doc.valid_to, "dd-MM-yyyy") }}
+    {% elif doc.approval_debit_note and doc.approval_debit_note[0].valid_to %}
+        {{ frappe.utils.formatdate(doc.approval_debit_note[0].valid_to, "dd-MM-yyyy") }}
+    {% else %}
+        NA
+    {% endif %}
     </span>
 </div>
 <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;white-space:nowrap">Remarks</span>
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 <br>
 {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
 
@@ -6031,7 +6408,44 @@ def get_business_volume_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -6314,8 +6728,10 @@ def get_customer_name_change_html(doc):
        <td style="width:50%; border:1px solid black; vertical-align:top; padding:5px; border-bottom:none;border-right:none;">
            <p style="line-height:1.1">
     <span style="display:inline-block; width:100px;">Dept.From </span>:&nbsp;{{ doc.department_from or '' }}<br><br>
-    <span style="display:inline-block; width:100px;">Requested By</span>: &nbsp;{{ doc.employee_name or '' }}<br><br>
+    <span style="display:inline-block; width:100px;">Dept.To </span>:&nbsp;{{ doc.department_to or '' }}<br><br>
+
     <span style="display:inline-block; width:100px;">Created By</span>: &nbsp;{{emp_name or '' }}<br><br>
+   
 </p>
 
        </td>
@@ -6323,7 +6739,7 @@ def get_customer_name_change_html(doc):
            <p style="line-height:1.1">
             <span style="display:inline-block; width:90px;">Date & Time</span>: {{ frappe.utils.format_datetime(doc.date_time, "dd-MM-yyyy HH:mm:ss") or '' }}<br><br>
     <span style="display:inline-block; width:90px;">Doc.No</span>: {{ doc.name }}<br><br>
-    <span style="display:inline-block; width:90px;">Instructed By</span>: &nbsp;{{ doc.employee_name or '' }}<br><br>
+        <span style="display:inline-block; width:90px;white-space:nowrap">Requested By&nbsp</span>: &nbsp;{{ doc.employee_name or '' }}<br><br>
 
        </p></td>
    </tr>
@@ -6390,7 +6806,44 @@ def get_customer_name_change_html(doc):
 {%endif%}
       
         <br>
-      
+      <div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
+
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
      <table>
@@ -6670,7 +7123,44 @@ def get_payment_right_off_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
      <table>
@@ -6908,7 +7398,44 @@ def get_sales_order_dc_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;white-space:nowrap">Remarks</span>
             <span>:&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
      <table>
@@ -7165,7 +7692,44 @@ def get_part_level_change_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;white-space:nowrap">Remarks</span>
             <span>:&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
      <table>
@@ -7422,6 +7986,44 @@ def get_invoice_cancel_html(doc):
     <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Remarks</span>
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
+</div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
+
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
 </div>
          <br>
     {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
@@ -8014,6 +8616,44 @@ def get_air_shipment_delivery_html(doc):
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Remarks</span>
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
+
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
          <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
      <table>
@@ -8302,6 +8942,44 @@ def get_air_shipment_reopen_html(doc):
     <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Remarks</span>
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
+</div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
+
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
 </div>
          <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
@@ -8648,7 +9326,44 @@ def get_schedule_increase_delivery_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -8943,7 +9658,44 @@ def get_air_shipment_material_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -9210,7 +9962,44 @@ def get_material_request_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;white-space:nowrap">Remarks</span>
             <span>:&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -9501,7 +10290,44 @@ def get_price_revision_material_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -9844,7 +10670,44 @@ def get_product_conversion_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -10134,7 +10997,44 @@ def get_vendor_split_order_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -10479,7 +11379,44 @@ def get_debit_note_materail_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;;white-space:nowrap">MODE OF DISPATCH</span>
             <span>:&nbsp;&nbsp;{{ doc.mode_of_dispatch or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -10762,7 +11699,7 @@ def get_schedule_totals(docname):
     schedule_sums_item = frappe.db.sql("""
         SELECT item_group, SUM(schedule_amount) AS total_schedule_item
         FROM `tabSales Order Schedule`
-        WHERE schedule_month = %s
+        WHERE schedule_month = %s AND docstatus = 1
         GROUP BY item_group
     """, (schedule_month,), as_dict=True)
 
@@ -11204,7 +12141,44 @@ def get_new_business_po_html_new(doc):
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Freight</span>
     <span >:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.freight or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 
 
         <br>
@@ -11556,7 +12530,44 @@ def get_air_shipment_reopen_html_new(doc):
     <span >:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.freight or 'NA' }}</span>
 </div>
 
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
@@ -11899,7 +12910,44 @@ def get_price_revision_mpl_html(doc):
             <span style="display:inline-block;width:140px;font-weight:bold;;white-space:nowrap">Freight</span>
             <span>:&nbsp;&nbsp;{{ doc.freight or 'NA' }}</span>
         </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -12250,7 +13298,44 @@ def get_air_shipment_reopen_html_new_mpl(doc):
     <span >:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.freight or 'NA' }}</span>
 </div>
 
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
@@ -12584,6 +13669,44 @@ def get_stock_change_req_html(doc):
 <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Remarks</span>
     <span >:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
+</div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
+
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
 </div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
@@ -12950,7 +14073,44 @@ def get_manpower_req_html(doc):
 
 </div>
 
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -13331,7 +14491,44 @@ def get_business_visit_html(doc):
     <span style="display:inline-block;width:160px;font-weight:bold;">Remarks</span>
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
 
         <br>
@@ -13681,7 +14878,44 @@ def get_supplier_registeration_html(doc):
     <span style="display:inline-block;width:160px;font-weight:bold;">Remarks</span>
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
 
         <br>
@@ -14005,7 +15239,44 @@ def get_customer_registeration_html(doc):
     <span style="display:inline-block;width:160px;font-weight:bold;">Remarks</span>
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
 
         <br>
@@ -14236,7 +15507,7 @@ def get_travel_request_html(doc):
     <span style="display:inline-block; width:100px;">Dept.From </span>:&nbsp;{{ doc.department_from or '' }}<br><br>
     <span style="display:inline-block; width:100px;">Dept.To </span>:&nbsp;{{ doc.department_to or '' }}<br><br>
 
-    <span style="display:inline-block; width:100px;padding-bottom:20px;">Requested By</span>: &nbsp;{{doc.employee_name or '' }}<br><br>
+    <span style="display:inline-block; width:100px;padding-bottom:20px;">Requested By</span>: &nbsp;{{emp_name or '' }}<br><br>
    
 </p>
 
@@ -14245,7 +15516,7 @@ def get_travel_request_html(doc):
            <p style="line-height:1.1">
             <span style="display:inline-block; width:90px;">Date & Time</span>: {{ frappe.utils.format_datetime(doc.date_time, "dd-MM-yyyy HH:mm:ss") or '' }}<br><br>
     <span style="display:inline-block; width:90px;">Doc.No</span>: {{ doc.name }}<br><br>
-        <span style="display:inline-block; width:90px;white-space:nowrap;padding-bottom:20px;">Instructed By&nbsp</span>: &nbsp;{{ doc.instructed_by or '' }}<br><br>
+        <span style="display:inline-block; width:90px;white-space:nowrap;padding-bottom:20px;">Instructed By&nbsp</span>: &nbsp;{{ doc.employee_name or '' }}<br><br>
 
        </p></td>
    </tr>
@@ -14433,7 +15704,44 @@ def get_travel_request_html(doc):
     <span style="display:inline-block;width:160px;font-weight:bold;">Remarks</span>
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.subject or 'NA' }}</span>
 </div>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
 {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
 
         <br>
@@ -14576,6 +15884,7 @@ def get_supplier_reqest_html(doc):
     bmd_signature = frappe.db.get_value("Employee", {"name": 'BMD01'}, "custom_digital_signature")
     cmd_signature = frappe.db.get_value("Employee", {"name": "CMD01"}, "custom_digital_signature")
     gm_signature = frappe.db.get_value("Employee", {"name":"KR002"}, "custom_digital_signature")
+    supplier_sign=frappe.db.get_value("Supplier", {"name": doc.get("supplier_new_name")}, "custom_digital_signature")
     for row in doc.get("supplier_stock_reconciliation", []):
         diff = row.get("difference", 0)
         value = abs(row.get("value", 0))  
@@ -14644,7 +15953,7 @@ def get_supplier_reqest_html(doc):
     <tr>
        <td style="width:50%; border:1px solid black; vertical-align:top; padding:5px; border-bottom:none;border-right:none;">
            <p style="line-height:1.1">
-    <span style="display:inline-block; width:100px;">Dept.From </span>:&nbsp;{{ doc.department_from or '' }}<br><br>
+    <span style="display:inline-block; width:100px;">Dept.From </span>:&nbsp;Supplier<br><br>
     <span style="display:inline-block; width:100px;">Dept.To </span>:&nbsp;{{ doc.department_to or '' }}<br><br>
 
     <span style="display:inline-block; width:100px;">Created By</span>: &nbsp;{{emp_name or '' }}<br><br>
@@ -14656,7 +15965,7 @@ def get_supplier_reqest_html(doc):
            <p style="line-height:1.1">
             <span style="display:inline-block; width:90px;">Date & Time</span>: {{ frappe.utils.format_datetime(doc.date_time, "dd-MM-yyyy HH:mm:ss") or '' }}<br><br>
     <span style="display:inline-block; width:90px;">Doc.No</span>: {{ doc.name }}<br><br>
-        <span style="display:inline-block; width:90px;white-space:nowrap">Requested By&nbsp</span>: &nbsp;{{ doc.employee_name or '' }}<br><br>
+        <span style="display:inline-block; width:90px;white-space:nowrap">Instructed By&nbsp</span>: &nbsp;{{ doc.employee_name or '' }}<br><br>
 
        </p></td>
    </tr>
@@ -14679,7 +15988,7 @@ def get_supplier_reqest_html(doc):
 {%set supplier_new_name=frappe.db.get_value("Supplier",{"name":doc.supplier_new_name},"supplier_name") %}
 <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Supplier Name</span>
-    <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ supplier_new_name or 'NA' }}</span>
+    <span style="color:blue;font-weight:bold">:&nbsp;&nbsp;&nbsp;&nbsp;{{ supplier_new_name or 'NA' }}</span>
 </div>
 
 <div style="margin-bottom: 4px;">
@@ -14703,16 +16012,16 @@ def get_supplier_reqest_html(doc):
 
 <table style="margin-bottom: 4px;">
  <tr>
-        <td style="background-color:#b3d1e3;text-align:center;">S.No</td>
-        <td style="background-color:#b3d1e3;text-align:center;">Item Code</td>
-        <td style="background-color:#b3d1e3;text-align:center;">Item Name</td>
-        <td style="background-color:#b3d1e3;text-align:center;">UOM</td>
-        <td style="background-color:#b3d1e3;text-align:center;">ERP Stock</td>
-        <td style="background-color:#b3d1e3;text-align:center;">Phy Stock</td>
-        <td style="background-color:#b3d1e3;text-align:center;">Difference</td>
-        <td style="background-color:#b3d1e3;text-align:center;">RM Cost ({{'INR'}})</td>
-        <td style="background-color:#b3d1e3;text-align:center;">Value ({{'INR'}})</td>
-        <td style="background-color:#b3d1e3;text-align:center;">Reason for Difference</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">S.No</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">Item Code</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">Item Name</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">UOM</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">ERP Stock</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">Phy Stock</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">Difference</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">RM Cost ({{'INR'}})</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">Value ({{'INR'}})</td>
+        <td style="background-color:#b3d1e3;text-align:center;font-weight:bold">Reason for Difference</td>
 
         </tr>
         
@@ -14720,23 +16029,33 @@ def get_supplier_reqest_html(doc):
 
      {% for i in doc.supplier_stock_reconciliation%}
     <tr>
-        <td>{{loop.index}}</td>
-        <td style="text-align:left;white-space:nowrap;">{{i.item_code or ''}}</td>
-        <td style="text-align:left;">{{i.item_name or ''}}</td>
-        <td style="text-align:center;white-space:nowrap;">{{i.uom or ''}}</td>
-        <td style="text-align:center;white-space:nowrap;">{{i.erp_stock}}</td>
-        <td style="text-align:center;white-space:nowrap;">{{i.phy_stock}}</td>
-       <td style="text-align:center;white-space:nowrap;">
-    {{ i.difference}}
+        <td style="font-size:12px;">{{loop.index}}</td>
+        <td style="text-align:left;white-space:nowrap;font-size:12px;">{{i.item_code or ''}}</td>
+        <td style="text-align:left;font-size:12px;">{{i.item_name or ''}}</td>
+        <td style="text-align:center;white-space:nowrap;font-size:12px;">{{i.uom or ''}}</td>
+        <td style="text-align:center;white-space:nowrap;font-size:12px;">{{i.erp_stock or '-'}}</td>
+        <td style="text-align:center;white-space:nowrap;font-size:12px;">{{i.phy_stock or '-'}}</td>
+       <td style="text-align:center;white-space:nowrap;font-size:12px;">
+    {{ i.difference or '-'}}
     <span style="color:{{ i.arrow_color }}; font-weight:bold;">{{ i.arrow }}</span>
 </td>
 
-        <td style="text-align:right;white-space:nowrap;">{{frappe.utils.fmt_money(i.rate or 0 , currency="INR" ,precision=4)}}</td>
-        <td style="text-align:right;white-space:nowrap;">
-    {{ frappe.utils.fmt_money(i.value or 0 , currency="INR", precision=0) }}
+        <td style="text-align:right;white-space:nowrap;font-size:12px;">
+          {% if i.rate %}
+        {{ frappe.utils.fmt_money(i.rate, currency="INR", precision=4) }}
+    {% else %}
+        -
+    {% endif %}</td>
+     <td style="text-align:right;white-space:nowrap;font-size:12px;">
+    {% if i.value %}
+        {{ frappe.utils.fmt_money(i.value, currency="INR", precision=0) }}
+    {% else %}
+        -
+    {% endif %}
     <span style="color:{{ i.value_arrow_color }}; font-weight:bold;">{{ i.value_arrow }}</span>
 </td>
-<td style="text-align:left;">{{i.reason_for_difference or ''}}</td>
+
+<td style="text-align:left;font-size:12px;">{{i.reason_for_difference or ''}}</td>
     </tr>
     {%endfor%}
     <tr><br>
@@ -14744,7 +16063,11 @@ def get_supplier_reqest_html(doc):
         Total Shortage Value
     </td>
     <td style="padding-top:20px;text-align:left;white-space:nowrap;font-weight:bold;border-right:hidden;border-bottom:hidden;border-left:hidden">
+        {%if total_shortage%}
         {{ frappe.utils.fmt_money(total_shortage, currency="INR", precision=0) }}
+        {% else %}
+        -
+    {% endif %}
         {% if total_shortage > 0 %}
             <span style="color:red; font-weight:bold;">↓</span>
         {% endif %}
@@ -14757,7 +16080,11 @@ def get_supplier_reqest_html(doc):
         Total Excess Value
     </td>
     <td style="padding-top:20px;text-align:left;white-space:nowrap;font-weight:bold;border-right:hidden;border-bottom:hidden;border-left:hidden">
+        {%if total_excess%}
         {{ frappe.utils.fmt_money(total_excess, currency="INR", precision=0) }}
+        {% else %}
+        -
+    {% endif %}
         {% if total_excess > 0 %}
             <span style="color:green; font-weight:bold;">↑</span>
         {% endif %}
@@ -14771,52 +16098,83 @@ def get_supplier_reqest_html(doc):
 </div>
 <table style="margin-bottom: 4px;">
  <tr>
-        <td style="background-color:#fec76f;text-align:center;">S.No</td>
-        <td style="background-color:#fec76f;text-align:center;">Total Shortage Value</td>
-        <td style="background-color:#fec76f;text-align:center;">Supplier Accept Debit Value</td>
-        <td style="background-color:#fec76f;text-align:center;">Supplier Not Accept Debit Value</td>
-        <td style="background-color:#fec76f;text-align:center;">Remarks</td>
+        <td style="background-color:#fec76f;text-align:center;font-weight:bold">S.No</td>
+        <td style="background-color:#fec76f;text-align:center;font-weight:bold">Total ERP Stock Value</td>
+        <td style="background-color:#fec76f;text-align:center;font-weight:bold">Total Phy Value</td>
+        <td style="background-color:#fec76f;text-align:center;font-weight:bold">Total Shortage Value</td>
+        <td style="background-color:#fec76f;text-align:center;font-weight:bold">Supplier Accept Debit Value</td>
+        <td style="background-color:#fec76f;text-align:center;font-weight:bold">Supplier Not Accept Debit Value</td>
+        <td style="background-color:#fec76f;text-align:center;font-weight:bold">Remarks</td>
 </tr>
 <tr>
  <td style="text-align:center;">1</td>
-        <td style="text-align:right;"> {{ frappe.utils.fmt_money(doc.tot_short_value, currency="INR", precision=0) }}</td>
-        <td style="text-align:right;">{{ frappe.utils.fmt_money(doc.supplier_accept_debit_value, currency="INR", precision=0) }}</td>
-        <td style="text-align:right;">{{ frappe.utils.fmt_money(doc.supplier_not_accept_debit_value, currency="INR", precision=0) }}</td>
+ {%if doc.total_erp_value%}
+ <td style="text-align:right;font-weight:bold;color:blue"> {{ frappe.utils.fmt_money(doc.total_erp_value, currency="INR", precision=0) }}</td>
+  {% else %}
+      <td style="text-align:right;font-weight:bold">-</td>
+    {% endif %}
+    {%if doc.total_phy_value%}
+ <td style="text-align:right;font-weight:bold;color:green"> {{ frappe.utils.fmt_money(doc.total_phy_value, currency="INR", precision=0) }}</td>
+        {% else %}
+         <td style="text-align:right;font-weight:bold">-</td>
+    {% endif %}
+    {%if doc.tot_short_value%}
+         <td style="text-align:right;font-weight:bold;color:red"> {{ frappe.utils.fmt_money(doc.tot_short_value, currency="INR", precision=0) }}</td>
+         {% else %}
+        <td style="text-align:right;font-weight:bold;">-</td>
+    {% endif %}
+     {%if doc.supplier_accept_debit_value%}
+        <td style="text-align:right;font-weight:bold;color:green">{{ frappe.utils.fmt_money(doc.supplier_accept_debit_value, currency="INR", precision=0) }}</td>
+      {% else %}
+          <td style="text-align:right;font-weight:bold">-</td>
+    {% endif %}   
+      {%if doc.supplier_not_accept_debit_value%}
+        <td style="text-align:right;font-weight:bold;color:red">{{ frappe.utils.fmt_money(doc.supplier_not_accept_debit_value, currency="INR", precision=0) }}</td>
+     {% else %}
+         <td style="text-align:right;font-weight:bold">-</td>
+    {% endif %}       
         <td style="text-align:left;">{{doc.remarks or ''}}</td>
 </tr>
-</table><br>
-<!-- Approved & Rejected Remarks Section -->
-<table style="width:100%; margin-top:10px; border-collapse: collapse;">
-    <tr>
-
-        {# -------------------- APPROVED REMARKS -------------------- #}
-        {% if doc.approval_remarks %}
-        <td style="width:50%; vertical-align:top; padding-right:10px;">
-            <div><b style="color:#008000; text-decoration: underline;">Approved Remarks</b><br><br>
-                {% for r in doc.approval_remarks %}
-                    ● {{ r.remarks or '' }}
-                    {% if not loop.last %}<br>{% endif %}
-                {% endfor %}
-            </div>
-        </td>
-        {% endif %}
-
-        {# -------------------- REJECTED REMARKS -------------------- #}
-        {% if doc.rejection_remarks %}
-        <td style="width:50%; vertical-align:top; padding-left:10px;">
-            <div><b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b><br><br>
-                {% for r in doc.rejection_remarks %}
-                    ● {{ r.rejection_remarks or '' }}
-                    {% if not loop.last %}<br>{% endif %}
-                {% endfor %}
-            </div>
-        </td>
-        {% endif %}
-
-    </tr>
 </table>
+<br>
+<div style="width:100%; margin-top:10px; display:flex; justify-content:space-between; gap:20px;">
 
+    {% if doc.approval_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#008000; text-decoration: underline;">Approved Remarks</b>
+        <br><br>
+        {% for r in doc.approval_remarks %}
+        {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+            ● <b>{{ user_full_name or r.user }}</b> -{{ r.remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
 
+    {% if doc.rejection_remarks %}
+    <div style="
+        width:50%;
+        padding:10px;
+        border:1px solid #000;
+        box-sizing:border-box;
+    ">
+        <b style="color:#FF0000; text-decoration: underline;">Rejected Remarks</b>
+        <br><br>
+        {% for r in doc.rejection_remarks %}
+                {% set user_full_name = frappe.db.get_value("Employee",{ "user_id":r.user}, "employee_name") %}
+
+            ●<b>{{ user_full_name or r.user }}</b> : {{ r.rejection_remarks or '' }}
+            {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
         <br>
         {% set name=frappe.db.get_value("Employee",{"user_id":doc.owner},"employee_name") %}
     <table>
@@ -14859,7 +16217,7 @@ def get_supplier_reqest_html(doc):
     </td>
     <td style="text-align:center;">
     {% if py.show_till("Pending for Supplier") %}
-        {{ show_signature("", doc.supplier_approved_on, "Pending for Supplier", doc.workflow_state, stop_state) }}
+        {{ show_signature(supplier_sign, doc.supplier_approved_on, "Pending for Supplier", doc.workflow_state, stop_state) }}
     {% endif %}
 </td>
 
@@ -14920,6 +16278,7 @@ def get_supplier_reqest_html(doc):
         "finance_signature":finance_signature,
         "bmd_signature":bmd_signature,
         "gm_signature":gm_signature,
+        "supplier_sign":supplier_sign,
         "stop_state":stop_state,
         "total_shortage": total_shortage,
         "total_excess": total_excess,

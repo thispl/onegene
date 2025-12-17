@@ -229,17 +229,18 @@ def process_approval_schedule_sheet(docname, file_url,month):
 
         schedule_data = frappe.db.get_value(
             "Sales Order Schedule",
-            {"sales_order_number": sales_order, "item_code": item_code,"schedule_month": month},
+            {"sales_order_number": sales_order, "item_code": item_code,"schedule_month": month,"docstatus":1},
             ["qty", "schedule_amount", "order_rate"],
             as_dict=True
         )
         qty = schedule_amount = order_rate = 0
-
+        item_data = frappe.db.get_value("Sales Order Item",{"parent": sales_order, "item_code": item_code},["rate"],as_dict=True)
         if schedule_data:
             qty = schedule_data.qty or 0
             schedule_amount = schedule_data.schedule_amount or 0
             order_rate = schedule_data.order_rate or 0
         else:
+            order_rate = item_data.rate or 0
             frappe.logger().info(f" No Sales Order Schedule found for SO={sales_order}, Item={item_code}")
         
 
@@ -407,17 +408,20 @@ def process_approval_schedule_sheet_supplier(docname, file_url,month):
 
         schedule_data = frappe.db.get_value(
             "Purchase Order Schedule",
-            {"purchase_order_number": purchase_order, "item_code": item_code,"schedule_month": month},
+            {"purchase_order_number": purchase_order, "item_code": item_code,"schedule_month": month,"docstatus":1},
             ["qty", "schedule_amount", "order_rate"],
             as_dict=True
         )
 
         qty = schedule_amount = order_rate = 0
+        item_data = frappe.db.get_value("Purchase Order Item",{"parent": purchase_order, "item_code": item_code},["rate"],as_dict=True)
+
         if schedule_data:
             qty = schedule_data.qty or 0
             schedule_amount = schedule_data.schedule_amount or 0
             order_rate = schedule_data.order_rate or 0
         else:
+            order_rate = item_data.rate or 0
             frappe.logger().info(f" No Purchase Order Schedule found for PO={purchase_order}, Item={item_code}")
 
         # revised_qty = flt(row.get("Revised Schedule Quantity") or 0)
