@@ -1,0 +1,144 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:box_no",
+ "creation": "2025-05-28 11:08:38.586660",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "name1",
+  "column_break_16xi",
+  "box_no",
+  "dimensions_section",
+  "length",
+  "column_break_wucn",
+  "breadth",
+  "column_break_ylco",
+  "height",
+  "column_break_fzly",
+  "dimension_uom",
+  "section_break_zihj",
+  "box_dimensions_table",
+  "section_break_cyqc",
+  "weight",
+  "column_break_nqtu",
+  "weight_uom"
+ ],
+ "fields": [
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "dimensions_section",
+   "fieldtype": "Section Break",
+   "label": "Dimensions"
+  },
+  {
+   "fieldname": "length",
+   "fieldtype": "Float",
+   "label": "Length"
+  },
+  {
+   "fieldname": "column_break_wucn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "breadth",
+   "fieldtype": "Float",
+   "label": "Breadth"
+  },
+  {
+   "fieldname": "column_break_ylco",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "height",
+   "fieldtype": "Float",
+   "label": "Height"
+  },
+  {
+   "fieldname": "column_break_fzly",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Millimeter",
+   "fieldname": "dimension_uom",
+   "fieldtype": "Link",
+   "label": "Dimension UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_zihj",
+   "fieldtype": "Section Break",
+   "read_only": 1
+  },
+  {
+   "fieldname": "box_dimensions_table",
+   "fieldtype": "Table",
+   "label": "Box Dimensions Table",
+   "options": "Box Dimensions Table",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_cyqc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "weight",
+   "fieldtype": "Float",
+   "label": "Weight"
+  },
+  {
+   "fieldname": "column_break_nqtu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Kg",
+   "fieldname": "weight_uom",
+   "fieldtype": "Link",
+   "label": "Weight UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_16xi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "box_no",
+   "fieldtype": "Data",
+   "label": "Box No",
+   "unique": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-06-09 17:17:13.536304",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Box",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

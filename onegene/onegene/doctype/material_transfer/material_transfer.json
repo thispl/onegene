@@ -1,0 +1,200 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "MT -.#####",
+ "creation": "2025-09-16 18:49:41.286548",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_mjer",
+  "column_break_ojcs",
+  "material_request",
+  "requested_by",
+  "requester_name",
+  "status",
+  "column_break_uvyg",
+  "amended_from",
+  "posting_date",
+  "posting_time",
+  "issued_by",
+  "issued_by_name",
+  "default_warehouse_section",
+  "default_source_warehouse",
+  "column_break_tf0x",
+  "default_target_warehouse",
+  "items_section",
+  "item",
+  "section_break_jvsr",
+  "remark"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_mjer",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Material Transfer",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Posting Date",
+   "read_only": 1
+  },
+  {
+   "default": "Now",
+   "fieldname": "posting_time",
+   "fieldtype": "Time",
+   "label": "Posting Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "issued_by",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Issued By",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "issued_by.employee_name",
+   "fieldname": "issued_by_name",
+   "fieldtype": "Data",
+   "label": "Issued By Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ojcs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "material_request",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Material Request",
+   "options": "Material Request",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "material_request.custom_requested_by",
+   "fetch_if_empty": 1,
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Requested By",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "requested_by.employee_name",
+   "fieldname": "requester_name",
+   "fieldtype": "Data",
+   "label": "Requester Name",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "default_warehouse_section",
+   "fieldtype": "Section Break",
+   "label": "Default Warehouse"
+  },
+  {
+   "fetch_from": "material_request.set_from_warehouse",
+   "fetch_if_empty": 1,
+   "fieldname": "default_source_warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Default Source Warehouse",
+   "options": "Warehouse",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_tf0x",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "material_request.set_warehouse",
+   "fetch_if_empty": 1,
+   "fieldname": "default_target_warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Default Target Warehouse",
+   "options": "Warehouse",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Table",
+   "label": "Item",
+   "options": "Material Transfer Items",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_uvyg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Pending\nPartially Issued\nIssued",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_jvsr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "remark",
+   "fieldtype": "Small Text",
+   "label": "Remark",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-10-30 19:31:17.617258",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Material Transfer",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

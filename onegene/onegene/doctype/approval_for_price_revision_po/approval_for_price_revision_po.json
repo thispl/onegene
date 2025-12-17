@@ -1,0 +1,195 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-17 14:55:59.173813",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "part_no",
+  "part_name",
+  "uom",
+  "po_no_new",
+  "po_type",
+  "po_no",
+  "po_price",
+  "current_priceinr",
+  "new_price",
+  "new_priceinr",
+  "increase_price",
+  "gst",
+  "column_break_drmu",
+  "increase_price_inr",
+  "hsn_code",
+  "reason_for_request"
+ ],
+ "fields": [
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "part_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fetch_from": "part_no.item_name",
+   "fetch_if_empty": 1,
+   "fieldname": "part_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.po_type==\"New\"",
+   "fieldname": "po_no_new",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "PO No (New)"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": ".grand_total",
+   "fieldname": "po_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Current Price",
+   "options": "currency",
+   "precision": "5",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": ".base_grand_total",
+   "fieldname": "current_priceinr",
+   "fieldtype": "Currency",
+   "label": "Current  Price(INR)",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "default": "0",
+   "fieldname": "new_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "New Price",
+   "options": "currency",
+   "precision": "5",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "new_priceinr",
+   "fieldtype": "Currency",
+   "label": "New Price(INR)",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "increase_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Difference Price",
+   "options": "currency",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "gst",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "GST",
+   "options": "Item Tax Template",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "column_break_drmu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "po_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "PO Type",
+   "options": "\nOpen\nClosed"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "po_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "PO No",
+   "options": "Sales Order",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "increase_price_inr",
+   "fieldtype": "Currency",
+   "label": "Difference Price (INR)",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "part_no.gst_hsn_code",
+   "fetch_if_empty": 1,
+   "fieldname": "hsn_code",
+   "fieldtype": "Link",
+   "label": "HSN Code",
+   "options": "GST HSN Code",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "reason_for_request",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Reason for Request"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": "part_no.stock_uom",
+   "fetch_if_empty": 1,
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-12-01 18:53:01.897792",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Approval for Price Revision PO",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

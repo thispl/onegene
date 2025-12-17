@@ -1,0 +1,110 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "PS.####",
+ "creation": "2023-08-25 12:01:28.142088",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer_code",
+  "customer_order_no",
+  "order_date",
+  "item_group",
+  "item_code",
+  "item_name",
+  "schedule_date",
+  "schedule_qty",
+  "tentative1",
+  "tentative2"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_order_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer Order No",
+   "reqd": 1
+  },
+  {
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "label": "Order Date"
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Data",
+   "label": "Item Group"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name"
+  },
+  {
+   "fieldname": "schedule_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Schedule Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "schedule_qty",
+   "fieldtype": "Data",
+   "label": "Schedule Qty",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tentative1",
+   "fieldtype": "Data",
+   "label": "Tentative-1"
+  },
+  {
+   "fieldname": "tentative2",
+   "fieldtype": "Data",
+   "label": "Tentative-2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-10-25 17:50:03.667416",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Production Schedule",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,223 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "MRB.####",
+ "creation": "2023-11-20 15:41:27.847674",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_details_section",
+  "purchase_receipt",
+  "item_code",
+  "description",
+  "item_inspection",
+  "supplier",
+  "material__process__machine",
+  "responsible",
+  "uom",
+  "rate",
+  "qty",
+  "material_review_board_mrb_information",
+  "disposition_of_non_conforming_material",
+  "column_break_4",
+  "product_description",
+  "warehouse",
+  "company",
+  "mrb_action",
+  "return_to_vendorsupplier_rework_state_rework_instruction",
+  "mrb_meeting_date",
+  "inspection_date",
+  "inspected_by",
+  "rework_instructions",
+  "section_break_16",
+  "mrb_review_report",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_details_section",
+   "fieldtype": "Section Break",
+   "label": "item Details"
+  },
+  {
+   "fieldname": "purchase_receipt",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Purchase Receipt",
+   "options": "Purchase Receipt"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "fieldname": "item_inspection",
+   "fieldtype": "Link",
+   "label": "Item Inspection ",
+   "options": "Item Inspection"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Data",
+   "label": "Supplier"
+  },
+  {
+   "fieldname": "material__process__machine",
+   "fieldtype": "Data",
+   "label": "Material / Process / Machine"
+  },
+  {
+   "fieldname": "responsible",
+   "fieldtype": "Data",
+   "label": "Responsible"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Uom",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Rate"
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "label": "Rejected Qty"
+  },
+  {
+   "fieldname": "material_review_board_mrb_information",
+   "fieldtype": "Small Text",
+   "label": "Material Review Board (MRB) Information"
+  },
+  {
+   "fieldname": "disposition_of_non_conforming_material",
+   "fieldtype": "Data",
+   "label": "Disposition of Non - Conforming Material"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "product_description",
+   "fieldtype": "Data",
+   "label": "Product Description"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "mrb_action",
+   "fieldtype": "Select",
+   "label": "MRB Action",
+   "options": "Use As is\nScrap\nReturn to Vendor\nRework"
+  },
+  {
+   "default": "0",
+   "fieldname": "return_to_vendorsupplier_rework_state_rework_instruction",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Return to Vendor(Supplier) Rework (State rework instruction) "
+  },
+  {
+   "fieldname": "mrb_meeting_date",
+   "fieldtype": "Date",
+   "label": "MRB Meeting Date"
+  },
+  {
+   "fieldname": "inspection_date",
+   "fieldtype": "Date",
+   "hidden": 1,
+   "label": "Inspection Date"
+  },
+  {
+   "fieldname": "inspected_by",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Inspected By",
+   "options": "User"
+  },
+  {
+   "fieldname": "rework_instructions",
+   "fieldtype": "Small Text",
+   "label": "Rework Instructions"
+  },
+  {
+   "fieldname": "section_break_16",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "mrb_review_report",
+   "fieldtype": "Small Text",
+   "label": "MRB Review Report"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "MRB",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "MRB",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-11-20 15:50:48.007991",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "MRB",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

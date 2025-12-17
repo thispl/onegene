@@ -1,0 +1,98 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-15 14:42:39.723665",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "datetime",
+  "employee",
+  "shift_type",
+  "entry_type",
+  "column_break_cvyp",
+  "rejected_qty",
+  "quantity",
+  "rejection_category",
+  "rejection_remarks"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "datetime",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Date & Time"
+  },
+  {
+   "columns": 2,
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "columns": 1,
+   "fieldname": "shift_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Shift Type",
+   "options": "Shift Type"
+  },
+  {
+   "columns": 1,
+   "fieldname": "entry_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Entry Type",
+   "options": "\nDirect\nRework"
+  },
+  {
+   "fieldname": "column_break_cvyp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "rejected_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Rejected Qty",
+   "precision": "0"
+  },
+  {
+   "fieldname": "rejection_category",
+   "fieldtype": "Link",
+   "label": "Rejection Category",
+   "options": "Rejection Category"
+  },
+  {
+   "fieldname": "rejection_remarks",
+   "fieldtype": "Link",
+   "label": "Rejection Remarks",
+   "options": "Rejection Reason"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quantity"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-23 11:32:46.552054",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Job Card Rejection Logs",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

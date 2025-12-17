@@ -1,0 +1,33 @@
+{% extends "templates/web.html" %}
+{% block title %} OT HOURS {% endblock %}
+{% block head_include %}
+<style>
+    body {
+        padding: 35px;
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css" />
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+{% endblock %}
+{% block content %}
+{% if att_data %}
+    <div id="birthdayCarousel" class="carousel slide" data-ride="carousel" data-interval="9000">
+        <div class="carousel-inner">
+            {% for index, table_html in enumerate(att_data) %}
+                <div class="carousel-item {% if index == 0 %} active {% endif %}">
+                    {{ table_html|safe }}
+                </div>
+            {% endfor %}
+        </div>
+        <a class="carousel-control-prev" href="#birthdayCarousel" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#birthdayCarousel" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
+

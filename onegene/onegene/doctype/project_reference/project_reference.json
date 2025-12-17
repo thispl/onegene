@@ -1,0 +1,151 @@
+{
+ "actions": [],
+ "autoname": "field:project_name",
+ "creation": "2025-05-05 15:12:14.031289",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "project_name",
+  "end_client_user_name",
+  "end_client_user_industry",
+  "column_break_5",
+  "customer_contractor",
+  "consultant_company",
+  "consultant_name",
+  "section_break_9",
+  "items_table",
+  "section_break_11",
+  "sales_invoice",
+  "sales_person_name",
+  "so_submitted_date",
+  "company",
+  "column_break_16",
+  "so_status_live",
+  "remarks",
+  "attach_file"
+ ],
+ "fields": [
+  {
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Project Name/Reference",
+   "unique": 1
+  },
+  {
+   "fetch_from": "End Client.end_client__user_name",
+   "fieldname": "end_client_user_name",
+   "fieldtype": "Data",
+   "label": "End Client / User Name"
+  },
+  {
+   "fetch_from": "End Client.industry_type",
+   "fieldname": "end_client_user_industry",
+   "fieldtype": "Data",
+   "label": "End Client / User Industry"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer_contractor",
+   "fieldtype": "Data",
+   "label": "Customer / Contractor"
+  },
+  {
+   "fieldname": "consultant_company",
+   "fieldtype": "Data",
+   "label": "Consultant Company"
+  },
+  {
+   "fieldname": "consultant_name",
+   "fieldtype": "Data",
+   "label": "Consultant Name"
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items_table",
+   "fieldtype": "Table",
+   "label": "Items Table",
+   "options": "Items Table"
+  },
+  {
+   "fieldname": "section_break_11",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice",
+   "options": "Sales Invoice"
+  },
+  {
+   "fieldname": "sales_person_name",
+   "fieldtype": "Data",
+   "label": "Sales Person Name"
+  },
+  {
+   "fieldname": "so_submitted_date",
+   "fieldtype": "Date",
+   "label": "SI Submitted Date"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "so_status_live",
+   "fieldtype": "Data",
+   "label": "SI Status_Live"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "attach_file",
+   "fieldtype": "Attach",
+   "label": "Attach File"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-05-05 15:12:14.031289",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Project Reference",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "project_name",
+ "track_changes": 1
+}

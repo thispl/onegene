@@ -1,0 +1,142 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<style>
+  :root {
+    --primary: black;
+    --primary-light: #EEF2FF;
+    --success: #10B981;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+    --info: #3B82F6;
+    --dark: #1F2937;
+    --light: #F9FAFB;
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .inline-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+  }
+
+  #qr-input, #qr-video {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  #qr-video {
+    display: none;
+  }
+</style>
+
+<div class="d-flex flex-column align-items-center justify-content-center">
+  <h3>Scan a QR Code</h3>
+
+    <!-- Show QR Code -->
+    
+    <div class="d-flex flex-row justify-content-center align-items-center" style="margin-bottom: -100px; margin-top: 50px;">
+      
+      {% if "Stock User" in user_roles %}
+      <div class="d-flex flex-column justify-content-center align-items-center">
+        <img width="150px" 
+            src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&amp;data=https://erp.onegeneindia.in/app/store-receipt/new-store-receipt-qcdyoofjri" 
+            alt="QR Code" />
+        <p class="mt-5" style="font-size: 18px; font-weight: 700;">Store Receipt</p>
+      </div>
+  {% endif %}
+    </div>
+
+
+  <div class="w-100 d-flex flex-column justify-content-center align-items-center" style="min-height: 360px;">
+    <div id="qr-input">
+      <input type="text" id="qr-url-input" style="border-radius: 8px; padding-left: 10px; padding-top: 5px; padding-bottom: 5px; width: 100%;" placeholder="Scan using reader" />
+    </div>
+
+    <div id="qr-video" class="mt-5">
+      <video style="border-radius: 10px; width: 100%;" id="preview"></video>
+    </div>
+
+    <p id="result" style="font-weight: bold;"></p>
+  </div>
+
+  <div class="inline-container mt-3">
+    <div>
+      <input type="radio" id="inline1" name="inline" checked onchange="toggleMode()">
+      <label for="inline1">QR Reader</label>
+    </div>
+    <div>
+      <input type="radio" id="inline2" name="inline" onchange="toggleMode()">
+      <label for="inline2">Scan QR</label>
+    </div>
+  </div>
+
+  <button class="btn btn-dark mt-3" style="padding-left: 15px; padding-right: 15px" onclick="window.location.href='/app/supplier-delivery'">Back to Home</button>
+</div>
+
+<script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+<script>
+  function toggleMode() {
+    const isReader = document.getElementById("inline1").checked;
+    const inputField = document.querySelector("#qr-input input");
+    document.getElementById("qr-input").style.display = isReader ? "block" : "none";
+    document.getElementById("qr-video").style.display = isReader ? "none" : "block";
+
+    if (isReader) {
+      setTimeout(() => inputField.focus(), 100);
+    }
+  }
+
+  // Scanner setup
+  let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+  scanner.addListener('scan', function (content) {
+    // document.getElementById("result").innerText = "Scanned: " + content;
+    if (content.startsWith("http://") || content.startsWith("https://")) {
+      window.location.href = content; // Open in a new tab
+      document.querySelector("#qr-url-input").value = ""; // Clear the input after successful redirect
+    } else {
+      alert("Scanned content is not a URL: " + content);
+    }
+  });
+
+  Instascan.Camera.getCameras().then(function (cameras) {
+    if (cameras.length > 0) {
+      scanner.start(cameras[0]);
+    } else {
+      alert('No cameras found.');
+    }
+  }).catch(function (e) {
+    console.error(e);
+    alert("Camera access denied or error occurred.");
+  });
+
+  // Call toggle on load to ensure default visibility
+  window.onload = toggleMode;
+
+  // Redirect if input is a valid URL in a new tab
+  document.querySelector("#qr-url-input").addEventListener("change", function () {
+    const url = this.value.trim();
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      window.location.href = url; // Open in a new tab
+      this.value = ""; // Clear the input field after successful redirect
+    } else {
+      alert("Input is not a valid URL.");
+    }
+  });
+
+
+  frappe.call("frappe.client.get", {
+      doctype: "User",
+      name: frappe.session.user
+  }).then(r => {
+      if (r.message && r.message.roles) {
+          const roles = r.message.roles.map(x => x.role);
+          if (roles.includes("Store User")) {
+              document.getElementById("store-qr").style.display = "block";
+          }
+      }
+  });
+</script>
+{% endblock %}

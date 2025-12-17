@@ -1,0 +1,469 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-05-05 14:18:40.470646",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "supplier_po_section",
+  "supplier_name",
+  "supplier_code",
+  "supplier_group",
+  "schedule_date",
+  "schedule_month",
+  "column_break_eylx",
+  "purchase_order_number",
+  "po_type",
+  "order_type",
+  "schedule_year",
+  "currency_section",
+  "currency",
+  "column_break_kfqz",
+  "exchange_rate",
+  "section_break_uqjh",
+  "item_code",
+  "item_group",
+  "item_name",
+  "column_break_qstg",
+  "order_rate",
+  "order_rate_inr",
+  "section_break_oyzr",
+  "qty",
+  "received_qty",
+  "pending_qty",
+  "column_break_bibq",
+  "schedule_amount",
+  "received_amount",
+  "pending_amount",
+  "column_break_ngwb",
+  "schedule_amount_inr",
+  "received_amount_inr",
+  "pending_amount_inr",
+  "revisions_section",
+  "revision",
+  "received",
+  "section_break_ucqs",
+  "created_by",
+  "column_break_nsxl",
+  "remarks",
+  "amended_from",
+  "disable_update_items",
+  "section_break_ibif",
+  "column_break_bway",
+  "column_break_n7cvb",
+  "column_break_woiq",
+  "column_break_dtfp",
+  "column_break_kbvn",
+  "column_break_rmly",
+  "child_name",
+  "summary_tab",
+  "schedule_summary"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": ".{purchase_order_number}./.{schedule_month}./.####"
+  },
+  {
+   "fieldname": "supplier_po_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier & PO Details"
+  },
+  {
+   "fetch_from": "supplier_name.supplier_code",
+   "fieldname": "supplier_code",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Supplier Code"
+  },
+  {
+   "fetch_from": ".supplier",
+   "fieldname": "supplier_name",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_eylx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "purchase_order_number",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Purchase Order Number",
+   "options": "Purchase Order",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "purchase_order_number.custom_order_type",
+   "fieldname": "order_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier Order Type",
+   "options": "\nFixed\nOpen"
+  },
+  {
+   "fieldname": "schedule_month",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Schedule Month",
+   "options": "JAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC",
+   "reqd": 1
+  },
+  {
+   "fieldname": "schedule_year",
+   "fieldtype": "Data",
+   "label": "Schedule Year",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_uqjh",
+   "fieldtype": "Section Break",
+   "label": "Item Details"
+  },
+  {
+   "fetch_from": ".",
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "column_break_qstg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Item Name"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "order_rate",
+   "fieldtype": "Currency",
+   "label": "Order Rate",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_oyzr",
+   "fieldtype": "Section Break",
+   "label": "Qty & Amount"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Schedule Qty",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "received_qty",
+   "fieldtype": "Float",
+   "label": "Received Qty",
+   "no_copy": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "pending_qty",
+   "fieldtype": "Float",
+   "label": "Pending Qty",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_bibq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "schedule_amount",
+   "fieldtype": "Currency",
+   "label": "Schedule Amount",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "received_amount",
+   "fieldtype": "Currency",
+   "label": "Received Amount",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "pending_amount",
+   "fieldtype": "Currency",
+   "label": "Pending Amount",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_ucqs",
+   "fieldtype": "Section Break",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Read Only",
+   "label": "Created By",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_nsxl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Purchase Order Schedule",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "revisions_section",
+   "fieldtype": "Section Break",
+   "label": "Revisions"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "revision",
+   "fieldtype": "Table",
+   "label": "Revision",
+   "no_copy": 1,
+   "options": "Purchase Order Schedule Revision",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ibif",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_bway",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_n7cvb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_woiq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_dtfp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_kbvn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_rmly",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "child_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Child Name",
+   "no_copy": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Purchase Order Schedule",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "disable_update_items",
+   "fieldtype": "Check",
+   "label": "Disable Update Items",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "received",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Received",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "schedule_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Schedule Date",
+   "no_copy": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "order_rate_inr",
+   "fieldtype": "Currency",
+   "label": "Order Rate (INR)",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "currency_section",
+   "fieldtype": "Section Break",
+   "label": "Currency"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "default": "1",
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "precision": "9",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ngwb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "schedule_amount_inr",
+   "fieldtype": "Currency",
+   "label": "Schedule Amount (INR)",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "received_amount_inr",
+   "fieldtype": "Currency",
+   "label": "Received Amount (INR)",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "pending_amount_inr",
+   "fieldtype": "Currency",
+   "label": "Pending Amount (INR)",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "summary_tab",
+   "fieldtype": "Tab Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "schedule_summary",
+   "fieldtype": "HTML",
+   "label": "Schedule Summary"
+  },
+  {
+   "fieldname": "column_break_kfqz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "supplier_name.supplier_group",
+   "fieldname": "supplier_group",
+   "fieldtype": "Link",
+   "label": "Supplier Group",
+   "options": "Supplier Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "po_type",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Order Type",
+   "options": "\nPurchase Order\nJob Order\nService Order",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-12-03 18:19:33.987457",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Purchase Order Schedule",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "item_code",
+ "track_changes": 1
+}

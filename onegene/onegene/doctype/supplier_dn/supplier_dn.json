@@ -1,0 +1,357 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-04-21 18:43:51.727517",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier",
+  "supplier_name",
+  "column_break_ngek",
+  "date",
+  "time",
+  "column_break_zdqj",
+  "company",
+  "items_section",
+  "scan_barcode",
+  "item_table",
+  "total_qty",
+  "section_break_peio",
+  "amended_from",
+  "address_contact_tab",
+  "supplier_address_section",
+  "supplier_address",
+  "address_display",
+  "supplier_gstin",
+  "gst_category",
+  "column_break_czih",
+  "contact_person",
+  "contact_display",
+  "contact_mobile",
+  "contact_email",
+  "company_shipping_address_section",
+  "shipping_address",
+  "column_break_ohel",
+  "shipping_address_display",
+  "company_billing_address_section",
+  "billing_address",
+  "column_break_vkpf",
+  "billing_address_display",
+  "company_gstin",
+  "place_of_supply",
+  "terms_tab",
+  "tc_name",
+  "terms",
+  "more_info_tab",
+  "print_settings_section",
+  "letter_head",
+  "transporter_section",
+  "transporter",
+  "transporter_name",
+  "vehicle_no",
+  "distance",
+  "mode_of_transport",
+  "column_break_mrvt",
+  "driver",
+  "driver_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_peio",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Supplier-DN",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "supplier.supplier_name",
+   "fieldname": "supplier_name",
+   "fieldtype": "Read Only",
+   "label": "Supplier Name"
+  },
+  {
+   "fieldname": "column_break_ngek",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "now",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "default": "now",
+   "fieldname": "time",
+   "fieldtype": "Time",
+   "label": "Posting Time"
+  },
+  {
+   "fieldname": "column_break_zdqj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "WONJIN AUTOPARTS INDIA PVT.LTD.",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "scan_barcode",
+   "fieldtype": "Data",
+   "label": "Scan Barcode"
+  },
+  {
+   "fieldname": "item_table",
+   "fieldtype": "Table",
+   "label": "Item Table",
+   "options": "Supplier-DN Item"
+  },
+  {
+   "fieldname": "total_qty",
+   "fieldtype": "Float",
+   "label": "Total Qty"
+  },
+  {
+   "fieldname": "address_contact_tab",
+   "fieldtype": "Tab Break",
+   "label": "Address & Contact"
+  },
+  {
+   "fieldname": "supplier_address_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier Address"
+  },
+  {
+   "fieldname": "supplier_address",
+   "fieldtype": "Link",
+   "label": "Supplier Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "address_display",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "column_break_czih",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_person",
+   "fieldtype": "Data",
+   "label": "Contact Person"
+  },
+  {
+   "fieldname": "contact_display",
+   "fieldtype": "Small Text",
+   "label": "Contact"
+  },
+  {
+   "fieldname": "contact_mobile",
+   "fieldtype": "Small Text",
+   "label": "Mobile No",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "contact_email",
+   "fieldtype": "Small Text",
+   "label": "Contact Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "company_shipping_address_section",
+   "fieldtype": "Section Break",
+   "label": "Company Shipping Address"
+  },
+  {
+   "fieldname": "shipping_address",
+   "fieldtype": "Link",
+   "label": "Shipping Address Template",
+   "options": "Address"
+  },
+  {
+   "fieldname": "shipping_address_display",
+   "fieldtype": "Small Text",
+   "label": "Shipping Address"
+  },
+  {
+   "fieldname": "column_break_ohel",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "billing_address",
+   "fieldtype": "Link",
+   "label": "Billing Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "column_break_vkpf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "billing_address_display",
+   "fieldtype": "Small Text",
+   "label": "Billing Address"
+  },
+  {
+   "fieldname": "company_billing_address_section",
+   "fieldtype": "Section Break",
+   "label": "Company Billing Address"
+  },
+  {
+   "fieldname": "terms_tab",
+   "fieldtype": "Tab Break",
+   "label": "Terms"
+  },
+  {
+   "fieldname": "tc_name",
+   "fieldtype": "Link",
+   "label": "Terms",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "terms",
+   "fieldtype": "Text Editor",
+   "label": "Terms and Conditions"
+  },
+  {
+   "fetch_from": "supplier_address.gstin",
+   "fieldname": "supplier_gstin",
+   "fieldtype": "Read Only",
+   "label": "Supplier GSTIN"
+  },
+  {
+   "fetch_from": "supplier_address.gst_category",
+   "fieldname": "gst_category",
+   "fieldtype": "Read Only",
+   "label": "GST Category"
+  },
+  {
+   "fieldname": "more_info_tab",
+   "fieldtype": "Tab Break",
+   "label": "More Info"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "print_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Print Settings"
+  },
+  {
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "label": "Letter Head",
+   "options": "Letter Head"
+  },
+  {
+   "fetch_from": "billing_address.gstin",
+   "fieldname": "company_gstin",
+   "fieldtype": "Read Only",
+   "label": "Company GSTIN"
+  },
+  {
+   "fieldname": "place_of_supply",
+   "fieldtype": "Autocomplete",
+   "label": "Place of Supply",
+   "options": "01-Jammu and Kashmir\n02-Himachal Pradesh\n03-Punjab\n04-Chandigarh\n05-Uttarakhand\n06-Haryana\n07-Delhi\n08-Rajasthan\n09-Uttar Pradesh\n10-Bihar\n11-Sikkim\n12-Arunachal Pradesh\n13-Nagaland\n14-Manipur\n15-Mizoram\n16-Tripura\n17-Meghalaya\n18-Assam\n19-West Bengal\n20-Jharkhand\n21-Odisha\n22-Chhattisgarh\n23-Madhya Pradesh\n24-Gujarat\n26-Dadra and Nagar Haveli and Daman and Diu\n27-Maharashtra\n29-Karnataka\n30-Goa\n31-Lakshadweep Islands\n32-Kerala\n33-Tamil Nadu\n34-Puducherry\n35-Andaman and Nicobar Islands\n36-Telangana\n37-Andhra Pradesh\n38-Ladakh\n96-Other Countries\n97-Other Territory"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "transporter_section",
+   "fieldtype": "Section Break",
+   "label": "Transporter"
+  },
+  {
+   "fieldname": "transporter",
+   "fieldtype": "Link",
+   "label": "Transporter",
+   "options": "Supplier"
+  },
+  {
+   "fetch_from": "transporter.supplier_name",
+   "fieldname": "transporter_name",
+   "fieldtype": "Read Only",
+   "label": "Transporter Name"
+  },
+  {
+   "fieldname": "column_break_mrvt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "label": "Driver",
+   "options": "Driver"
+  },
+  {
+   "fetch_from": "driver.full_name",
+   "fieldname": "driver_name",
+   "fieldtype": "Small Text",
+   "label": "Driver Name"
+  },
+  {
+   "fieldname": "vehicle_no",
+   "fieldtype": "Data",
+   "label": "Vehicle No"
+  },
+  {
+   "fieldname": "distance",
+   "fieldtype": "Int",
+   "label": "Distance (in km)"
+  },
+  {
+   "default": "Road",
+   "fieldname": "mode_of_transport",
+   "fieldtype": "Select",
+   "label": "Mode of Transport",
+   "options": "\nRoad\nAir\nRail\nShip"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-04-21 19:27:43.448840",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Supplier-DN",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,112 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "PMR-.#####",
+ "creation": "2025-08-26 16:42:15.133961",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_ejpf",
+  "date",
+  "last_updated_on",
+  "column_break_qgno",
+  "company",
+  "month",
+  "section_break_tekf",
+  "assembly_items",
+  "sub_assembly_items",
+  "raw_materials"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_ejpf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "label": "Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_updated_on",
+   "fieldtype": "Datetime",
+   "label": "Last Updated On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_qgno",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "month",
+   "fieldtype": "Select",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "label": "Month",
+   "options": "\nJAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_tekf",
+   "fieldtype": "Section Break",
+   "read_only": 1
+  },
+  {
+   "fieldname": "assembly_items",
+   "fieldtype": "Table",
+   "label": "Assembly Items",
+   "options": "Assembly Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sub_assembly_items",
+   "fieldtype": "Table",
+   "label": "Sub Assembly Items",
+   "options": "Sub Assembly Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "raw_materials",
+   "fieldtype": "Table",
+   "label": "Raw Materials",
+   "options": "Raw Materials",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-26 16:42:15.133961",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Production Material Request",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

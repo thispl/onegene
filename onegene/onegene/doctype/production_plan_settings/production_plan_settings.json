@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-10-16 19:21:09.728392",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "working_days",
+  "section_break_n5yoi",
+  "generate",
+  "column_break_eexg1"
+ ],
+ "fields": [
+  {
+   "fieldname": "working_days",
+   "fieldtype": "Int",
+   "label": "Working Days"
+  },
+  {
+   "fieldname": "section_break_n5yoi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "To generate the Production Plan Report Manually",
+   "fieldname": "generate",
+   "fieldtype": "Button",
+   "label": "Generate Production Plan"
+  },
+  {
+   "fieldname": "column_break_eexg1",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-10-25 17:49:50.991219",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Production Plan Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,213 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-04-21 18:48:56.601914",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "purchase_order",
+  "qty",
+  "uom",
+  "scheduled_qty",
+  "pend_qty",
+  "dis_qty",
+  "ok_qty",
+  "column_break_rcqa",
+  "order_type",
+  "hsnsac",
+  "rate",
+  "amount",
+  "rejected_qty",
+  "no_of_bins",
+  "pending_after_received",
+  "received_qty",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Read Only",
+   "in_list_view": 1,
+   "label": "Item Name"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Qty",
+   "precision": "2"
+  },
+  {
+   "columns": 1,
+   "fetch_from": "item_code.stock_uom",
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_rcqa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Purchase Order",
+   "options": "Purchase Order",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1 && !frappe.user.has_role('System Manager')",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "purchase_order.custom_order_type",
+   "fieldname": "order_type",
+   "fieldtype": "Read Only",
+   "label": "Order Type"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "label": "SRQ",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.gst_hsn_code",
+   "fieldname": "hsnsac",
+   "fieldtype": "Read Only",
+   "label": "HSN/SAC"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "hidden": 1,
+   "label": "Rate"
+  },
+  {
+   "default": "0",
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "hidden": 1,
+   "label": "Amount"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "scheduled_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Sch. Qty",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "pend_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Pend. Qty",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "default": "0",
+   "fieldname": "dis_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "DC Qty",
+   "precision": "0"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "pending_after_received",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "PQAR",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "default": "0",
+   "fieldname": "received_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "<b style=\"color: black;\">Rec. Qty</b>",
+   "permlevel": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "default": "0",
+   "fieldname": "ok_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Ok Qty",
+   "permlevel": 2,
+   "precision": "0"
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "default": "0",
+   "fieldname": "no_of_bins",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Bin ~ Box",
+   "precision": "0",
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "default": "0",
+   "fieldname": "rejected_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Rej. Qty",
+   "permlevel": 2,
+   "precision": "0"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-09-17 17:17:02.810566",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Supplier-DN Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

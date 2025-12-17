@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "OPEN-ORD -.####",
+ "creation": "2023-10-13 18:01:55.521794",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sales_order_number",
+  "disable_update_items",
+  "section_break_jd2co",
+  "open_order_table"
+ ],
+ "fields": [
+  {
+   "fieldname": "sales_order_number",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Sales Order Number",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "section_break_jd2co",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "open_order_table",
+   "fieldtype": "Table",
+   "label": "Open Order Table",
+   "options": "Open Order Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "disable_update_items",
+   "fieldtype": "Check",
+   "label": "Disable Update Items"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-10-11 16:19:52.026188",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Open Order",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

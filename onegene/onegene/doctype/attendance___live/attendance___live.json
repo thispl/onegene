@@ -1,0 +1,90 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-03-06 06:13:21.779139",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "departmentwise",
+  "column_break_dpfl",
+  "designationwise",
+  "column_break_cvqc",
+  "last_scheduled_job_is_runned_on",
+  "section_break_oziv",
+  "attendance"
+ ],
+ "fields": [
+  {
+   "fieldname": "column_break_dpfl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_cvqc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_oziv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.departmentwise || doc.designationwise",
+   "fieldname": "attendance",
+   "fieldtype": "HTML",
+   "label": "Attendance"
+  },
+  {
+   "default": "1",
+   "fieldname": "departmentwise",
+   "fieldtype": "Check",
+   "label": "Departmentwise"
+  },
+  {
+   "default": "0",
+   "fieldname": "designationwise",
+   "fieldtype": "Check",
+   "label": "Designationwise",
+   "read_only_depends_on": "eval:doc.departmentwise == 1"
+  },
+  {
+   "fieldname": "last_scheduled_job_is_runned_on",
+   "fieldtype": "Datetime",
+   "label": "Last Attendance executed on",
+   "read_only": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-10-25 17:49:37.596082",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Attendance - Live",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Guest",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,50 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-03-20 15:16:30.991611",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "today_date",
+  "birthday_wish"
+ ],
+ "fields": [
+  {
+   "fieldname": "birthday_wish",
+   "fieldtype": "HTML",
+   "label": "Birthday_Wish"
+  },
+  {
+   "default": "Today",
+   "fieldname": "today_date",
+   "fieldtype": "Date",
+   "hidden": 1,
+   "label": "Date"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-10-25 17:49:40.486649",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Today Birthday",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include onegene *.css
+recursive-include onegene *.csv
+recursive-include onegene *.html
+recursive-include onegene *.ico
+recursive-include onegene *.js
+recursive-include onegene *.json
+recursive-include onegene *.md
+recursive-include onegene *.png
+recursive-include onegene *.py
+recursive-include onegene *.svg
+recursive-include onegene *.txt
+recursive-exclude onegene *.pyc

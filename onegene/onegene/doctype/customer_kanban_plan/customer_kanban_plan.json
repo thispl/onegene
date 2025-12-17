@@ -1,0 +1,174 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "CKP-.#####",
+ "creation": "2025-11-26 12:22:18.471098",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "item_group",
+  "column_break_pers",
+  "date",
+  "customer",
+  "customer_code",
+  "plan_section",
+  "schedule",
+  "delivered_qty",
+  "balance_to_be_delivered",
+  "column_break_jata",
+  "today_customer_plan",
+  "fg_stock",
+  "balance_required",
+  "section_break_gbrz",
+  "commitment_plan",
+  "commitment_failure",
+  "reason_for_failure",
+  "column_break_pswg",
+  "today_dispatched",
+  "dispatched_percentage"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name"
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "column_break_pers",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "plan_section",
+   "fieldtype": "Section Break",
+   "label": "Plan"
+  },
+  {
+   "fieldname": "schedule",
+   "fieldtype": "Int",
+   "label": "Schedule"
+  },
+  {
+   "fieldname": "delivered_qty",
+   "fieldtype": "Int",
+   "label": "Delivered Qty"
+  },
+  {
+   "fieldname": "balance_to_be_delivered",
+   "fieldtype": "Int",
+   "label": "Balance to be Delivered"
+  },
+  {
+   "fieldname": "column_break_jata",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "today_customer_plan",
+   "fieldtype": "Int",
+   "label": "Today Customer Plan"
+  },
+  {
+   "fieldname": "fg_stock",
+   "fieldtype": "Int",
+   "label": "FG Stock"
+  },
+  {
+   "fieldname": "balance_required",
+   "fieldtype": "Int",
+   "label": "Balance Required"
+  },
+  {
+   "fieldname": "section_break_gbrz",
+   "fieldtype": "Section Break",
+   "label": "Commitments"
+  },
+  {
+   "fieldname": "commitment_plan",
+   "fieldtype": "Int",
+   "label": "Commitment Plan"
+  },
+  {
+   "fieldname": "commitment_failure",
+   "fieldtype": "Int",
+   "label": "Commitment Failure"
+  },
+  {
+   "fieldname": "reason_for_failure",
+   "fieldtype": "Small Text",
+   "label": "Reason for Failure"
+  },
+  {
+   "fieldname": "column_break_pswg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "today_dispatched",
+   "fieldtype": "Int",
+   "label": "Today Dispatched"
+  },
+  {
+   "fieldname": "dispatched_percentage",
+   "fieldtype": "Percent",
+   "label": "Dispatched Percentage"
+  },
+  {
+   "fetch_from": "customer.customer_code",
+   "fieldname": "customer_code",
+   "fieldtype": "Data",
+   "label": "Customer Code"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-26 12:27:53.692302",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Customer Kanban Plan",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

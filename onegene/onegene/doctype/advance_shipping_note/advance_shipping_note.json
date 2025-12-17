@@ -1,0 +1,539 @@
+{
+ "actions": [],
+ "autoname": "SU-DN-.YYYY.-.####",
+ "creation": "2025-05-05 14:14:15.098328",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier",
+  "supplier_name",
+  "supplier_name1",
+  "datetime",
+  "month",
+  "column_break_ngek",
+  "supplier_delivery_note",
+  "company",
+  "purchase_order",
+  "purchase_orders",
+  "update_items",
+  "column_break_zdqj",
+  "confirm_supplier_dn",
+  "security_name",
+  "received_date_time",
+  "items_section",
+  "scan_barcode",
+  "gate_entry_url",
+  "item_table",
+  "html",
+  "section_break_nnrf",
+  "dispatched_qty",
+  "column_break_mmha",
+  "received_qty",
+  "total",
+  "section_break_rfxt",
+  "schedule_trace",
+  "end_bit_scrap",
+  "transporter_section",
+  "mode_of_transport",
+  "transporter",
+  "transporter_name",
+  "vehicle_no",
+  "column_break_mrvt",
+  "driver_name",
+  "address_contact_tab",
+  "supplier_address_section",
+  "column_break_nfih",
+  "supplier_address",
+  "address_display",
+  "supplier_gstin",
+  "gst_category",
+  "column_break_czih",
+  "contact_display",
+  "contact_person",
+  "contact_mobile",
+  "contact_email",
+  "company_shipping_address_section",
+  "shipping_address",
+  "column_break_ohel",
+  "shipping_address_display",
+  "company_billing_address_section",
+  "billing_address",
+  "column_break_vkpf",
+  "billing_address_display",
+  "company_gstin",
+  "place_of_supply",
+  "terms_tab",
+  "tc_name",
+  "terms",
+  "more_info_tab",
+  "purchase_receipt",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "read_only": 1,
+   "read_only_depends_on": "eval:frappe.user.has_role('System Manager') == 0 && frappe.user.has_role('Security') == 1",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "supplier.supplier_code",
+   "fieldname": "supplier_name",
+   "fieldtype": "Read Only",
+   "label": "Supplier Code"
+  },
+  {
+   "default": "now",
+   "fieldname": "datetime",
+   "fieldtype": "Datetime",
+   "label": "Date & Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ngek",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier_delivery_note",
+   "fieldtype": "Data",
+   "label": "Supplier DC Number",
+   "read_only_depends_on": "eval:doc.workflow_state != \"Draft\"",
+   "reqd": 1
+  },
+  {
+   "default": "WONJIN AUTOPARTS INDIA PVT.LTD.",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == \"Draft\"",
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Purchase Order",
+   "options": "Purchase Order"
+  },
+  {
+   "fieldname": "column_break_zdqj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval: (frappe.user.has_role('Security') || frappe.user.has_role('System Manager')) && doc.workflow_state == \"In Transit\"",
+   "fieldname": "confirm_supplier_dn",
+   "fieldtype": "Data",
+   "label": "Confirm Supplier DC Number",
+   "mandatory_depends_on": "eval:frappe.user.has_role('Security') == 1 && doc.workflow_state == \"In Transit\""
+  },
+  {
+   "depends_on": "eval: (frappe.user.has_role('Security') || frappe.user.has_role('System Manager')) && doc.workflow_state == \"In Transit\"",
+   "fieldname": "security_name",
+   "fieldtype": "Select",
+   "label": "Security Name",
+   "mandatory_depends_on": "eval:frappe.user.has_role('Security') == 1 && doc.workflow_state == \"In Transit\"",
+   "options": "\nS0388 - B KAVITHA\nSB0020 - GUNASEKARAN MR\nSB0005 - SUNDARESAN A"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval: frappe.user.has_role('Security') || frappe.user.has_role('System Manager')",
+   "fieldname": "received_date_time",
+   "fieldtype": "Datetime",
+   "label": "Received Date & Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "scan_barcode",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Scan Barcode",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_table",
+   "fieldtype": "Table",
+   "label": "Item Table",
+   "options": "Supplier-DN Item"
+  },
+  {
+   "fieldname": "html",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "section_break_nnrf",
+   "fieldtype": "Section Break",
+   "label": "Total Quantity"
+  },
+  {
+   "fieldname": "dispatched_qty",
+   "fieldtype": "Float",
+   "label": "Dispatched",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mmha",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval: frappe.user.has_role('Security') || frappe.user.has_role('System Manager')",
+   "fieldname": "received_qty",
+   "fieldtype": "Float",
+   "label": "Received",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total",
+   "fieldtype": "Currency",
+   "hidden": 1,
+   "label": "Total",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "section_break_rfxt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval: frappe.session.user == \"amar.p@groupteampro.com\"",
+   "fieldname": "schedule_trace",
+   "fieldtype": "Table",
+   "hidden": 1,
+   "label": "Schedule Trace",
+   "no_copy": 1,
+   "options": "Supplier-DN Schedule Trace"
+  },
+  {
+   "bold": 1,
+   "fieldname": "end_bit_scrap",
+   "fieldtype": "Table",
+   "label": "End Bit Scrap & Return",
+   "options": "Supplier-DN Scrap",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1 && frappe.user.has_role('System Manager') == 0"
+  },
+  {
+   "fieldname": "transporter_section",
+   "fieldtype": "Section Break",
+   "label": "Transporter",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "default": "Road",
+   "fieldname": "mode_of_transport",
+   "fieldtype": "Select",
+   "label": "Mode of Transport",
+   "options": "Direct\nRoad\nAir\nRail\nShip",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fetch_from": "supplier.supplier_name",
+   "fieldname": "transporter",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Transporter",
+   "options": "Supplier",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fetch_from": "transporter.supplier_name",
+   "fieldname": "transporter_name",
+   "fieldtype": "Read Only",
+   "label": "Transporter Name",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fieldname": "vehicle_no",
+   "fieldtype": "Data",
+   "label": "Vehicle No",
+   "mandatory_depends_on": "eval:frappe.user.has_role('Security') && doc.workflow_state == \"In Transit\""
+  },
+  {
+   "fieldname": "column_break_mrvt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fetch_from": "driver.full_name",
+   "fieldname": "driver_name",
+   "fieldtype": "Small Text",
+   "label": "Driver Name & Contact",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fieldname": "address_contact_tab",
+   "fieldtype": "Tab Break",
+   "label": "Address & Contact"
+  },
+  {
+   "fieldname": "supplier_address_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier Address"
+  },
+  {
+   "fetch_from": "supplier.supplier_primary_address",
+   "fieldname": "supplier_address",
+   "fieldtype": "Link",
+   "label": "Supplier Address",
+   "options": "Address",
+   "read_only": 1
+  },
+  {
+   "fetch_from": ".primary_address",
+   "fieldname": "address_display",
+   "fieldtype": "Small Text",
+   "label": "Address",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "supplier_address.gstin",
+   "fieldname": "supplier_gstin",
+   "fieldtype": "Read Only",
+   "label": "Supplier GSTIN",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fetch_from": "supplier_address.gst_category",
+   "fieldname": "gst_category",
+   "fieldtype": "Read Only",
+   "label": "GST Category",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fieldname": "column_break_czih",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "supplier.supplier_primary_contact",
+   "fieldname": "contact_display",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Contact",
+   "options": "Contact"
+  },
+  {
+   "fetch_from": "contact_display.full_name",
+   "fieldname": "contact_person",
+   "fieldtype": "Data",
+   "label": "Contact Person"
+  },
+  {
+   "fetch_from": "supplier.mobile_no",
+   "fieldname": "contact_mobile",
+   "fieldtype": "Data",
+   "label": "Mobile No",
+   "options": "Phone",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fetch_from": "supplier.email_id",
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "label": "Contact Email",
+   "options": "Email",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fieldname": "company_shipping_address_section",
+   "fieldtype": "Section Break",
+   "label": "Company Shipping Address"
+  },
+  {
+   "default": "WONJIN AUTOPARTS INDIA PVT LTD-Shipping",
+   "fetch_from": ".",
+   "fieldname": "shipping_address",
+   "fieldtype": "Link",
+   "label": "Shipping Address Template",
+   "options": "Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ohel",
+   "fieldtype": "Column Break",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "default": "Plot No: A1K, CMDA Industrial Complex\nMaraimalai Nagar\nChennai\nTamil Nadu\n603209\nIndia\nPhone: 044-4740 4415 / 4740 4436\nFax: 04447400142\nEmail: finance@onegeneindia.in",
+   "fetch_from": ".",
+   "fieldname": "shipping_address_display",
+   "fieldtype": "Small Text",
+   "label": "Shipping Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company_billing_address_section",
+   "fieldtype": "Section Break",
+   "label": "Company Billing Address"
+  },
+  {
+   "default": "WONJIN AUTOPARTS INDIA PVT LTD-Billing",
+   "fieldname": "billing_address",
+   "fieldtype": "Link",
+   "label": "Billing Address",
+   "options": "Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_vkpf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Plot No: A1K, CMDA Industrial Complex\nMaraimalai Nagar\nChennai\nTamil Nadu\n603209\nIndia\nPhone: 044-4740 4415 / 4740 4436\nFax: 04447400142\nEmail: finance@onegeneindia.in",
+   "fetch_from": ".",
+   "fieldname": "billing_address_display",
+   "fieldtype": "Small Text",
+   "label": "Billing Address",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "billing_address.gstin",
+   "fieldname": "company_gstin",
+   "fieldtype": "Read Only",
+   "label": "Company GSTIN",
+   "read_only": 1
+  },
+  {
+   "fetch_from": ".",
+   "fieldname": "place_of_supply",
+   "fieldtype": "Autocomplete",
+   "label": "Place of Supply",
+   "options": "01-Jammu and Kashmir\n02-Himachal Pradesh\n03-Punjab\n04-Chandigarh\n05-Uttarakhand\n06-Haryana\n07-Delhi\n08-Rajasthan\n09-Uttar Pradesh\n10-Bihar\n11-Sikkim\n12-Arunachal Pradesh\n13-Nagaland\n14-Manipur\n15-Mizoram\n16-Tripura\n17-Meghalaya\n18-Assam\n19-West Bengal\n20-Jharkhand\n21-Odisha\n22-Chhattisgarh\n23-Madhya Pradesh\n24-Gujarat\n26-Dadra and Nagar Haveli and Daman and Diu\n27-Maharashtra\n29-Karnataka\n30-Goa\n31-Lakshadweep Islands\n32-Kerala\n33-Tamil Nadu\n34-Puducherry\n35-Andaman and Nicobar Islands\n36-Telangana\n37-Andhra Pradesh\n38-Ladakh\n96-Other Countries\n97-Other Territory",
+   "read_only": 1
+  },
+  {
+   "fieldname": "terms_tab",
+   "fieldtype": "Tab Break",
+   "label": "Terms",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fieldname": "tc_name",
+   "fieldtype": "Link",
+   "label": "Terms",
+   "options": "Terms and Conditions",
+   "read_only": 1,
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fieldname": "terms",
+   "fieldtype": "Text Editor",
+   "label": "Terms and Conditions",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fieldname": "more_info_tab",
+   "fieldtype": "Tab Break",
+   "label": "More Info",
+   "read_only_depends_on": "eval:frappe.user.has_role('Security') == 1"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Advance Shipping Note",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "depends_on": "eval:doc.workflow_state != \"Draft\"",
+   "fieldname": "purchase_orders",
+   "fieldtype": "Table MultiSelect",
+   "label": "Purchase Orders",
+   "options": "Supplier Delivery Note Purchase Order Selector",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.workflow_state == \"Draft\"",
+   "fieldname": "update_items",
+   "fieldtype": "Button",
+   "hidden": 1,
+   "label": "Update Items"
+  },
+  {
+   "fieldname": "column_break_nfih",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "month",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "in_standard_filter": 1,
+   "label": "Month",
+   "options": "\nJAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC"
+  },
+  {
+   "fieldname": "purchase_receipt",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Purchase Receipt",
+   "no_copy": 1,
+   "options": "Purchase Receipt",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "supplier.supplier_name",
+   "fieldname": "supplier_name1",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Supplier Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gate_entry_url",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Gate entry url"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-12-15 11:22:53.815034",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Advance Shipping Note",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Supplier",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

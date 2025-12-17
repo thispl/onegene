@@ -1,0 +1,154 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:OTB-{YY}-{####}",
+ "creation": "2024-09-11 11:04:55.112466",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "department",
+  "designation",
+  "column_break_sjtt",
+  "from_date",
+  "to_date",
+  "company",
+  "employee_category",
+  "section_break_z1z9",
+  "total_ot_hours",
+  "column_break_lmhc",
+  "comp_off_pending_for_approval",
+  "column_break_dtom",
+  "comp_off_used",
+  "column_break_bzjp",
+  "ot_balance"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.designation",
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_sjtt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "in_filter": 1,
+   "label": "From Date"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date"
+  },
+  {
+   "fetch_from": "employee.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.employee_category",
+   "fieldname": "employee_category",
+   "fieldtype": "Link",
+   "label": "Employee Category",
+   "options": "Employee Category",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_z1z9",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_ot_hours",
+   "fieldtype": "Float",
+   "label": "Total OT Hours"
+  },
+  {
+   "fieldname": "column_break_lmhc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "comp_off_pending_for_approval",
+   "fieldtype": "Data",
+   "label": "Comp Off (Pending for Approval)"
+  },
+  {
+   "fieldname": "column_break_dtom",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "comp_off_used",
+   "fieldtype": "Data",
+   "label": "Comp Off Used"
+  },
+  {
+   "fieldname": "column_break_bzjp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ot_balance",
+   "fieldtype": "Float",
+   "label": "OT Balance"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-28 17:10:38.341133",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "OT Balance",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

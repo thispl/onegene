@@ -1,0 +1,36 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2024-01-07 21:50:16.712328",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "json": "{}",
+ "letterhead": null,
+ "modified": "2024-01-08 20:08:21.950266",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Early Out Report  with Dashboard",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Attendance",
+ "report_name": "Early Out Report  with Dashboard",
+ "report_type": "Report Builder",
+ "roles": [
+  {
+   "role": "HR User"
+  },
+  {
+   "role": "HR Manager"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Employee Self Service"
+  }
+ ]
+}

@@ -1,0 +1,209 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "GE-.#####",
+ "creation": "2025-10-05 00:58:16.065821",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "amended_from",
+  "entry_type",
+  "entry_against",
+  "entry_id",
+  "party_type",
+  "party",
+  "column_break_mcvh",
+  "entry_time",
+  "entry_date",
+  "ref_no",
+  "security_no",
+  "security_name",
+  "vehicle_number",
+  "driver_name",
+  "section_break_0kry",
+  "gate_qty",
+  "column_break_adzz",
+  "section_break_oksb",
+  "items",
+  "gate_entry_items",
+  "no_of_box"
+ ],
+ "fields": [
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Gate Entry",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "entry_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Entry Type",
+   "options": "Inward\nOutward",
+   "reqd": 1
+  },
+  {
+   "depends_on": "entry_type",
+   "fieldname": "entry_against",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Entry Against",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "entry_id",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Entry ID",
+   "options": "entry_against",
+   "reqd": 1
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Party Type",
+   "options": "\nCustomer\nSupplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "label": "Party",
+   "options": "party_type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_mcvh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "entry_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Entry Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ref_no",
+   "fieldtype": "Data",
+   "label": "Ref No",
+   "reqd": 1
+  },
+  {
+   "fieldname": "security_no",
+   "fieldtype": "Link",
+   "label": "Security",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "vehicle_number",
+   "fieldtype": "Data",
+   "label": "Vehicle Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_0kry",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "gate_qty",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Gate Qty"
+  },
+  {
+   "fieldname": "column_break_adzz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_oksb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "HTML",
+   "hidden": 1,
+   "label": "Items"
+  },
+  {
+   "fieldname": "gate_entry_items",
+   "fieldtype": "Table",
+   "options": "Gate Entry Item"
+  },
+  {
+   "fieldname": "no_of_box",
+   "fieldtype": "Float",
+   "label": "No of Box",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Gate Entry",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "security_no.employee_name",
+   "fieldname": "security_name",
+   "fieldtype": "Data",
+   "label": "Security Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "entry_time",
+   "fieldtype": "Datetime",
+   "label": "Entry Time",
+   "read_only": 1,
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-10-22 18:00:44.067259",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Gate Entry",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

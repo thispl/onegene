@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "PUR-OP-ORD-.#####",
+ "creation": "2025-05-05 14:20:29.478737",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "purchase_order",
+  "disable_update_items",
+  "open_order_table"
+ ],
+ "fields": [
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Purchase Order",
+   "options": "Purchase Order"
+  },
+  {
+   "fieldname": "open_order_table",
+   "fieldtype": "Table",
+   "label": "Open Order Table",
+   "options": "Purchase Open Order Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "disable_update_items",
+   "fieldtype": "Check",
+   "label": "Disable Update Items"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-08-01 13:21:06.265380",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Purchase Open Order",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

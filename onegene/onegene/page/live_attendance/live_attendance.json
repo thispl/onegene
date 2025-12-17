@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2024-02-04 10:09:42.816750",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 52,
+ "modified": "2024-07-01 15:35:12.922159",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "live-attendance",
+ "owner": "Administrator",
+ "page_name": "live-attendance",
+ "roles": [
+  {
+   "role": "Guest"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Attendance"
+}

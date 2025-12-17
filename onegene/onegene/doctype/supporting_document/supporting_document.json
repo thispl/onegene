@@ -1,0 +1,48 @@
+{
+ "actions": [],
+ "creation": "2025-05-05 15:23:41.844351",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "document_type",
+  "attach",
+  "download"
+ ],
+ "fields": [
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Document Type",
+   "options": "Documents"
+  },
+  {
+   "fieldname": "attach",
+   "fieldtype": "Attach",
+   "in_list_view": 1,
+   "label": "Attach"
+  },
+  {
+   "default": "0",
+   "fieldname": "download",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Download"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-05-05 15:23:41.844351",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Supporting Document",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

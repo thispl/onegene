@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-22 17:48:45.430741",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_8bwx",
+  "department_from",
+  "column_break_ofjp",
+  "iom_type",
+  "section_break_pcit",
+  "workflow_notification"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_8bwx",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "workflow_notification",
+   "fieldtype": "Table",
+   "label": "Workflow Notification",
+   "options": "IOM Workflow Notification"
+  },
+  {
+   "fieldname": "iom_type",
+   "fieldtype": "Link",
+   "label": "IOM Type",
+   "options": "IOM Type"
+  },
+  {
+   "fieldname": "column_break_ofjp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "department_from",
+   "fieldtype": "Link",
+   "label": "Department From",
+   "options": "Department"
+  },
+  {
+   "fieldname": "section_break_pcit",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-09-23 17:11:25.534923",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "IOM Workflow Notification Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

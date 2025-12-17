@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-05-05 14:53:51.032120",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "schedule_date",
+  "schedule_month",
+  "schedule_qty",
+  "column_break_jano",
+  "received_qty",
+  "pending_qty",
+  "order_schedule"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "columns": 2,
+   "fieldname": "schedule_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Schedule Date"
+  },
+  {
+   "columns": 2,
+   "fieldname": "schedule_month",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Schedule Month"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "schedule_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Sch. Qty"
+  },
+  {
+   "fieldname": "column_break_jano",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "received_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Rec. Qty"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "pending_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Pend. Qty"
+  },
+  {
+   "columns": 2,
+   "fieldname": "order_schedule",
+   "fieldtype": "Data",
+   "label": "Order Schedule"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-07-19 20:50:13.307921",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Purchase Order Schedule Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

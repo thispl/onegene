@@ -1,0 +1,44 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-12-30 17:58:35.027352",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "name1",
+  "account_number",
+  "name_and_address_of_last_employer"
+ ],
+ "fields": [
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "account_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Account Number"
+  },
+  {
+   "fieldname": "name_and_address_of_last_employer",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name and Address of Last Employer"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-01-03 09:33:06.077320",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Member - EPF",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

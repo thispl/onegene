@@ -1,0 +1,44 @@
+<div class="container"> 
+    <br>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+        Date & Time:<b> &nbsp;&nbsp;{{ data["nowtime"] }}</b>
+        </div>
+        <div class="col-md-4"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+        <table class="table">
+            <thead>
+                <tr>
+                    <td colspan="6" style="background-color: lightgrey;text-align:center">Attendance</td>
+                </tr>
+                <tr style="background-color: orange;text-align:center">
+                    <td>Staff</td>
+                    <td>Operator</td>
+                    <td>Apprentice</td>
+                    <td>Trainee</td>
+                    <td>CL</td>
+                    <td>Total</td>
+                </tr>
+                <tr style="background-color: lightgrey;text-align:center">
+                    <td>{{ data["staff_count"] }}</td>
+                    <td>{{ data["ops_count"] }}</td>
+                    <td>{{ data["aps_count"] }}</td>
+                    <td>{{ data["trainee_count"] }}</td>
+                    <td>{{ data["cl_count"] }}</td>
+                    <td>{{ data["tot_count"] }}</td>
+                </tr>
+            </thead>
+           <tbody>
+        </tbody>
+        </table>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+    <div class="row">
+</div>
+</div>

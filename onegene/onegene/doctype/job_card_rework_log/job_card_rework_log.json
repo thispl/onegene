@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-15 21:17:47.935889",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "datetime",
+  "employee",
+  "reworked_qty",
+  "accepted_qty",
+  "column_break_cvyp",
+  "rejected_qty",
+  "rejection_category",
+  "rejection_remarks",
+  "shift_type"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "datetime",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Date & Time"
+  },
+  {
+   "columns": 2,
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "reworked_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Reworked Qty"
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "accepted_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Accepted Qty",
+   "precision": "0"
+  },
+  {
+   "fieldname": "column_break_cvyp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "rejected_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Rejected Qty",
+   "precision": "0"
+  },
+  {
+   "fieldname": "rejection_category",
+   "fieldtype": "Link",
+   "label": "Rejection Category",
+   "options": "Rejection Category"
+  },
+  {
+   "fieldname": "rejection_remarks",
+   "fieldtype": "Link",
+   "label": "Rejection Remarks",
+   "options": "Rejection Reason"
+  },
+  {
+   "fieldname": "shift_type",
+   "fieldtype": "Link",
+   "label": "Shift Type",
+   "options": "Shift Type"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-09-15 21:17:47.935889",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Job Card Rework Log",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

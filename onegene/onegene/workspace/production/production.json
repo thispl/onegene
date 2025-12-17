@@ -1,0 +1,112 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"AFTLNuvO03\",\"type\":\"card\",\"data\":{\"card_name\":\"Production\",\"col\":4}}]",
+ "creation": "2025-08-29 10:34:49.946011",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 1,
+ "icon": "color-manufacturing",
+ "idx": 0,
+ "indicator_color": "",
+ "is_hidden": 0,
+ "label": "Production",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Production",
+   "link_count": 6,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Production Plan Report",
+   "link_count": 0,
+   "link_to": "Production Plan Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Daily Production Plan",
+   "link_count": 0,
+   "link_to": "Daily Production Plan",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Production Kanban Report",
+   "link_count": 0,
+   "link_to": "Production Kanban Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Production Sheet",
+   "link_count": 0,
+   "link_to": "Production Sheet",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Job Card",
+   "link_count": 0,
+   "link_to": "Job Card",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Material Request",
+   "link_count": 0,
+   "link_to": "Material Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2025-10-27 17:58:47.736999",
+ "modified_by": "amar.p@groupteampro.com",
+ "module": "ONEGENE",
+ "name": "Production",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "Manufacturing User"
+  },
+  {
+   "role": "PPC"
+  },
+  {
+   "role": "Manufacturing Manager"
+  },
+  {
+   "role": "Stock User"
+  }
+ ],
+ "sequence_id": 23.0,
+ "shortcuts": [],
+ "title": "Production"
+}

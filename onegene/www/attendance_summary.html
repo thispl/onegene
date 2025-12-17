@@ -1,0 +1,196 @@
+
+{% extends "templates/web.html" %}
+{% block title %} Attendance Report {% endblock %}
+{% block head_include %}
+<style>
+    body {
+        padding: 35px;
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css" />
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+<script>
+    $(document).ready(function () {
+       
+        setInterval(function () {
+            opts = {
+                method: "onegene.www.attendance_summary.get_att_data",
+            }
+            frappe.call(opts).then(res => {
+            let html = '';
+            $.each(res, function (i, d) {
+                $("#pd").html(d[0]);
+                $("#de").html(d[1]);
+                $("#shi1").html(d[2]);
+                $("#shi2").html(d[3]);
+                $("#shi3").html(d[4]);
+                $("#shi4").html(d[5]);
+                $("#pd1").html(d[6]);
+                $("#de1").html(d[7]);
+                $("#shi11").html(d[8]);
+                $("#shi12").html(d[9]);
+                $("#shi13").html(d[10]);
+                $("#shi14").html(d[11]);
+                $("#pd2").html(d[12]);
+                $("#de2").html(d[13]);
+                $("#shi21").html(d[14]);
+                $("#shi22").html(d[15]);
+                $("#shi23").html(d[16]);
+                $("#shi24").html(d[17]);
+                $("#d").html(d[18]);
+
+                let tags = d;
+                $.each(tags, function (j, k) {
+    html += '<table><thead>\
+        <tr>\
+            <td style="background-color:palegoldenrod" colspan="14"><center>Manpower Attendance <b>' + k['date'] + '</b></center></td>\
+        </tr>\
+        <tr style="background-color:orange;">\
+            <td style="width: 14%;"><center><b>Description</b></center></td>\
+            <td style="width: 8%;"><center><b>Staff</b></center></td>\
+            <td style="width: 8%;"><center><b>Operator</b></center></td>\
+            <td style="width: 8%;"><center><b>Apprentice</b></center></td>\
+            <td style="width: 8%;"><center><b>Contractor</b></center></td>\
+            <td style="width: 8%;"><center><b>Trainee</b></center></td>\
+            <td style="width: 14%;"><center><b>Total</b></center></td>\
+        </tr>\
+        </thead><tbody>';
+
+    html += "<tr style='color:rgb(0,128,0);'><td><center><b>"+ k['in']+ "</b></center></td>\
+        <td><center>"+ k['staff_in'] + "</center></td>\
+        <td><center>"+ k['operator_in'] + "</center></td>\
+        <td><center>"+ k['apprentice_in'] + "</center></td>\
+        <td><center>"+ k['contract_in'] + "</center></td>\
+        <td><center>"+ k['trainee_in'] + "</center></td>\
+        <td><center>"+
+        ( k['in_total']) +"</center></td></tr>\
+        <tr style='color:rgb(150,75,0);'><td><center><b>"+ k['out']+ "</b></center></td>\
+        <td><center>"+ k['staff_out'] + "</center></td>\
+        <td><center>"+ k['operator_out'] + "</center></td>\
+        <td><center>"+ k['apprentice_out'] + "</center></td>\
+        <td><center>"+ k['contract_out'] + "</center></td>\
+        <td><center>"+ k['trainee_out'] + "</center></td>\
+        <td><center>"+
+        ( k['out_total']) +"</center></td></tr>\
+        <tr style='color:rgb(255,0,0);'><td><center><b>"+ k['bal']+ "</b></center></td>\
+        <td><center>"+ k['staff_bal'] + "</center></td>\
+        <td><center>"+ k['oper_bal'] + "</center></td>\
+        <td><center>"+ k['app_bal'] + "</center></td>\
+        <td><center>"+ k['con_bal'] + "</center></td>\
+        <td><center>"+ k['train_bal'] + "</center></td>\
+        <td><center>"+
+        ( k['bal_total']) +
+        "</center></td></tr>";
+
+});
+
+                
+                html += '</tbody></table>';
+            });
+
+            $('#pager').html(html);
+        });
+
+
+
+       }, 10000);
+
+        // Get the page info, so we know what the last is
+         count = 0
+        var pageInfo = table.page.info(),
+
+        //     // Set the ending interval to the last page
+            endInt = pageInfo.end,
+
+        //     // Current page
+             currentInt = 0,
+
+        //     // Start an interval to go to the "next" page every 3 seconds
+             interval = setInterval(function () {
+        //         // "Next" ...
+                 table.page(currentInt).draw('page');
+
+        //         // Increment the current page int
+                 currentInt++;
+
+        //         // If were on the last page, reset the currentInt to the first page #
+                if (currentInt === endInt)
+                     currentInt = 0;
+
+            }, 5000); // 3 seconds
+    });
+</script>
+{% endblock %}
+
+{%- block content -%}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centered Table</title>
+</head>
+<body>
+    {% for row in att_data %}
+    <table border="1" width="100%" id="pager" style="font-size: 25px; line-height: 3;">
+
+        <thead>
+            <tr>
+                <td style="background-color:palegoldenrod" colspan="7"><center>Manpower Attendance <b>{{ row['date'] }}</b></center></td>
+            </tr>
+            <tr style="background-color:orange">
+                <td style="width: 14%;"><center><b>Description</b></center></td>
+                <td style="width: 8%;"><center><b>Staff</b></center></td>
+                <td style="width: 8%;"><center><b>Operator</b></center></td>
+                <td style="width: 8%;"><center><b>Apprentice</b></center></td>
+                <td style="width: 8%;"><center><b>Contractor</b></center></td>
+                <td style="width: 8%;"><center><b>Trainee</b></center></td>
+                
+                <td style="width: 14%;"><center><b>Total</b></center></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="text-align: center; line-height: 3;color:green;">
+                <td><b>{{ row['in'] }}</b></td>
+                <td id="de">{{ row['staff_in'] }}</td>
+                <td id="shi1">{{ row['operator_in'] }}</td>
+                <td id="shi2">{{ row['apprentice_in'] }}</td>
+                <td id="shi3">{{ row['contract_in'] }}</td>
+                <td id="shi3">{{ row['trainee_in'] }}</td>
+                
+                <td id="shi4"><b>{{ row['in_total'] }}</b></td>
+            </tr>
+            <tr style="text-align: center; line-height: 3;color: brown;">
+                <td id="pd1"><b>{{ row['out'] }}</b></td>
+                <td id="de1">{{ row['staff_out'] }}</td>
+                <td id="shi11">{{ row['operator_out'] }}</td>
+                <td id="shi12">{{ row['apprentice_out'] }}</td>
+                <td id="shi13">{{ row['contract_out'] }}</td>
+                <td id="shi13">{{ row['trainee_out'] }}</td>
+                
+                <td id="shi4"><b>{{ row['out_total'] }}</b></td>
+            </tr>
+            <tr style="text-align: center; line-height: 3;color: red;">
+                <td id="pd2"><b>{{ row['bal'] }}</b></td>
+                <td id="de2">{{ row['staff_bal'] }}</td>
+                <td id="shi21">{{ row['oper_bal'] }}</td>
+                <td id="shi22">{{ row['app_bal'] }}</td>
+                <td id="shi23">{{ row['con_bal'] }}</td>
+                <td id="shi23">{{ row['train_bal'] }}</td>
+                
+                <td id="shi4"><b>{{ row['bal_total'] }}</b></td>
+            </tr>
+            
+        </tbody>
+
+    </table>
+    {% endfor %}
+
+</body>
+</html>
+
+
+
+{% endblock %}

@@ -1,0 +1,130 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-08-28 18:09:40.266251",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "inspection_type",
+  "reference_type",
+  "reference_name",
+  "column_break_ttvn",
+  "date",
+  "item_code",
+  "item_name",
+  "uom",
+  "column_break_hwwd",
+  "possible_inspection_qty",
+  "actual_inspection_qty",
+  "inspection_by",
+  "inspector_name",
+  "quality_inspection"
+ ],
+ "fields": [
+  {
+   "fieldname": "inspection_type",
+   "fieldtype": "Select",
+   "label": "Inspection Type",
+   "options": "Incoming\nOutgoing\nIn Process"
+  },
+  {
+   "fieldname": "reference_type",
+   "fieldtype": "Select",
+   "label": "Reference Type",
+   "options": "\nPurchase Receipt\nPurchase Invoice\nSubcontracting Receipt\nDelivery Note\nSales Invoice\nStock Entry\nJob Card"
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference Name",
+   "options": "reference_type"
+  },
+  {
+   "fieldname": "column_break_ttvn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name"
+  },
+  {
+   "fetch_from": "item_code.stock_uom",
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "UOM",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "column_break_hwwd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "possible_inspection_qty",
+   "fieldtype": "Int",
+   "label": "Possible Inspection Qty"
+  },
+  {
+   "fieldname": "actual_inspection_qty",
+   "fieldtype": "Int",
+   "label": "Actual Inspection Qty"
+  },
+  {
+   "fieldname": "inspection_by",
+   "fieldtype": "Data",
+   "label": "Inspection By"
+  },
+  {
+   "fieldname": "inspector_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Inspector Name"
+  },
+  {
+   "fieldname": "quality_inspection",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Quality Inspection"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-08-28 18:09:40.266251",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Quality Inspection Tool",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

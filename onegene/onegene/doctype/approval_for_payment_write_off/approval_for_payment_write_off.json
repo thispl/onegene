@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-17 15:03:31.748730",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "invoice_no",
+  "invoice_date",
+  "price",
+  "price_inr",
+  "column_break_xoju",
+  "payment_status",
+  "reason_for_request"
+ ],
+ "fields": [
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fieldname": "invoice_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Invoice No ",
+   "options": "Sales Invoice"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": "invoice_no.posting_date",
+   "fetch_if_empty": 1,
+   "fieldname": "invoice_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Invoice Date",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": "invoice_no.grand_total",
+   "fetch_if_empty": 1,
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Price",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": "invoice_no.base_grand_total",
+   "fetch_if_empty": 1,
+   "fieldname": "price_inr",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Price (INR)",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "column_break_xoju",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "payment_status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Payment status "
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fieldname": "reason_for_request",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Reason for Request"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-12-01 18:47:29.384291",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Approval for Payment Write Off",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

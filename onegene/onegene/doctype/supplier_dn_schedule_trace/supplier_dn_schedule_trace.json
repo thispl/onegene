@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-05-05 14:13:48.103579",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "purchase_order_schedule",
+  "item_code",
+  "schedule_date",
+  "allocated_qty"
+ ],
+ "fields": [
+  {
+   "fieldname": "purchase_order_schedule",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Purchase Order Schedule"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Code"
+  },
+  {
+   "fieldname": "schedule_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Schedule Date"
+  },
+  {
+   "fieldname": "allocated_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Allocated Qty"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-05-05 14:13:48.103579",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Supplier-DN Schedule Trace",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,189 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "OTR-.####",
+ "creation": "2024-09-11 10:33:05.429848",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "ot_table",
+  "section_break_bokl",
+  "company",
+  "column_break_rkpd",
+  "department",
+  "column_break_toqd",
+  "employee_category",
+  "column_break_ghuf",
+  "ot_requested_date",
+  "is_holiday_ot",
+  "ot_type",
+  "section_break_xcqq",
+  "column_break_rpgj",
+  "employee_details",
+  "section_break_byxu",
+  "ot_hours",
+  "column_break_d50m",
+  "column_break_vdhp",
+  "section_break_xzdl",
+  "ot_updated",
+  "ot_balance",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "column_break_rkpd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_toqd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "employee_category",
+   "fieldtype": "Link",
+   "label": "Employee Category",
+   "options": "Employee Category"
+  },
+  {
+   "fieldname": "column_break_ghuf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Today",
+   "fieldname": "ot_requested_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "OT Requested Date",
+   "no_copy": 1,
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_holiday_ot",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Holiday OT?"
+  },
+  {
+   "fieldname": "ot_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "OT Type",
+   "options": "OT as OT Hours\nOT as Comp Off",
+   "read_only_depends_on": "eval:doc.is_holiday_ot==0"
+  },
+  {
+   "fieldname": "section_break_xcqq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "employee_details",
+   "fieldtype": "Table",
+   "ignore_user_permissions": 1,
+   "options": "OT Request Child"
+  },
+  {
+   "fieldname": "section_break_xzdl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "ot_updated",
+   "fieldtype": "Check",
+   "label": "OT Updated"
+  },
+  {
+   "default": "0",
+   "fieldname": "ot_balance",
+   "fieldtype": "Check",
+   "label": "OT Balance Updated"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "OT Request",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_rpgj",
+   "fieldtype": "Column Break",
+   "ignore_user_permissions": 1
+  },
+  {
+   "fieldname": "ot_hours",
+   "fieldtype": "Int",
+   "label": "OT Hours",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_d50m",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_vdhp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_byxu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "ot_table",
+   "fieldtype": "HTML",
+   "label": "OT Table"
+  },
+  {
+   "fieldname": "section_break_bokl",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-11-12 15:26:16.708245",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "OT Request",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

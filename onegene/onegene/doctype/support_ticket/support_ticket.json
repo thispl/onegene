@@ -1,0 +1,221 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "ST.#####",
+ "creation": "2024-02-05 16:38:51.836693",
+ "default_view": "List",
+ "doctype": "DocType",
+ "document_type": "Setup",
+ "engine": "InnoDB",
+ "field_order": [
+  "subject_section",
+  "subject",
+  "employee",
+  "employee_mail_id",
+  "issue_related_to",
+  "cb00",
+  "status",
+  "priority",
+  "opening_date_time",
+  "resolution_date_time",
+  "mail_sent",
+  "sb_details",
+  "description",
+  "column_break_kllg",
+  "resolution_details",
+  "section_break_19",
+  "opening_date",
+  "resolution_date",
+  "user_resolution_time",
+  "column_break_oacx",
+  "opening_time",
+  "resolution_time"
+ ],
+ "fields": [
+  {
+   "fieldname": "subject_section",
+   "fieldtype": "Section Break",
+   "options": "fa fa-flag"
+  },
+  {
+   "bold": 1,
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_standard_filter": 1,
+   "label": "Subject",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb00",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Open",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "oldfieldname": "status",
+   "oldfieldtype": "Select",
+   "options": "Open\nReplied\nOn Hold\nResolved\nClosed",
+   "search_index": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Priority",
+   "options": "Issue Priority"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "eval:doc.status!=\"Closed\"",
+   "fieldname": "sb_details",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "bold": 1,
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "in_global_search": 1,
+   "label": "Ticket Description",
+   "oldfieldname": "problem_description",
+   "oldfieldtype": "Text"
+  },
+  {
+   "fieldname": "section_break_19",
+   "fieldtype": "Section Break",
+   "label": "Resolution Details"
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "fieldname": "resolution_details",
+   "fieldtype": "Text Editor",
+   "label": "Resolution Details",
+   "no_copy": 1,
+   "oldfieldname": "resolution_details",
+   "oldfieldtype": "Text"
+  },
+  {
+   "default": "Today",
+   "fieldname": "opening_date",
+   "fieldtype": "Date",
+   "label": "Opening Date",
+   "no_copy": 1,
+   "oldfieldname": "opening_date",
+   "oldfieldtype": "Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "opening_time",
+   "fieldtype": "Time",
+   "label": "Opening Time",
+   "no_copy": 1,
+   "oldfieldname": "opening_time",
+   "oldfieldtype": "Time",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:!doc.__islocal",
+   "fieldname": "resolution_date",
+   "fieldtype": "Datetime",
+   "label": "Resolution Date",
+   "no_copy": 1,
+   "oldfieldname": "resolution_date",
+   "oldfieldtype": "Date"
+  },
+  {
+   "fieldname": "resolution_time",
+   "fieldtype": "Duration",
+   "label": "Resolution Time"
+  },
+  {
+   "fieldname": "user_resolution_time",
+   "fieldtype": "Duration",
+   "label": "User Resolution Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.user_id",
+   "fetch_if_empty": 1,
+   "fieldname": "employee_mail_id",
+   "fieldtype": "Data",
+   "label": "Employee mail id"
+  },
+  {
+   "default": "0",
+   "fieldname": "mail_sent",
+   "fieldtype": "Check",
+   "label": "Mail Sent",
+   "read_only": 1
+  },
+  {
+   "fieldname": "issue_related_to",
+   "fieldtype": "Select",
+   "label": "Issue Related To",
+   "options": "\nHR\nIT",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_kllg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_oacx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "opening_date_time",
+   "fieldtype": "Datetime",
+   "label": "Opening Date & TIme"
+  },
+  {
+   "fieldname": "resolution_date_time",
+   "fieldtype": "Datetime",
+   "label": "Resolution Date & Time"
+  }
+ ],
+ "icon": "fa fa-ticket",
+ "links": [],
+ "modified": "2025-04-21 11:15:39.453073",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Support Ticket",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Support Team",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "status,subject",
+ "sender_field": "raised_by",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "subject_field": "subject",
+ "title_field": "subject",
+ "track_changes": 1,
+ "track_seen": 1
+}

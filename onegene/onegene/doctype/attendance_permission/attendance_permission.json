@@ -1,0 +1,179 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "AP-.####",
+ "creation": "2024-01-05 15:59:02.046036",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "employee_category",
+  "column_break_doic",
+  "department",
+  "designation",
+  "section_break_cvsh",
+  "permission_date",
+  "column_break_wopc",
+  "permission_hours",
+  "section_break_u42s",
+  "approver",
+  "session",
+  "from_time",
+  "to_time",
+  "column_break_71wi",
+  "reason",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_doic",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.designation",
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_cvsh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "permission_date",
+   "fieldtype": "Date",
+   "label": "Permission Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_wopc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "permission_hours",
+   "fieldtype": "Select",
+   "label": "Permission Hours",
+   "options": "\n1\n2",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_u42s",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.session == \"Flexible\"",
+   "fieldname": "from_time",
+   "fieldtype": "Time",
+   "label": "From Time",
+   "mandatory_depends_on": "eval:doc.session == \"Flexible\""
+  },
+  {
+   "fieldname": "column_break_71wi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_time",
+   "fieldtype": "Time",
+   "label": "To Time"
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Small Text",
+   "label": "Reason",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Attendance Permission",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "employee.employee_category",
+   "fieldname": "employee_category",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Employee Category",
+   "options": "Employee Category",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.leave_approver",
+   "fieldname": "approver",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Approver",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "session",
+   "fieldtype": "Select",
+   "label": "Session",
+   "options": "\nFirst Half\nSecond Half\nFlexible"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-12-26 14:21:53.420226",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Attendance Permission",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 1
+}

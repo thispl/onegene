@@ -1,0 +1,387 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "GDC-.#####",
+ "creation": "2025-10-04 16:13:54.046808",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "amended_from",
+  "dc_type",
+  "party_type",
+  "party",
+  "supplier",
+  "column_break_fhk3",
+  "dc_date",
+  "is_return",
+  "general_dc",
+  "section_break_rnhn",
+  "warehouse",
+  "vehicle_number",
+  "requested_by",
+  "requester_name",
+  "requested_department",
+  "hod",
+  "hod_approved_on",
+  "accounts_manager",
+  "account_manager_approved_on",
+  "column_break_9ool",
+  "receipt_status",
+  "receipt_date",
+  "reference_no",
+  "vehicle_no",
+  "received_by",
+  "receiver_name",
+  "received_department",
+  "received_warehouse",
+  "tab_break_7op3",
+  "items",
+  "items_",
+  "section_break_qjq5",
+  "qty_transferred",
+  "column_break_4vsz",
+  "pending_qty",
+  "column_break_zqto",
+  "total",
+  "section_break_xokz",
+  "scan_barcode",
+  "terms_and_conditions_tab",
+  "terms",
+  "terms_and_conditions"
+ ],
+ "fields": [
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "General DC",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "dc_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "DC Type",
+   "options": "\nReturnable\nNon Returnable",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "general_dc.party_type",
+   "fetch_if_empty": 1,
+   "fieldname": "party_type",
+   "fieldtype": "Link",
+   "label": "Customer/Supplier",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_fhk3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "general_dc.party",
+   "fetch_if_empty": 1,
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "label": "Customer/Supplier Name",
+   "options": "party_type",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.dc_type=='Returnable'",
+   "fieldname": "is_return",
+   "fieldtype": "Check",
+   "label": "Is Return",
+   "read_only_depends_on": "eval:doc.workflow_state !=\"Draft\""
+  },
+  {
+   "depends_on": "is_return",
+   "fieldname": "general_dc",
+   "fieldtype": "Link",
+   "label": "General DC",
+   "mandatory_depends_on": "eval:doc.is_return==1",
+   "options": "General DC"
+  },
+  {
+   "fieldname": "section_break_rnhn",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Today",
+   "fetch_from": "general_dc.dc_date",
+   "fetch_if_empty": 1,
+   "fieldname": "dc_date",
+   "fieldtype": "Date",
+   "label": "DC Date",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "general_dc.warehouse",
+   "fetch_if_empty": 1,
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fetch_from": "general_dc.vehicle_number",
+   "fetch_if_empty": 1,
+   "fieldname": "vehicle_number",
+   "fieldtype": "Data",
+   "label": "Vehicle Number",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "general_dc.received_by",
+   "fetch_if_empty": 1,
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "label": "Requested by",
+   "options": "Employee"
+  },
+  {
+   "fetch_from": "requested_by.employee_name",
+   "fieldname": "requester_name",
+   "fieldtype": "Data",
+   "label": "Requester Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "requested_by.department",
+   "fetch_if_empty": 1,
+   "fieldname": "requested_department",
+   "fieldtype": "Link",
+   "label": "Requested Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "column_break_9ool",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "receipt_status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Receipt Status",
+   "options": "\nReceipt Pending\nPartially Received\nFully Received",
+   "read_only": 1
+  },
+  {
+   "default": "Today",
+   "depends_on": "eval:doc.is_return==1",
+   "fieldname": "receipt_date",
+   "fieldtype": "Date",
+   "label": "Receipt Date"
+  },
+  {
+   "depends_on": "eval:doc.is_return==1",
+   "fieldname": "reference_no",
+   "fieldtype": "Data",
+   "label": "Reference No"
+  },
+  {
+   "depends_on": "eval:doc.is_return==1",
+   "fieldname": "vehicle_no",
+   "fieldtype": "Data",
+   "label": "Vehicle No"
+  },
+  {
+   "depends_on": "eval:doc.is_return==1",
+   "fieldname": "received_by",
+   "fieldtype": "Link",
+   "label": "Received by",
+   "options": "Employee"
+  },
+  {
+   "depends_on": "eval:doc.is_return==1",
+   "fetch_from": "received_by.employee_name",
+   "fieldname": "receiver_name",
+   "fieldtype": "Data",
+   "label": "Receiver Name",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.is_return==1",
+   "fetch_from": "received_by.department",
+   "fetch_if_empty": 1,
+   "fieldname": "received_department",
+   "fieldtype": "Link",
+   "label": "Received Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.is_return==1",
+   "fieldname": "received_warehouse",
+   "fieldtype": "Link",
+   "label": "Received Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "tab_break_7op3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.is_return==0 ",
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "General DC Item"
+  },
+  {
+   "depends_on": "eval:doc.is_return==1 && doc.general_dc",
+   "fieldname": "items_",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "General DC Return"
+  },
+  {
+   "fieldname": "section_break_qjq5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.dc_type=='Returnable'",
+   "fieldname": "qty_transferred",
+   "fieldtype": "Float",
+   "label": "Total Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_4vsz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.dc_type=='Returnable'",
+   "fieldname": "pending_qty",
+   "fieldtype": "Float",
+   "label": "Pending Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_xokz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "scan_barcode",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Scan Barcode",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "General DC",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "terms_and_conditions_tab",
+   "fieldtype": "Tab Break",
+   "label": "Terms and conditions"
+  },
+  {
+   "fetch_from": "terms.terms",
+   "fetch_if_empty": 1,
+   "fieldname": "terms_and_conditions",
+   "fieldtype": "Text Editor",
+   "label": "Terms and Conditions"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "hod",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "HOD",
+   "options": "User"
+  },
+  {
+   "fieldname": "accounts_manager",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Accounts Manager",
+   "options": "User"
+  },
+  {
+   "fieldname": "hod_approved_on",
+   "fieldtype": "Datetime",
+   "hidden": 1,
+   "label": "HOD Approved On",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_manager_approved_on",
+   "fieldtype": "Datetime",
+   "hidden": 1,
+   "label": "Account Manager Approved On",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_zqto",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total",
+   "fieldtype": "Currency",
+   "label": "Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "terms",
+   "fieldtype": "Link",
+   "label": "Terms",
+   "options": "Terms and Conditions"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-10-15 13:50:57.359936",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "General DC",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

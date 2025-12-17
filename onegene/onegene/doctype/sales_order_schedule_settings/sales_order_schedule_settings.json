@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-10-11 12:26:59.608783",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "html_1",
+  "html_2",
+  "html_3",
+  "column_break_nuztg",
+  "download",
+  "attach",
+  "html_4",
+  "upload",
+  "column_break_ehys",
+  "response",
+  "response_data",
+  "section_break_bom8n",
+  "note",
+  "warning_data",
+  "error_data",
+  "html"
+ ],
+ "fields": [
+  {
+   "fieldname": "attach",
+   "fieldtype": "Attach"
+  },
+  {
+   "fieldname": "column_break_nuztg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval: doc.attach",
+   "fieldname": "upload",
+   "fieldtype": "Button",
+   "label": "Upload"
+  },
+  {
+   "fieldname": "download",
+   "fieldtype": "Button",
+   "label": "Download"
+  },
+  {
+   "fieldname": "section_break_bom8n",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "html",
+   "fieldtype": "HTML",
+   "label": "HTML"
+  },
+  {
+   "fieldname": "html_1",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "html_2",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "html_3",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "HTML",
+   "label": "Note"
+  },
+  {
+   "fieldname": "column_break_ehys",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "html_4",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "response",
+   "fieldtype": "HTML",
+   "label": "Response"
+  },
+  {
+   "fieldname": "warning_data",
+   "fieldtype": "HTML",
+   "label": "Warning Data"
+  },
+  {
+   "fieldname": "error_data",
+   "fieldtype": "HTML",
+   "label": "Error data"
+  },
+  {
+   "fieldname": "response_data",
+   "fieldtype": "Long Text",
+   "hidden": 1,
+   "label": "Response Data"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "make_attachments_public": 1,
+ "modified": "2025-11-04 11:25:15.400472",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Sales Order Schedule Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

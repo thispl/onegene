@@ -1,0 +1,135 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:tool",
+ "creation": "2025-08-28 17:52:20.535294",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tool_id",
+  "tool",
+  "tool_name",
+  "workstation",
+  "tool_life",
+  "hsn_code",
+  "tool_life_logs",
+  "column_break_mpnn",
+  "status",
+  "operation",
+  "total_processed_qty",
+  "model",
+  "pm_plan"
+ ],
+ "fields": [
+  {
+   "fieldname": "tool_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Tool ID",
+   "unique": 1
+  },
+  {
+   "fieldname": "tool_name",
+   "fieldtype": "Data",
+   "label": "Tool Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "workstation",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Workstation",
+   "options": "Workstation"
+  },
+  {
+   "fieldname": "tool_life",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Tool Life",
+   "no_copy": 1,
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "tool_life_logs",
+   "fieldtype": "Table",
+   "label": "Tool Life Logs",
+   "options": "Tool Life",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mpnn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nInactive\nScrap",
+   "read_only": 1
+  },
+  {
+   "fieldname": "operation",
+   "fieldtype": "Link",
+   "label": "Operation",
+   "options": "Operation"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_processed_qty",
+   "fieldtype": "Int",
+   "label": "Total Processed Qty",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "tool",
+   "fieldtype": "Data",
+   "label": "Tool",
+   "unique": 1
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model"
+  },
+  {
+   "fieldname": "pm_plan",
+   "fieldtype": "Data",
+   "label": "PM PLAN"
+  },
+  {
+   "fieldname": "hsn_code",
+   "fieldtype": "Link",
+   "label": "HSN Code",
+   "options": "GST HSN Code"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-09-24 17:21:25.894818",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Tool",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "tool_name",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

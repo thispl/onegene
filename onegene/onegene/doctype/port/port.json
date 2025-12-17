@@ -1,0 +1,67 @@
+{
+ "actions": [],
+ "autoname": "field:seaair_port_name",
+ "creation": "2025-05-05 15:19:08.108886",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "seaair_port_name",
+  "cargo_type",
+  "city",
+  "country"
+ ],
+ "fields": [
+  {
+   "fieldname": "seaair_port_name",
+   "fieldtype": "Data",
+   "label": "SEA/AIR PORT Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "cargo_type",
+   "fieldtype": "Select",
+   "label": "Cargo Type",
+   "options": "\nSEA\nAIR"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Link",
+   "label": "City",
+   "options": "City"
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-05-05 15:19:08.108886",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "PORT",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

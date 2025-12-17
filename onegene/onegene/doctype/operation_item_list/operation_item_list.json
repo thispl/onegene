@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "OP-.####",
+ "creation": "2024-01-05 22:59:52.046655",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_arwz",
+  "item",
+  "bom_item",
+  "document_name",
+  "operation",
+  "operation_name",
+  "selected_field",
+  "req_tot_qty",
+  "uom",
+  "qty"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_arwz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "document_name",
+   "fieldtype": "Data",
+   "label": "BOM"
+  },
+  {
+   "fieldname": "operation_name",
+   "fieldtype": "Data",
+   "label": "Operation Name"
+  },
+  {
+   "fieldname": "selected_field",
+   "fieldtype": "Data",
+   "label": "Selected Field"
+  },
+  {
+   "fieldname": "req_tot_qty",
+   "fieldtype": "Float",
+   "label": "Qty"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Available Qty"
+  },
+  {
+   "fieldname": "operation",
+   "fieldtype": "Data",
+   "label": "Operation"
+  },
+  {
+   "fieldname": "bom_item",
+   "fieldtype": "Link",
+   "label": "Bom Item",
+   "options": "Item"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-13 13:35:25.052673",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Operation Item List",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

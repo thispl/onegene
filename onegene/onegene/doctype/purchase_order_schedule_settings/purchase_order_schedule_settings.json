@@ -1,0 +1,127 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-05-05 14:45:39.050989",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_zstn",
+  "html_1",
+  "html_2",
+  "html_3",
+  "column_break_enkx",
+  "download",
+  "attach",
+  "html_4",
+  "upload",
+  "column_break_qlqn",
+  "response",
+  "response_data",
+  "section_break_bom8n",
+  "note",
+  "error_data",
+  "html"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_zstn",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "html_1",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "html_2",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "html_3",
+   "fieldtype": "HTML"
+  },
+  {
+   "fieldname": "column_break_enkx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "download",
+   "fieldtype": "Button",
+   "label": "Download"
+  },
+  {
+   "fieldname": "attach",
+   "fieldtype": "Attach"
+  },
+  {
+   "fieldname": "html_4",
+   "fieldtype": "HTML"
+  },
+  {
+   "depends_on": "eval: doc.attach",
+   "fieldname": "upload",
+   "fieldtype": "Button",
+   "label": "Upload"
+  },
+  {
+   "fieldname": "column_break_qlqn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_bom8n",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "html",
+   "fieldtype": "HTML",
+   "label": "HTML"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "HTML",
+   "label": "Note"
+  },
+  {
+   "fieldname": "response",
+   "fieldtype": "HTML",
+   "label": "Response"
+  },
+  {
+   "fieldname": "response_data",
+   "fieldtype": "Long Text",
+   "hidden": 1,
+   "label": "Response Data"
+  },
+  {
+   "fieldname": "error_data",
+   "fieldtype": "HTML",
+   "label": "Error Data"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "make_attachments_public": 1,
+ "modified": "2025-11-03 16:04:22.919065",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Purchase Order Schedule Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

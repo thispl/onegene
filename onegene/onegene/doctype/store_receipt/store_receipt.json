@@ -1,0 +1,115 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "STR-.#####",
+ "creation": "2025-08-28 20:52:23.618282",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "type",
+  "column_break_utae",
+  "quality_inspection",
+  "inspection_id",
+  "column_break_kxcj",
+  "date",
+  "section_break_pqbc",
+  "item",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "quality_inspection",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Inspection ID",
+   "options": "Quality Inspection"
+  },
+  {
+   "fieldname": "column_break_kxcj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "section_break_pqbc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Store Receipt Child",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Store Receipt",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Store Receipt",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "Store Receipt Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_utae",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "inspection_id",
+   "fieldtype": "Autocomplete",
+   "label": "Inspection ID"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-11-07 11:51:11.555875",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Store Receipt",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

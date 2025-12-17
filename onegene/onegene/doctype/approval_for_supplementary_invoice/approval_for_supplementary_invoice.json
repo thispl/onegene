@@ -1,0 +1,187 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-17 14:55:24.403736",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "part_no",
+  "part_name",
+  "po_no",
+  "qty",
+  "po_price",
+  "invoiced_priceinr",
+  "gst",
+  "new_price",
+  "revised_priceinr",
+  "column_break_drmu",
+  "difference",
+  "difference_inr",
+  "supplementary_value",
+  "supplementary_value_inr",
+  "reason_for_request",
+  "hsn_code"
+ ],
+ "fields": [
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "part_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fetch_from": "part_no.item_name",
+   "fetch_if_empty": 1,
+   "fieldname": "part_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "po_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "PO No",
+   "options": "Sales Order"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": ".order_type",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": ".grand_total",
+   "fieldname": "po_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Invoiced Price",
+   "options": "currency",
+   "precision": "5"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "po_no.base_grand_total",
+   "fetch_if_empty": 1,
+   "fieldname": "invoiced_priceinr",
+   "fieldtype": "Currency",
+   "label": "Invoiced Price(INR)",
+   "precision": "5"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "gst",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "GST",
+   "options": "Item Tax Template",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "new_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Revised Price",
+   "options": "currency",
+   "precision": "5"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "revised_priceinr",
+   "fieldtype": "Currency",
+   "label": "Revised Price(INR)",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "column_break_drmu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "difference",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Difference",
+   "options": "currency",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "difference_inr",
+   "fieldtype": "Currency",
+   "label": "Difference (INR)",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "supplementary_value",
+   "fieldtype": "Currency",
+   "label": "Supplementary Value",
+   "options": "currency",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "supplementary_value_inr",
+   "fieldtype": "Currency",
+   "label": "Supplementary Value (INR)",
+   "precision": "5",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "reason_for_request",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Reason for Request"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": "part_no.gst_hsn_code",
+   "fetch_if_empty": 1,
+   "fieldname": "hsn_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "HSN Code",
+   "options": "GST HSN Code",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-12-01 18:53:51.002880",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Approval for Supplementary Invoice",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

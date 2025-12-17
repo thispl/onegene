@@ -1,0 +1,155 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:pallet_no",
+ "creation": "2025-05-28 11:09:35.087229",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "name1",
+  "column_break_wjb9",
+  "pallet_no",
+  "dimensions_section",
+  "length",
+  "column_break_wucn",
+  "breadth",
+  "column_break_vrsp",
+  "height",
+  "column_break_oaxr",
+  "extra_height",
+  "column_break_xdxy",
+  "dimension_uom",
+  "section_break_oxis",
+  "pallet_dimensions_table",
+  "section_break_cyqc",
+  "weight",
+  "column_break_nqtu",
+  "weight_uom"
+ ],
+ "fields": [
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "dimensions_section",
+   "fieldtype": "Section Break",
+   "label": "Dimensions"
+  },
+  {
+   "fieldname": "length",
+   "fieldtype": "Float",
+   "label": "Length"
+  },
+  {
+   "fieldname": "column_break_wucn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "breadth",
+   "fieldtype": "Float",
+   "label": "Breadth"
+  },
+  {
+   "fieldname": "column_break_vrsp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "height",
+   "fieldtype": "Float",
+   "label": "Height"
+  },
+  {
+   "fieldname": "column_break_oaxr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Millimeter",
+   "fieldname": "dimension_uom",
+   "fieldtype": "Link",
+   "label": "Dimension UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_oxis",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "pallet_dimensions_table",
+   "fieldtype": "Table",
+   "label": "Pallet Dimensions Table",
+   "options": "Pallet Dimensions Table",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_cyqc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "weight",
+   "fieldtype": "Float",
+   "label": "Weight"
+  },
+  {
+   "fieldname": "column_break_nqtu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Kg",
+   "fieldname": "weight_uom",
+   "fieldtype": "Link",
+   "label": "Weight UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_wjb9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pallet_no",
+   "fieldtype": "Data",
+   "label": "Pallet No",
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "extra_height",
+   "fieldtype": "Float",
+   "label": "Extra Height"
+  },
+  {
+   "fieldname": "column_break_xdxy",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-11-30 18:52:32.542898",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Pallet",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

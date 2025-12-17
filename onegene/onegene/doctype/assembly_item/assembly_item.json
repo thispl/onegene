@@ -1,0 +1,149 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-08-26 16:41:51.619709",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "item_group",
+  "item_bom",
+  "plan",
+  "required_plan",
+  "column_break_mygw",
+  "sales_order",
+  "item_type",
+  "stock_in_sw",
+  "stock_in_wip",
+  "produced_qty",
+  "column_break_dklg",
+  "warehouse",
+  "stock_in_sfg",
+  "stock_in_shop_floor",
+  "in_progress",
+  "mr_qty"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "columns": 2,
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name"
+  },
+  {
+   "columns": 2,
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Group",
+   "options": "Item Group"
+  },
+  {
+   "columns": 1,
+   "fieldname": "plan",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Plan"
+  },
+  {
+   "columns": 1,
+   "fieldname": "required_plan",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Required Plan"
+  },
+  {
+   "fieldname": "column_break_mygw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "item_type",
+   "fieldtype": "Link",
+   "label": "Item Type",
+   "options": "Item Type"
+  },
+  {
+   "fieldname": "stock_in_sw",
+   "fieldtype": "Float",
+   "label": "Stock In SW"
+  },
+  {
+   "fieldname": "stock_in_wip",
+   "fieldtype": "Float",
+   "label": "Stock In WIP"
+  },
+  {
+   "columns": 1,
+   "fieldname": "produced_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Produced Qty"
+  },
+  {
+   "fieldname": "column_break_dklg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "stock_in_sfg",
+   "fieldtype": "Float",
+   "label": "Stock In SFG"
+  },
+  {
+   "fieldname": "stock_in_shop_floor",
+   "fieldtype": "Float",
+   "label": "Stock In Shop Floor"
+  },
+  {
+   "fieldname": "in_progress",
+   "fieldtype": "Float",
+   "label": "In Progress"
+  },
+  {
+   "fieldname": "mr_qty",
+   "fieldtype": "Float",
+   "label": "MR Qty"
+  },
+  {
+   "fieldname": "item_bom",
+   "fieldtype": "Link",
+   "label": "Item BOM",
+   "options": "BOM"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-20 09:34:09.223170",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Assembly Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

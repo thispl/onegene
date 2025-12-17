@@ -1,0 +1,73 @@
+
+{% extends "templates/web.html" %}
+{% block title %} OT Report {% endblock %}
+{% block head_include %}
+<style>
+    body {
+        padding: 35px;
+    }
+</style>
+{% endblock %}
+
+{%- block content -%}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centered Table</title>
+</head>
+<body>
+    {% for row in ot_data %}
+    <table border="1" width="100%" style="font-size: 18px; line-height: 4;">
+        <tr width="20%"style="background-color:#dbd78c;line-height: 4;">
+            <td style='border-right:hidden;' colspan="1"><center><img src="https://erp.onegeneindia.in/files/ci_img.png" width="190" height="100" style="float:left"></center></td><td colspan="4" style='border-left:hidden;padding-right:100;font-size: 23px;'><b>Over Time Summary - {{row['mon']}}</b></td>
+        </tr>
+    </table>
+    <table border="1" width="100%" style="font-size: 18px; line-height: 4;">
+
+        <thead>
+            
+            <tr style="background-color:orange">
+                <td style="width: 25%;"><center><b>Description</b></center></td>
+                <td style="width: 15%;"><center><b>Operator</b></center></td>
+                <td style="width: 15%;"><center><b>Apprentice</b></center></td>
+                <td style="width: 15%;"><center><b>Contractor</b></center></td>
+                <td style="width: 15%;"><center><b>Trainee</b></center></td>
+                <td style="width: 15%;"><center><b>Total</b></center></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="text-align: center; line-height: 4;color:green;">
+                <td><b>Total Hrs</b></td>
+                <td>{{ row['opot'] }}</td>
+                <td>{{ row['appot'] }}</td>
+                <td>{{ row['conot'] }}</td>
+                <td>{{ row['traot'] }}</td>
+                <td>{{ row['ottot'] }}</td>
+            </tr>
+            <tr style="text-align: center; line-height: 4;color: rgba(255, 106, 0, 0.81);">
+                <td><b>Used Hrs (C.off)</b></td>
+                <td>{{ row['opcoff'] }}</td>
+                <td>{{ row['appcoff'] }}</td>
+                <td>{{ row['concoff'] }}</td>
+                <td>{{ row['tracoff'] }}</td>
+                <td><b>{{ row['cofftot'] }}</b></td>
+            </tr>
+            <tr style="text-align: center; line-height: 4;color: red;">
+                <td><b>Balance to Pay Hrs</b></td>
+                <td>{{ row['obal'] }}</td>
+                <td>{{ row['appbal'] }}</td>
+                <td>{{ row['conbal'] }}</td>
+                <td>{{ row['trabal'] }}</td>
+                <td>{{ row['baltot'] }}</td>
+            </tr>
+            
+        </tbody>
+
+    </table>
+    {% endfor %}
+
+</body>
+</html>
+
+{% endblock %}

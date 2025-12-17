@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-05-28 11:09:55.528574",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "box",
+  "total_no_of_box",
+  "weight_per_unit",
+  "total_weight",
+  "total_length",
+  "total_breadth",
+  "total_height"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "box",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Box",
+   "options": "Box",
+   "width": "200px"
+  },
+  {
+   "columns": 2,
+   "fieldname": "total_no_of_box",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Box Count",
+   "width": "150px"
+  },
+  {
+   "columns": 1,
+   "fieldname": "weight_per_unit",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "WPU",
+   "width": "150px"
+  },
+  {
+   "columns": 2,
+   "fieldname": "total_weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Total Weight",
+   "width": "150px"
+  },
+  {
+   "columns": 1,
+   "fieldname": "total_length",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "L",
+   "width": "100px"
+  },
+  {
+   "columns": 1,
+   "fieldname": "total_breadth",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "B",
+   "width": "150px"
+  },
+  {
+   "columns": 1,
+   "fieldname": "total_height",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "H",
+   "width": "100px"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-05-28 11:09:55.528574",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Box Summary",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

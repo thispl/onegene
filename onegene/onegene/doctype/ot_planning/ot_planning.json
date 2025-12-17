@@ -1,0 +1,166 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "OT-.####",
+ "creation": "2024-05-31 08:30:57.076309",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "shift_dates_section",
+  "from_date",
+  "column_break_kc0k",
+  "to_date",
+  "section_break_qkgb",
+  "department",
+  "employee_category",
+  "company",
+  "column_break_gy5i",
+  "number_of_employees",
+  "section_break_yfb6",
+  "employee_details",
+  "amended_from",
+  "section_break_nngb",
+  "to_hod",
+  "to_ph",
+  "to_mdhr"
+ ],
+ "fields": [
+  {
+   "fieldname": "shift_dates_section",
+   "fieldtype": "Section Break",
+   "label": "Shift Dates"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "From Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_kc0k",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_qkgb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee_category",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "in_standard_filter": 1,
+   "label": "Employee Category",
+   "options": "Employee Category"
+  },
+  {
+   "default": "WONJIN AUTOPARTS INDIA PVT.LTD.",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_gy5i",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "number_of_employees",
+   "fieldtype": "Int",
+   "label": "Number of Employees"
+  },
+  {
+   "fieldname": "section_break_yfb6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "employee_details",
+   "fieldtype": "Table",
+   "label": "Employee Details",
+   "options": "Employee OT Schedule"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "OT Planning",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_nngb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "to_hod",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "To HOD for Approval"
+  },
+  {
+   "default": "0",
+   "fieldname": "to_ph",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "To PH for Pending Information"
+  },
+  {
+   "default": "0",
+   "fieldname": "to_mdhr",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "To MD/HR for Approval"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-10-25 17:25:05.833399",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "OT Planning",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

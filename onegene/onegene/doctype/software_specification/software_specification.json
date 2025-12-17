@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:document",
+ "creation": "2024-02-21 18:30:00.932091",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "document",
+  "policy",
+  "disable",
+  "why_it_is_disabled"
+ ],
+ "fields": [
+  {
+   "fieldname": "document",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Document",
+   "options": "DocType",
+   "unique": 1
+  },
+  {
+   "fieldname": "policy",
+   "fieldtype": "Small Text",
+   "in_standard_filter": 1,
+   "label": "Policy"
+  },
+  {
+   "default": "0",
+   "fieldname": "disable",
+   "fieldtype": "Check",
+   "label": "Disable"
+  },
+  {
+   "depends_on": "eval:doc.disable",
+   "fieldname": "why_it_is_disabled",
+   "fieldtype": "Small Text",
+   "label": "Why it is disabled"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-10-25 17:49:41.109307",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Software Specification",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

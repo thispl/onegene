@@ -1,0 +1,66 @@
+{% extends "templates/web.html" %}
+{% block title %} Today's Birthdays {% endblock %}
+{% block head_include %}
+<style>
+    body {
+        padding: 35px;
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css" />
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+{% endblock %}
+{%- block content -%}
+{% if bday_data == 'No Birthdays Today' %}
+    <p><center><b>No Birthday Today</b></center></p>
+{% else %}
+    <div id="birthdayCarousel" class="carousel slide" data-ride="carousel" data-interval="4000">
+        <div class="carousel-inner">
+            {% for index, row in enumerate(bday_data) %}
+                <div class="carousel-item {% if index == 0 %} active {% endif %}">
+                    <table width="100%" id="pager">     
+                        <tbody>
+                            <tr>
+                                <td style="padding-left: 100px;"colspan='1'>
+                                  <img src="https://erp.onegeneindia.in/files/ci_img.png" width="190" height="100">
+                                </td>
+                                <td style="font-size: 29px;color: rgba(11, 11, 85, 0.854);" colspan="2"><b>{{ row['Title'] }}</b></td>
+                              </tr>
+                            <tr>
+                                <td rowspan="4" style="text-align: center; line-height: 1;">
+                                    <img src="{{ row['Default Image URL'] }}" alt="Image Description" style="max-width: 250px; max-height: 500px;">
+                                </td>
+                                    <td style="font-size: 20px"><b>Name: </b>{{ row['Name'] }}</td>
+                                <td rowspan="2" style="text-align: left; line-height: 1;"><img src="{{ row['Image1'] }}" alt="Image Description" style="max-width: 180px; max-height: 300px;"></td>
+                            </tr>
+                            <tr style="text-align: left; line-height: 1;">
+                                <td style="font-size: 20px"><b>Category: </b>{{ row['Employee Category'] }}</td>
+                            </tr>
+                            <tr style="text-align: left; line-height: 1;">
+                                <td style="font-size: 20px"><b>Department: </b>{{ row['Department'] }}</td>
+                                <td rowspan="2" style="text-align: left; line-height: 2;"><img src="{{ row['Image2'] }}" alt="Image Description" style="max-width: 180px; max-height: 300px;"></td>         
+                            </tr>
+                            <tr style="text-align: left; line-height: 1;">
+                                <td style="font-size: 20px"><b>Designation: </b>{{ row['Designation'] }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="color: rgb(8, 8, 84);font-size :25px;"><center><b>இனிய பிறந்த நாள் வாழ்த்துக்கள்</b></center></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                </div>
+            {% endfor %}
+        </div>
+        <a class="carousel-control-prev" href="#birthdayCarousel" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#birthdayCarousel" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+{% endif %}
+
+{% endblock %}
+

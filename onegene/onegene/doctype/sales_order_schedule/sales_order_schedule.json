@@ -1,0 +1,475 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:{sales_order_number}/{schedule_month}/{####}",
+ "creation": "2023-10-11 12:39:18.324840",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer_so_details_section",
+  "customer_code",
+  "customer_name",
+  "customer_group",
+  "schedule_date",
+  "column_break_dbru",
+  "sales_order_number",
+  "order_type",
+  "schedule_month",
+  "schedule_year",
+  "currency_section",
+  "currency",
+  "column_break_jqpw",
+  "exchange_rate",
+  "item_details_section",
+  "item_code",
+  "item_group",
+  "order",
+  "item_name",
+  "column_break_vtaw",
+  "order_rate",
+  "order_rate_inr",
+  "qty_amount_section",
+  "qty",
+  "delivered_qty",
+  "pending_qty",
+  "column_break_mmqo",
+  "schedule_amount",
+  "delivered_amount",
+  "pending_amount",
+  "column_break_ezpa",
+  "schedule_amount_inr",
+  "delivered_amount_inr",
+  "pending_amount_inr",
+  "section_break_ibif",
+  "column_break_woiq",
+  "tentative_plan_1",
+  "column_break_dtfp",
+  "tentative_plan_2",
+  "column_break_kbvn",
+  "revision_section",
+  "revision",
+  "revised",
+  "section_break_ucqs",
+  "created_by",
+  "column_break_nsxl",
+  "remarks",
+  "reference_section",
+  "child_name",
+  "work_order_created",
+  "work_order_qty",
+  "disable_update_items",
+  "amended_from",
+  "summary_tab",
+  "schedule_summary"
+ ],
+ "fields": [
+  {
+   "fieldname": "schedule_date",
+   "fieldtype": "Date",
+   "label": "Schedule Date"
+  },
+  {
+   "fetch_from": "customer_name.customer_code",
+   "fieldname": "customer_code",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Customer Code"
+  },
+  {
+   "fieldname": "sales_order_number",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Sales Order Number",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Schedule Qty"
+  },
+  {
+   "fieldname": "tentative_plan_1",
+   "fieldtype": "Float",
+   "label": "Tentative Plan 1",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "tentative_plan_2",
+   "fieldtype": "Float",
+   "label": "Tentative Plan 2",
+   "no_copy": 1
+  },
+  {
+   "fetch_from": "sales_order_number.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Customer Name",
+   "options": "Customer"
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Item Group",
+   "options": "Item Group"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name"
+  },
+  {
+   "fetch_from": "sales_order_number.customer_order_type",
+   "fieldname": "order_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Order Type",
+   "options": "\nFixed\nOpen"
+  },
+  {
+   "fieldname": "column_break_woiq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_dtfp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_ibif",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_kbvn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "delivered_qty",
+   "fieldtype": "Float",
+   "label": "Delivered Qty",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "pending_qty",
+   "fieldtype": "Float",
+   "label": "Pending Qty",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "pending_amount",
+   "fieldtype": "Currency",
+   "label": "Pending Amount",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "order_rate",
+   "fieldtype": "Currency",
+   "label": "Order Rate",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "schedule_amount",
+   "fieldtype": "Currency",
+   "label": "Schedule Amount",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "delivered_amount",
+   "fieldtype": "Currency",
+   "label": "Delivered Amount",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Read Only",
+   "label": "Created By",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_nsxl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_ucqs",
+   "fieldtype": "Section Break",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "child_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Child Name",
+   "no_copy": 1,
+   "set_only_once": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "work_order_created",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Work Order Created",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: frappe.session.user == \"amar.p@groupteampro.com\"",
+   "fieldname": "work_order_qty",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Work Order Qty",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_so_details_section",
+   "fieldtype": "Section Break",
+   "label": "Customer SO Details"
+  },
+  {
+   "fieldname": "column_break_dbru",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_details_section",
+   "fieldtype": "Section Break",
+   "label": "Item Details"
+  },
+  {
+   "fieldname": "column_break_vtaw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "qty_amount_section",
+   "fieldtype": "Section Break",
+   "label": "Qty Amount"
+  },
+  {
+   "fieldname": "column_break_mmqo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "reference_section",
+   "fieldtype": "Section Break",
+   "label": "Reference"
+  },
+  {
+   "fieldname": "schedule_month",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Schedule Month",
+   "options": "JAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC"
+  },
+  {
+   "fieldname": "schedule_year",
+   "fieldtype": "Data",
+   "label": "Schedule Year",
+   "read_only": 1
+  },
+  {
+   "fieldname": "revision_section",
+   "fieldtype": "Section Break",
+   "label": "Revision"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "revision",
+   "fieldtype": "Table",
+   "label": "Revision Log",
+   "no_copy": 1,
+   "options": "Sales Order Schedule Revision",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "disable_update_items",
+   "fieldtype": "Check",
+   "label": "Disable Update Items",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "revised",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Revised",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Sales Order Schedule",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "order_rate_inr",
+   "fieldtype": "Currency",
+   "label": "Order Rate (INR)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ezpa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "schedule_amount_inr",
+   "fieldtype": "Currency",
+   "label": "Schedule Amount (INR)",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "delivered_amount_inr",
+   "fieldtype": "Currency",
+   "label": "Delivered Amount (INR)",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "pending_amount_inr",
+   "fieldtype": "Currency",
+   "label": "Pending Amount (INR)",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "currency_section",
+   "fieldtype": "Section Break",
+   "label": "Currency"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "customer_name.default_currency",
+   "fetch_if_empty": 1,
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "1",
+   "description": "Rate at which customer's currency is converted to company's base currency",
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "precision": "9",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "customer_name.customer_group",
+   "fieldname": "customer_group",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Customer Group",
+   "options": "Customer Group"
+  },
+  {
+   "fetch_from": "item_group.custom_order",
+   "fieldname": "order",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Order"
+  },
+  {
+   "fieldname": "summary_tab",
+   "fieldtype": "Tab Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "schedule_summary",
+   "fieldtype": "HTML",
+   "label": "Schedule Summary"
+  },
+  {
+   "fieldname": "column_break_jqpw",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-12-01 12:02:00.781174",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Sales Order Schedule",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,235 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-17 14:47:24.917103",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "type",
+  "part_no",
+  "item_code_new",
+  "part_name",
+  "item_name_new",
+  "po_no",
+  "po_no_new",
+  "po_date",
+  "qty",
+  "qty_new",
+  "po_price",
+  "po_price_new",
+  "item_tax_template",
+  "column_break_drmu",
+  "po_price_inr",
+  "po_price_inrexisting",
+  "value",
+  "value_inr",
+  "hsn_code",
+  "reason_for_request"
+ ],
+ "fields": [
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Type",
+   "options": "\nNew\nExisting"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "depends_on": "eval:doc.type==\"Existing\"",
+   "fieldname": "part_no",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Item Code (Existing)",
+   "mandatory_depends_on": "eval:doc.type==\"Existing\"",
+   "options": "Item"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "item_code_new",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "depends_on": "eval:doc.type==\"Existing\"",
+   "fetch_from": "part_no.item_name",
+   "fetch_if_empty": 1,
+   "fieldname": "part_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Item Name (Existing)",
+   "mandatory_depends_on": "eval:doc.type==\"Existing\"",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "item_name_new",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.type==\"Existing\"",
+   "fieldname": "po_no",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "PO No",
+   "options": "Sales Order"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "po_no_new",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "PO No",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": ".total_qty",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Qty",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "qty_new",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.type==\"Existing\"",
+   "fetch_from": ".grand_total",
+   "fieldname": "po_price",
+   "fieldtype": "Currency",
+   "hidden": 1,
+   "label": "PO Price",
+   "options": "currency",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "po_price_new",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "PO Price",
+   "options": "currency",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "item_tax_template",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "GST",
+   "options": "Item Tax Template",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "column_break_drmu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": ".base_grand_total",
+   "fieldname": "po_price_inr",
+   "fieldtype": "Currency",
+   "hidden": 1,
+   "label": "PO Price (INR)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "po_price_inrexisting",
+   "fieldtype": "Currency",
+   "label": "PO Price (INR)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fieldname": "reason_for_request",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Reason for Request",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": ".gst_hsn_code",
+   "fieldname": "hsn_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "HSN Code",
+   "options": "GST HSN Code"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "po_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "PO Date",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "value",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Value",
+   "options": "currency",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "value_inr",
+   "fieldtype": "Currency",
+   "label": "Value (INR)",
+   "precision": "2",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-12-01 18:55:13.707285",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Approval for Proto Sample PO",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

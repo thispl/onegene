@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-17 12:26:19.410650",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "schedule_date",
+  "schedule_month",
+  "schedule_qty",
+  "column_break_jano",
+  "delivery_qty",
+  "pending_qty",
+  "order_schedule"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "schedule_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Schedule Date",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "schedule_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Sch. Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_jano",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "delivery_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Del. Qty",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "pending_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Pend. Qty",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "order_schedule",
+   "fieldtype": "Data",
+   "label": "Order Schedule",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "schedule_month",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Schedule Month",
+   "options": "JAN\nFEB\nMAR\nAPR\nMAY\nJUN\nJUL\nAUG\nSEP\nOCT\nNOV\nDEC",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-29 18:12:20.628681",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Sales Order Schedule Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-06-26 17:42:27.204459",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "item_group",
+  "custom_item_order_type",
+  "qty",
+  "uom",
+  "create_po",
+  "existing_po",
+  "new_po"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Data",
+   "label": "Item Group",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.custom_item_order_type",
+   "fieldname": "custom_item_order_type",
+   "fieldtype": "Data",
+   "label": "Item Order Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "create_po",
+   "fieldtype": "Button",
+   "hidden": 1,
+   "label": "Create PO"
+  },
+  {
+   "fieldname": "existing_po",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Existing PO",
+   "options": "Purchase Order",
+   "read_only_depends_on": "eval:doc.new_po"
+  },
+  {
+   "fieldname": "new_po",
+   "fieldtype": "Data",
+   "label": "New PO",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-06-26 17:42:27.204459",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "MR Scheduling Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,96 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "NSPP.####",
+ "creation": "2024-02-13 14:51:05.073073",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_xbyc",
+  "get_template",
+  "amended_from",
+  "column_break_hhln",
+  "attach",
+  "column_break_eamn",
+  "upload",
+  "section_break_mljr",
+  "csv_preview"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_xbyc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Night Shift Planning Process",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "get_template",
+   "fieldtype": "Button",
+   "label": "Get Template"
+  },
+  {
+   "fieldname": "column_break_eamn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.attach",
+   "fieldname": "upload",
+   "fieldtype": "Button",
+   "label": "Upload"
+  },
+  {
+   "fieldname": "column_break_hhln",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attach",
+   "fieldtype": "Attach",
+   "label": "Attach"
+  },
+  {
+   "fieldname": "section_break_mljr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.attach",
+   "fieldname": "csv_preview",
+   "fieldtype": "HTML",
+   "label": "CSV Preview"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-10-25 17:49:41.403509",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Night Shift Planning Process",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,266 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "QP-.#####",
+ "creation": "2025-09-12 21:43:41.860733",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "inspection_pending_type",
+  "datetime",
+  "column_break_gegl",
+  "reference_type",
+  "reference_name",
+  "job_card",
+  "work_order",
+  "status",
+  "section_break_tokw",
+  "column_break_lrgw",
+  "item_code",
+  "item_group",
+  "column_break_wygo",
+  "item_name",
+  "uom",
+  "pack_size",
+  "section_break_wotc",
+  "possible_inspection_qty",
+  "column_break_fjxn",
+  "inspection_pending_qty",
+  "inspection_completed_qty",
+  "item_details_section",
+  "column_break_dokw",
+  "employee",
+  "workstation",
+  "operation",
+  "supervisor",
+  "department"
+ ],
+ "fields": [
+  {
+   "depends_on": "eval:doc.inspection_pending_type == \"In Process\"",
+   "fieldname": "job_card",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "in_standard_filter": 1,
+   "label": "Job Card",
+   "options": "Job Card",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.inspection_pending_type == \"In Process\"",
+   "fetch_from": "job_card.work_order",
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "in_standard_filter": 1,
+   "label": "Work Order",
+   "options": "Work Order",
+   "read_only": 1
+  },
+  {
+   "fieldname": "datetime",
+   "fieldtype": "Datetime",
+   "label": "Date & Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_lrgw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "job_card.production_item",
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Item Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.stock_uom",
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_wygo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "default": "0",
+   "fieldname": "inspection_pending_qty",
+   "fieldtype": "Float",
+   "label": "<b style=\"color: orange;\">Inspection Pending Qty</b>",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "default": "0",
+   "fieldname": "inspection_completed_qty",
+   "fieldtype": "Float",
+   "label": "<b style=\"color: green;\">Inspection Completed Qty</b>",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.inspection_pending_type == \"In Process\"",
+   "fieldname": "item_details_section",
+   "fieldtype": "Section Break",
+   "hidden": 1
+  },
+  {
+   "fetch_from": "job_card.operation",
+   "fieldname": "operation",
+   "fieldtype": "Link",
+   "label": "Operation",
+   "options": "Operation",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "job_card.workstation",
+   "fieldname": "workstation",
+   "fieldtype": "Link",
+   "label": "Workstation",
+   "options": "Workstation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Link",
+   "label": "Status",
+   "options": "Quality Pending Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_dokw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Operator",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "supervisor",
+   "fieldtype": "Link",
+   "label": "Supervisor",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "job_card.custom_department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fieldname": "inspection_pending_type",
+   "fieldtype": "Link",
+   "label": "Inspection Pending Type",
+   "options": "Inspection Pending Type",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "possible_inspection_qty",
+   "fieldtype": "Float",
+   "label": "<b style=\"color: blue;\">Possible Inspection Qty</b>",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_gegl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_tokw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_wotc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_fjxn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Reference Type",
+   "options": "\nPurchase Receipt\nPurchase Invoice\nSubcontracting Receipt\nDelivery Note\nSales Invoice\nStock Entry\nJob Card",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Reference Name",
+   "options": "reference_type",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fetch_from": "item_code.pack_size",
+   "fieldname": "pack_size",
+   "fieldtype": "Int",
+   "label": "Pack Size",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Quality Inspection",
+   "link_fieldname": "custom_quality_pending"
+  }
+ ],
+ "modified": "2025-10-16 19:11:41.377508",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Quality Pending",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "item_code"
+}

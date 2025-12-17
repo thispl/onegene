@@ -1,0 +1,186 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "ATR.####",
+ "creation": "2024-02-05 11:54:42.664689",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "column_break_2",
+  "attendance_date",
+  "section_break_4",
+  "attendance_shift",
+  "first_in_time",
+  "last_out_time",
+  "column_break_myeb",
+  "shift",
+  "in_time",
+  "out_time",
+  "column_break_mznv",
+  "corrected_shift",
+  "corrected_in",
+  "corrected_out",
+  "section_break_15",
+  "attendance_marked",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attendance_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Attendance Date",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.attendance_date",
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break",
+   "label": "Attendance Details"
+  },
+  {
+   "fieldname": "first_in_time",
+   "fieldtype": "Data",
+   "label": "First In Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_out_time",
+   "fieldtype": "Data",
+   "label": "Last Out Time",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.in_time == 1",
+   "fieldname": "corrected_in",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Corrected In",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.out_time == 1",
+   "fieldname": "corrected_out",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Corrected Out",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "eval:doc.shift == 1",
+   "fieldname": "corrected_shift",
+   "fieldtype": "Link",
+   "label": "Corrected Shift",
+   "options": "Shift Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "attendance_marked",
+   "fieldtype": "Data",
+   "label": "Attendance Marked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Attendance Regularize",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Attendance Regularize",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "attendance_shift",
+   "fieldtype": "Data",
+   "label": "Attendance Shift",
+   "options": "Shift Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mznv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_myeb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "shift",
+   "fieldtype": "Check",
+   "label": "Shift"
+  },
+  {
+   "default": "0",
+   "fieldname": "in_time",
+   "fieldtype": "Check",
+   "label": "In Time"
+  },
+  {
+   "default": "0",
+   "fieldname": "out_time",
+   "fieldtype": "Check",
+   "label": "Out Time"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-05-30 19:30:26.023894",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Attendance Regularize",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
+}

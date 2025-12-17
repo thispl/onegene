@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-17 15:01:18.942392",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "part_no",
+  "part_name",
+  "new_part_no",
+  "hsn_code",
+  "column_break_nyor",
+  "reason_for_request",
+  "gst"
+ ],
+ "fields": [
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fieldname": "part_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Current Item Code",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fieldname": "new_part_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "New Item Code",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fetch_from": "part_no.item_name",
+   "fetch_if_empty": 1,
+   "fieldname": "part_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Current Item Name"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "column_break_nyor",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fieldname": "reason_for_request",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Reason for Request",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fetch_from": "part_no.gst_hsn_code",
+   "fetch_if_empty": 1,
+   "fieldname": "hsn_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "HSN Code",
+   "options": "GST HSN Code",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "fieldname": "gst",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "GST",
+   "options": "Item Tax Template",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-12-01 18:48:01.082152",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Approval for Part Level Change",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

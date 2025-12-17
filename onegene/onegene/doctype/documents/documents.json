@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "autoname": "field:documents",
+ "creation": "2025-05-28 15:29:46.986425",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "documents",
+  "type",
+  "attachment"
+ ],
+ "fields": [
+  {
+   "fieldname": "documents",
+   "fieldtype": "Data",
+   "label": "Documents",
+   "unique": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "\nImport\nExport\nBoth"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-05-28 15:29:46.986425",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Documents",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

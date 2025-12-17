@@ -1,0 +1,140 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "BCOFF-.####",
+ "creation": "2024-04-29 07:51:36.338639",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "holiday_date",
+  "company",
+  "department",
+  "section_break_f63f",
+  "compensation_off_date",
+  "employee_category",
+  "designation",
+  "employee",
+  "section_break_cm5v",
+  "employees_list",
+  "column_break_ulyz",
+  "number_of_employees",
+  "compensation_marked",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "holiday_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Holiday Date",
+   "reqd": 1
+  },
+  {
+   "default": "WONJIN AUTOPARTS INDIA PVT.LTD.",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "section_break_f63f",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "compensation_off_date",
+   "fieldtype": "Date",
+   "label": "Compensation Off Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee_category",
+   "fieldtype": "Link",
+   "label": "Employee Category",
+   "options": "Employee Category"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "section_break_cm5v",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "employees_list",
+   "fieldtype": "Table",
+   "label": "Employees List",
+   "options": "Employees List"
+  },
+  {
+   "fieldname": "column_break_ulyz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "number_of_employees",
+   "fieldtype": "Int",
+   "label": "Number of Employees",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "compensation_marked",
+   "fieldtype": "Check",
+   "label": "Compensation Marked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Bulk Compensation Off Option",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-17 12:26:28.594034",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Bulk Compensation Off Option",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

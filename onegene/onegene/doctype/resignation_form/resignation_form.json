@@ -1,0 +1,175 @@
+{
+ "actions": [],
+ "autoname": "format:RF-{employee}-{posting_date}",
+ "creation": "2024-01-09 20:40:42.471010",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "employee_name",
+  "department",
+  "column_break_7",
+  "employee_category",
+  "designation",
+  "date_of_joining",
+  "section_break_ddkj",
+  "posting_date",
+  "attach",
+  "requested_relieving_date",
+  "reason",
+  "column_break_d9it",
+  "hod_relieving_date",
+  "exit_interview_held_on",
+  "new_workplace",
+  "feedback",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.date_of_joining",
+   "fieldname": "date_of_joining",
+   "fieldtype": "Date",
+   "label": "Date of Joining",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "requested_relieving_date",
+   "fieldtype": "Date",
+   "label": "Requested Relieving Date"
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Small Text",
+   "label": "Reason"
+  },
+  {
+   "depends_on": "eval:frappe.user.has_role(\"HOD\")",
+   "fieldname": "hod_relieving_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "HOD's Relieving Date"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Resignation Form",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "employee.designation",
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.employee_category",
+   "fieldname": "employee_category",
+   "fieldtype": "Link",
+   "label": "Employee Category",
+   "options": "Employee Category",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ddkj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_d9it",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "attach",
+   "fieldtype": "Attach",
+   "label": "Attach"
+  },
+  {
+   "depends_on": "eval:frappe.user.has_role(\"HOD\")",
+   "fieldname": "exit_interview_held_on",
+   "fieldtype": "Date",
+   "label": "Exit Interview Held On"
+  },
+  {
+   "depends_on": "eval:frappe.user.has_role(\"HOD\")",
+   "fieldname": "feedback",
+   "fieldtype": "Small Text",
+   "label": "Feedback"
+  },
+  {
+   "depends_on": "eval:frappe.user.has_role(\"HOD\")",
+   "fieldname": "new_workplace",
+   "fieldtype": "Data",
+   "label": "New Workplace"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-10-25 17:25:10.106384",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Resignation Form",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

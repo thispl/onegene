@@ -1,0 +1,238 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "NSPS.####",
+ "creation": "2024-02-13 17:27:15.763139",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "workflow_state",
+  "posting_date",
+  "column_break_ivzt",
+  "hr_user",
+  "section_break_0du2",
+  "employee",
+  "employee_name",
+  "department",
+  "designation",
+  "employee_category",
+  "swapping_date",
+  "requesting_date",
+  "employee_id",
+  "amended_from",
+  "column_break_lnys",
+  "swapping_employee",
+  "swapping_employee_name",
+  "swapping_employee_department",
+  "swapping_employee_designation",
+  "swapping_employee_category",
+  "swapping_date_2",
+  "audit_date",
+  "swapping_employee_id",
+  "section_break_ibdb",
+  "planning",
+  "column_break_kzdh",
+  "swapping_person_planning"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_0du2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Night Shift Auditors Plan Swapping",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.designation",
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.employee_category",
+   "fetch_if_empty": 1,
+   "fieldname": "employee_category",
+   "fieldtype": "Link",
+   "label": "Employee Category",
+   "options": "Employee Category",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_lnys",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "swapping_employee",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "in_list_view": 1,
+   "label": "Swapping Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "swapping_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Audit Date",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_ibdb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "planning",
+   "fieldtype": "HTML",
+   "label": "Planning"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting date"
+  },
+  {
+   "depends_on": "eval:doc.swapping_employee",
+   "fieldname": "swapping_person_planning",
+   "fieldtype": "HTML",
+   "label": "Swapping Person Planning"
+  },
+  {
+   "fieldname": "requesting_date",
+   "fieldtype": "Date",
+   "label": "Swapping Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_kzdh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": ".",
+   "fieldname": "swapping_employee_name",
+   "fieldtype": "Data",
+   "label": "Swapping Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": ".",
+   "fieldname": "swapping_employee_department",
+   "fieldtype": "Link",
+   "label": "Swapping Employee Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fetch_from": ".",
+   "fieldname": "swapping_employee_designation",
+   "fieldtype": "Link",
+   "label": "Swapping Employee Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fetch_from": ".",
+   "fieldname": "swapping_employee_category",
+   "fieldtype": "Link",
+   "label": "Swapping Employee Category",
+   "options": "Employee Category",
+   "read_only": 1
+  },
+  {
+   "fieldname": "audit_date",
+   "fieldtype": "Date",
+   "label": "Swapping Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "swapping_date_2",
+   "fieldtype": "Date",
+   "label": "Audit Date",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.user_id",
+   "fieldname": "employee_id",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Employee ID",
+   "options": "User"
+  },
+  {
+   "fetch_from": "swapping_employee.user_id",
+   "fieldname": "swapping_employee_id",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Swapping Employee ID",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_ivzt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "hr_user",
+   "fieldtype": "Link",
+   "label": "HR User",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "workflow_state",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Workflow State",
+   "no_copy": 1,
+   "options": "Workflow State"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-10-25 17:25:07.178690",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Night Shift Auditors Plan Swapping",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "employee_name",
+ "track_changes": 1
+}

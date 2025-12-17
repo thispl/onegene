@@ -1,0 +1,185 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-10-05 00:58:31.201386",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "entry_type",
+  "entry_document",
+  "document_id",
+  "party_type",
+  "party",
+  "supplier_dc_number",
+  "column_break_kmbn",
+  "entry_time",
+  "ref_no",
+  "security_no",
+  "security_name",
+  "vehicle_number",
+  "driver_name",
+  "section_break_v5vr",
+  "gate_qty",
+  "column_break_n47d",
+  "section_break_mkna",
+  "items",
+  "gate_entry_item",
+  "end_bit_scrap",
+  "no_of_box"
+ ],
+ "fields": [
+  {
+   "fieldname": "entry_type",
+   "fieldtype": "Select",
+   "label": "Entry Type",
+   "options": "\nInward\nOutward"
+  },
+  {
+   "fieldname": "entry_document",
+   "fieldtype": "Link",
+   "label": "Entry Document",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "document_id",
+   "fieldtype": "Dynamic Link",
+   "label": "Document ID",
+   "options": "entry_document"
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Link",
+   "label": "Party Type",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "label": "Party",
+   "options": "party_type"
+  },
+  {
+   "fieldname": "column_break_kmbn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "entry_time",
+   "fieldtype": "Datetime",
+   "label": "Entry Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ref_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Ref No",
+   "reqd": 1
+  },
+  {
+   "fieldname": "security_no",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Security",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "vehicle_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Vehicle Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Driver Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_v5vr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "gate_qty",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Gate Qty"
+  },
+  {
+   "fieldname": "column_break_n47d",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_mkna",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "HTML",
+   "hidden": 1,
+   "label": "Items"
+  },
+  {
+   "fieldname": "gate_entry_item",
+   "fieldtype": "Table",
+   "label": "Gate Entry Item",
+   "options": "Gate Entry Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "no_of_box",
+   "fieldtype": "Float",
+   "label": "No of Box",
+   "reqd": 1
+  },
+  {
+   "fetch_from": ".employee_name",
+   "fieldname": "security_name",
+   "fieldtype": "Select",
+   "label": "Security Name",
+   "options": "\nS0388 - B KAVITHA\nSB0020 - GUNASEKARAN MR\nSB0005 - SUNDARESAN A",
+   "reqd": 1
+  },
+  {
+   "fieldname": "supplier_dc_number",
+   "fieldtype": "Data",
+   "label": "Supplier DC Number",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "end_bit_scrap",
+   "fieldtype": "Table",
+   "label": "End Bit Scrap & Return",
+   "options": "Supplier-DN Scrap",
+   "read_only": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-12-09 10:20:09.826568",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Gate Entry Update",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

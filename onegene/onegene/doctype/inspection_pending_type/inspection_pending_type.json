@@ -1,0 +1,52 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:inspection_pending_type",
+ "creation": "2025-09-20 10:48:23.826582",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_0saw",
+  "inspection_pending_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_0saw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "inspection_pending_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Inspection Pending Type",
+   "reqd": 1,
+   "unique": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-09-20 10:50:51.682286",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Inspection Pending Type",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
