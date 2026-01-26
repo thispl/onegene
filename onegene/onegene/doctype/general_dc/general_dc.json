@@ -10,12 +10,15 @@
   "amended_from",
   "dc_type",
   "party_type",
-  "party",
   "supplier",
+  "column_break_vukw",
+  "party",
+  "division",
   "column_break_fhk3",
   "dc_date",
   "is_return",
   "general_dc",
+  "company",
   "section_break_rnhn",
   "warehouse",
   "vehicle_number",
@@ -158,6 +161,7 @@
    "fetch_if_empty": 1,
    "fieldname": "requested_department",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Requested Department",
    "options": "Department"
   },
@@ -355,12 +359,35 @@
    "fieldtype": "Link",
    "label": "Terms",
    "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "division",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Division",
+   "options": "\nPlant 1\nPlant 2"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_vukw",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "links": [],
- "modified": "2025-10-15 13:50:57.359936",
+ "links": [
+  {
+   "link_doctype": "General DC",
+   "link_fieldname": "general_dc"
+  }
+ ],
+ "modified": "2026-01-20 12:48:18.340584",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "General DC",

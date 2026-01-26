@@ -13,13 +13,13 @@
   "supplier_name",
   "supplier_code",
   "supplier_group",
-  "schedule_date",
   "schedule_month",
+  "schedule_year",
   "column_break_eylx",
   "purchase_order_number",
   "po_type",
   "order_type",
-  "schedule_year",
+  "schedule_date",
   "currency_section",
   "currency",
   "column_break_kfqz",
@@ -123,9 +123,11 @@
   },
   {
    "fieldname": "schedule_year",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
    "label": "Schedule Year",
-   "read_only": 1
+   "options": "2025\n2026",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_uqjh",
@@ -441,7 +443,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-03 18:19:33.987457",
+ "modified": "2026-01-06 15:50:21.888864",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Purchase Order Schedule",

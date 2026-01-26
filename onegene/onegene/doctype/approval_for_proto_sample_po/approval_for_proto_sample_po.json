@@ -110,6 +110,7 @@
   {
    "allow_on_submit": 1,
    "columns": 1,
+   "default": "1",
    "fieldname": "qty_new",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -223,7 +224,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-12-01 18:55:13.707285",
+ "modified": "2026-01-05 12:33:23.265507",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Approval for Proto Sample PO",

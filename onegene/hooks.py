@@ -342,6 +342,7 @@ doc_events = {
 		"after_insert" : ["onegene.onegene.custom.mark_order_created_in_iom"],
 		"validate": [
 			# "onegene.onegene.custom.validate_schedule_item_table",
+			"onegene.onegene.custom.validate_customer_po",
 			"onegene.onegene.custom.create_cutomer_po",
 			"onegene.onegene.custom.validate_item_rate",
 			   ],
@@ -401,7 +402,7 @@ doc_events = {
 		"onegene.onegene.custom.update_datetime_and_approver_details_in_Si", "onegene.onegene.custom.update_hod_time","onegene.onegene.custom.get_calculated_height",
         "onegene.onegene.custom.make_url_for_si","onegene.onegene.custom.update_port_in_si","onegene.onegene.custom.trigger_notification_based_on_the_workflow_in_si", "onegene.onegene.event.sales_invoice.set_posting_date_as_creation"],
 		"before_insert": ["onegene.onegene.custom.sales_invoice_custom_autoname","onegene.utils.update_si_name"],
-		"on_submit":["onegene.utils.update_lr_status", "onegene.onegene.custom.mark_qid_for_si"],
+		"on_submit":["onegene.utils.update_lr_status", "onegene.onegene.custom.mark_qid_for_si", "onegene.onegene.custom.update_datetime_and_approver_details_finance"],
 		'after_insert':[
 			# 'onegene.utils.create_gate_entry',
 			"onegene.onegene.custom.trigger_notification_based_on_the_workflow_in_si_for_draft"],
@@ -479,7 +480,7 @@ doc_events = {
  
 	"Address":{
 		"before_save":"onegene.onegene.custom.customer_address_validate",
-		"validate": "onegene.onegene.custom.update_tax_category_by_state",
+		# "validate": "onegene.onegene.custom.update_tax_category_by_state",
 	},
 	
 	"Purchase Receipt": {

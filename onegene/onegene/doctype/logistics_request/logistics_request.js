@@ -196,6 +196,33 @@ frappe.ui.form.on('Logistics Request', {
 	
 		 }
 		 if (!frm.doc.__islocal){
+			if (frm.doc.rejection_remark) {
+				if (frappe.user.has_role("Logistics User") || frappe.user.has_role("System Manager")) {
+					frm.add_custom_button(__("View Rejection Remark"), function () {
+						const d = new frappe.ui.Dialog({
+							title:'Rejection remark',
+							fields: [
+								{
+									label: 'Rejected by',
+									fieldname: 'rejection_by',
+									fieldtype: 'Data',
+									default: frm.doc.rejected_by,
+									read_only: 1
+								},
+								{
+									label: 'Reason',
+									fieldname: 'reason',
+									fieldtype: 'Small Text',
+									default: frm.doc.rejection_remark,
+									read_only: 1
+								}
+							]
+						});
+						d.show();
+					});
+				}
+			}
+
 			frm.set_df_property('currency_and_price_list_section','read_only',1)
 			frm.set_df_property('product_description_so','read_only',1)
 			if(frm.doc.prepared_by){
@@ -210,6 +237,7 @@ frappe.ui.form.on('Logistics Request', {
 					frm.set_df_property('ffw_quotation','read_only',1)
 					frm.set_df_property('recommended_ffw','read_only',1)
 					frm.set_df_property('insurance','read_only',1)
+					
 				}
 				if(frm.doc.date_of_delivery){
 					frm.set_df_property('custom_shipping_bill_number_date','read_only',1)
@@ -224,25 +252,29 @@ frappe.ui.form.on('Logistics Request', {
 					frm.set_df_property('attachment','read_only',1)
 					frm.set_df_property('date_of_delivery','read_only',1)
 					frm.set_df_property('receive_by_name','read_only',1)
-				}
+				}	
 				if((frm.doc.status != "Draft" && frm.doc.status != "SMD Approved" && frm.doc.status!='Scheduled')
 				|| frappe.user.has_role == "Accounts User"){
 					frm.set_df_property('etd','read_only',1)
 					frm.set_df_property('eta','read_only',1)
 				}
 				
-				if(frm.doc.status=='Rejected by Finance' && frm.doc.reopened==1){
-			frm.set_df_property('logistics_ops_section', 'read_only', 0);
-			frm.set_df_property('customer_incoterms','read_only',0)
-			frm.set_df_property('date_of_shipment','read_only',0)
-			frm.set_df_property('pol_seaport','read_only',0)
-			frm.set_df_property('pod_seaport','read_only',0)
-			frm.set_df_property('final_destination','read_only',0)
-			frm.set_df_property('transit_time','read_only',0)
-			frm.set_df_property('etd','read_only',0)
-			console.log('etd')
-			frm.set_df_property('eta','read_only',0)
-		}	
+				if(frm.doc.status=='Draft' && frm.doc.reopened==1){
+					frm.set_df_property('logistics_ops_section', 'read_only', 0);
+					frm.set_df_property('customer_incoterms','read_only',0)
+					frm.set_df_property('date_of_shipment','read_only',0)
+					frm.set_df_property('pol_seaport','read_only',0)
+					frm.set_df_property('pod_seaport','read_only',0)
+					frm.set_df_property('final_destination','read_only',0)
+					frm.set_df_property('transit_time','read_only',0)
+					frm.set_df_property('etd','read_only',0)
+					console.log('etd')
+					frm.set_df_property('eta','read_only',0)
+				}
+				if (frm.doc.sent_for_finance==1 &&  frm.doc.reopened==0){
+					frm.set_df_property('pol_airport','read_only',1)
+					frm.set_df_property('pod_airport','read_only',1)
+				}
 				// frm.set_df_property('document_attached','read_only',1)
 			}
 		 }
@@ -405,6 +437,7 @@ frappe.ui.form.on('Logistics Request', {
 				frm.add_custom_button(__("Re-Open"), function () { 
 					if (frappe.user.has_role('Logistics User') || frappe.user.has_role('System Manager')) {
 						frm.set_value('reopened', 1);
+						frm.set_value('status', "Draft");
 						frm.save().then(() => {
 							window.location.reload();
 						});
@@ -459,24 +492,65 @@ frappe.ui.form.on('Logistics Request', {
 					},__("Action"))
 			}
 			if (frm.doc.approved_by_finance==0 && frm.doc.sent_for_finance==1 && frm.doc.cargo_type=='Sea' && frm.doc.scope_of_delivery=='Wonjin' && (frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager'))){
-				frm.add_custom_button(__("Finance Approval"), function () {
-					if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')){
-						frm.set_value('status','Pending for CMD')
+				// frm.add_custom_button(__("Finance Approval"), function () {
+				// 	if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')){
+				// 		frm.set_value('status','Pending for CMD')
 						
-						frm.set_value('approved_by_finance',1)
+				// 		frm.set_value('approved_by_finance',1)
+				// 		frm.set_value('approved_by_finance_date_and_time', frappe.datetime.now_datetime());
+				// 		frm.set_value('finance',frappe.session.user)
+				// 		frm.save().then(() => {
+				// 			console.log("Saved successfully");
+				// 			location.reload();
+				// 		});
+				// 	}
+				// 	else{
+				// 		frappe.msgprint("Only Accounts Manager will allow to approve")
+				// 		frappe.msgprint("Approval க்காக அதை move செய்யும் அதிகாரம் Accounts Manager-க்கு மட்டுமே உள்ளது.")
+
+				// 	}
+					
+				// 	},__("Action"))
+				frm.add_custom_button(__("Finance Approval"), function () {
+					if (frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')) {
+						
+						frm.set_value('status', 'LR Approved');
+						frm.set_value('approved_by_finance', 1);
 						frm.set_value('approved_by_finance_date_and_time', frappe.datetime.now_datetime());
-						frm.set_value('finance',frappe.session.user)
+						frm.set_value('ffw_approved', 1);
+						frm.set_df_property('section_break_kvnk', 'hidden', 1);
+						frm.set_value('finance', frappe.session.user);
+
 						frm.save().then(() => {
-							console.log("Saved successfully");
-							location.reload();
+							console.log("Form saved successfully");
+							if (frm.doc.po_so === "Sales Invoice" && frm.doc.order_no) {
+								frappe.call({
+									method: "onegene.onegene.custom.update_workflow",
+									args: {
+										doctype: "Sales Invoice",
+										name: frm.doc.order_no,
+										transporter:frm.doc.recommended_ffw,
+									},
+									callback: function(r) {
+										if (!r.exc) {
+											frm.set_value("workflow_state", 'LR Approved');
+											frm.refresh_field("workflow_state");
+										}
+									}
+									
+								});
+							} else {
+								location.reload(); 
+							}
+							
 						});
 					}
-					else{
-						frappe.msgprint("Only Accounts Manager will allow to approve")
-						frappe.msgprint("Approval க்காக அதை move செய்யும் அதிகாரம் Accounts Manager-க்கு மட்டுமே உள்ளது.")
 
+					else{
+						frappe.msgprint("Only Finance will allow to approve")
+						frappe.msgprint("Approve செய்யும் அதிகாரம் Finance -க்கு மட்டுமே உள்ளது.")
 					}
-					
+						
 					},__("Action"))
 				frm.add_custom_button(__("Reject"), function () { 
 					if (frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')) {
@@ -500,8 +574,10 @@ frappe.ui.form.on('Logistics Request', {
 								frm.set_value('rejection_remark', values.rejection_remark);
 								
 								frm.set_value('status', 'Rejected by Finance');
+								// frm.set_value('status', 'Draft');
 								frm.set_value('sent_for_finance', 0);
 								frm.set_value('rejected_by_finance', 1);
+								frm.set_value('rejected_by', frappe.session.user);
 								frm.save().then(() => {
 									console.log("Saved successfully");
 									location.reload();
@@ -591,6 +667,7 @@ frappe.ui.form.on('Logistics Request', {
 					frm.add_custom_button(__("Re-Open"), function () { 
 					if (frappe.user.has_role('Logistics User') || frappe.user.has_role('System Manager')) {
 						frm.set_value('reopened', 1);
+						frm.set_value('status', "Draft");
 						frm.save().then(() => {
 							window.location.reload();
 						});
@@ -710,8 +787,10 @@ frappe.ui.form.on('Logistics Request', {
 								frm.set_value('rejection_remark', values.rejection_remark);
 								
 								frm.set_value('status', 'Rejected by Finance');
+								// frm.set_value('status', 'Draft');
 								frm.set_value('sent_for_finance', 0);
 								frm.set_value('rejected_by_finance', 1);
+								frm.set_value('rejected_by', frappe.session.user);
 								frm.save().then(() => {
 									console.log("Saved successfully");
 									location.reload();
@@ -792,6 +871,7 @@ frappe.ui.form.on('Logistics Request', {
 					frm.add_custom_button(__("Re-Open"), function () { 
 					if (frappe.user.has_role('Logistics User') || frappe.user.has_role('System Manager')) {
 						frm.set_value('reopened', 1);
+						frm.set_value('status', "Draft");
 						frm.save().then(() => {
 							window.location.reload();
 						});
@@ -851,21 +931,62 @@ frappe.ui.form.on('Logistics Request', {
 					},__("Action"))
 			}
 			else if(frm.doc.cargo_type=='Air'&&frm.doc.scope_of_delivery=='Wonjin' && frm.doc.approved_by_finance==0 && frm.doc.sent_for_finance==1 && (frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager'))){
-				frm.add_custom_button(__("Finance Approval"), function () {
-					if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')){
+				// frm.add_custom_button(__("Finance Approval"), function () {
+				// 	if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')){
 						
-						frm.set_value('status','Pending for BMD')
-						frm.set_value('approved_by_finance',1)
+				// 		frm.set_value('status','Pending for BMD')
+				// 		frm.set_value('approved_by_finance',1)
+				// 		frm.set_value('approved_by_finance_date_and_time', frappe.datetime.now_datetime());
+				// 		frm.set_value('finance',frappe.session.user)
+				// 		frm.save().then(() => {
+				// 			console.log("Saved successfully");
+				// 			location.reload();
+				// 		});
+				// 	}
+				// 	else{
+				// 		frappe.msgprint("Only Accounts Manager will allow to approve")
+				// 		frappe.msgprint("Approve செய்யும் அதிகாரம் Accounts Manager-க்கு மட்டுமே உள்ளது.")
+				// 	}
+						
+				// 	},__("Action"))
+				frm.add_custom_button(__("Finance Approval"), function () {
+					if (frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')) {
+						
+						frm.set_value('status', 'LR Approved');
+						frm.set_value('approved_by_finance', 1);
 						frm.set_value('approved_by_finance_date_and_time', frappe.datetime.now_datetime());
-						frm.set_value('finance',frappe.session.user)
+						frm.set_value('ffw_approved', 1);
+						frm.set_df_property('section_break_kvnk', 'hidden', 1);
+						frm.set_value('finance', frappe.session.user);
+
 						frm.save().then(() => {
-							console.log("Saved successfully");
-							location.reload();
+							console.log("Form saved successfully");
+							if (frm.doc.po_so === "Sales Invoice" && frm.doc.order_no) {
+								frappe.call({
+									method: "onegene.onegene.custom.update_workflow",
+									args: {
+										doctype: "Sales Invoice",
+										name: frm.doc.order_no,
+										transporter:frm.doc.recommended_ffw,
+									},
+									callback: function(r) {
+										if (!r.exc) {
+											frm.set_value("workflow_state", 'LR Approved');
+											frm.refresh_field("workflow_state");
+										}
+									}
+									
+								});
+							} else {
+								location.reload(); 
+							}
+							
 						});
 					}
+
 					else{
-						frappe.msgprint("Only Accounts Manager will allow to approve")
-						frappe.msgprint("Approve செய்யும் அதிகாரம் Accounts Manager-க்கு மட்டுமே உள்ளது.")
+						frappe.msgprint("Only Finance will allow to approve")
+						frappe.msgprint("Approve செய்யும் அதிகாரம் Finance -க்கு மட்டுமே உள்ளது.")
 					}
 						
 					},__("Action"))
@@ -891,8 +1012,10 @@ frappe.ui.form.on('Logistics Request', {
 								frm.set_value('rejection_remark', values.rejection_remark);
 								
 								frm.set_value('status', 'Rejected by Finance');
+								// frm.set_value('status', 'Draft');
 								frm.set_value('sent_for_finance', 0);
 								frm.set_value('rejected_by_finance', 1);
+								frm.set_value('rejected_by', frappe.session.user);
 								frm.save().then(() => {
 									console.log("Saved successfully");
 									location.reload();
@@ -1668,7 +1791,7 @@ frappe.ui.form.on('Logistics Request', {
             frm.disable_form();
         }
 		
-		if(frm.doc.status=='Draft'){
+		if(frm.doc.status=='Draft' && frm.doc.reopened==0){
 			frm.set_df_property('section_break_kvnk','hidden',1)
 			frm.set_df_property('support_doc','hidden',1)
 			frm.set_df_property('custom_section_break_sloza','hidden',1)
@@ -1773,6 +1896,7 @@ frappe.ui.form.on('Logistics Request', {
 					frm.add_custom_button(__("Re-Open"), function () { 
 					if (frappe.user.has_role('Logistics User') || frappe.user.has_role('System Manager')) {
 						frm.set_value('reopened', 1);
+						frm.set_value('status', "Draft");
 						frm.save().then(() => {
 							window.location.reload();
 						});
@@ -1835,21 +1959,62 @@ frappe.ui.form.on('Logistics Request', {
 					},__("Action"))
 			}
 			else if(frm.doc.cargo_type=='Air'&&frm.doc.scope_of_delivery=='Wonjin' && frm.doc.approved_by_finance==0 && frm.doc.sent_for_finance==1 && (frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager'))){
-				frm.add_custom_button(__("Finance Approval"), function () {
-					if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')){
+				// frm.add_custom_button(__("Finance Approval"), function () {
+				// 	if(frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')){
 						
-						frm.set_value('status','Pending for BMD')
-						frm.set_value('approved_by_finance',1)
+				// 		frm.set_value('status','Pending for BMD')
+				// 		frm.set_value('approved_by_finance',1)
+				// 		frm.set_value('approved_by_finance_date_and_time', frappe.datetime.now_datetime());
+				// 		frm.set_value('finance',frappe.session.user)
+				// 		frm.save().then(() => {
+				// 			console.log("Saved successfully");
+				// 			location.reload();
+				// 		});
+				// 	}
+				// 	else{
+				// 		frappe.msgprint("Only Accounts Manager will allow to approve")
+				// 		frappe.msgprint("Approval-க்கு போகும் செயலை Accounts Manager மட்டும் செய்ய முடியும்.")
+				// 	}
+						
+				// 	},__("Action"))
+				frm.add_custom_button(__("Finance Approval"), function () {
+					if (frappe.user.has_role('Accounts Manager') || frappe.user.has_role('System Manager')) {
+						
+						frm.set_value('status', 'LR Approved');
+						frm.set_value('approved_by_finance', 1);
 						frm.set_value('approved_by_finance_date_and_time', frappe.datetime.now_datetime());
-						frm.set_value('finance',frappe.session.user)
+						frm.set_value('ffw_approved', 1);
+						frm.set_df_property('section_break_kvnk', 'hidden', 1);
+						frm.set_value('finance', frappe.session.user);
+
 						frm.save().then(() => {
-							console.log("Saved successfully");
-							location.reload();
+							console.log("Form saved successfully");
+							if (frm.doc.po_so === "Sales Invoice" && frm.doc.order_no) {
+								frappe.call({
+									method: "onegene.onegene.custom.update_workflow",
+									args: {
+										doctype: "Sales Invoice",
+										name: frm.doc.order_no,
+										transporter:frm.doc.recommended_ffw,
+									},
+									callback: function(r) {
+										if (!r.exc) {
+											frm.set_value("workflow_state", 'LR Approved');
+											frm.refresh_field("workflow_state");
+										}
+									}
+									
+								});
+							} else {
+								location.reload(); 
+							}
+							
 						});
 					}
+
 					else{
-						frappe.msgprint("Only Accounts Manager will allow to approve")
-						frappe.msgprint("Approval-க்கு போகும் செயலை Accounts Manager மட்டும் செய்ய முடியும்.")
+						frappe.msgprint("Only Finance will allow to approve")
+						frappe.msgprint("Approve செய்யும் அதிகாரம் Finance -க்கு மட்டுமே உள்ளது.")
 					}
 						
 					},__("Action"))
@@ -1877,6 +2042,7 @@ frappe.ui.form.on('Logistics Request', {
 								frm.set_value('status', 'Rejected by Finance');
 								frm.set_value('sent_for_finance', 0);
 								frm.set_value('rejected_by_finance', 1);
+								frm.set_value('rejected_by', frappe.session.user);
 								frm.save().then(() => {
 									console.log("Saved successfully");
 									location.reload();
@@ -2009,7 +2175,7 @@ frappe.ui.form.on('Logistics Request', {
 
 
 		
-
+		
 
 
 
@@ -2380,6 +2546,18 @@ frappe.ui.form.on('Logistics Request', {
 		// 		})
 		// 	}
 		// }
+		if(frm.doc.status=='Rejected by Finance' && frm.doc.reopened==1){
+			frm.set_df_property('logistics_ops_section', 'read_only', 0);
+			frm.set_df_property('customer_incoterms','read_only',0)
+			frm.set_df_property('date_of_shipment','read_only',0)
+			frm.set_df_property('pol_seaport','read_only',0)
+			frm.set_df_property('pod_seaport','read_only',0)
+			frm.set_df_property('final_destination','read_only',0)
+			frm.set_df_property('transit_time','read_only',0)
+			frm.set_df_property('etd','read_only',0)
+			console.log('etd')
+			frm.set_df_property('eta','read_only',0)
+		}
 	},
 	eta(frm) {
 		frm.trigger('transit_time')

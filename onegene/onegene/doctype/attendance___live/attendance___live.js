@@ -17,6 +17,7 @@ frappe.ui.form.on("Attendance - Live", {
 	},
 	onload: function(frm) {
         frm.disable_save()
+        frm.trigger('get_data_system')
         frappe.call({
 			method:"onegene.onegene.custom.update_last_execution",
 			callback(r){

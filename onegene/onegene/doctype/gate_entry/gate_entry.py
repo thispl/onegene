@@ -33,18 +33,23 @@ class GateEntry(Document):
                             lr=frappe.get_doc('Logistics Request',{'status':'Ready to Ship','order_no':self.entry_id})
                             lr.status='Dispatched'
                             lr.save(ignore_permissions=True)
+                            
         elif self.entry_against=='Advance Shipping Note':
             if frappe.db.exists('Advance Shipping Note', {'name':self.entry_id}):
-                doc = frappe.get_doc('Advance Shipping Note', self.entry_id)
-                if doc.workflow_state=='In Transit':
-                    doc.workflow_state='Gate Received'
-                    doc.confirm_supplier_dn=self.ref_no
-                    doc.security_name=self.security_name
-                    doc.vehicle_no=self.vehicle_number
-                    doc.driver_name=self.driver_name
-                    doc.received_date_time=self.entry_time
-                doc.save(ignore_permissions=True)
-       
+                asn_workflow_state = frappe.db.get_value('Advance Shipping Note', self.entry_id, "workflow_state")
+                if asn_workflow_state =='In Transit':
+                    frappe.db.set_value(
+                        'Advance Shipping Note',
+                        self.entry_id,
+                        {
+                            'workflow_state': 'Gate Received',
+                            'confirm_supplier_dn': self.ref_no,
+                            'security_name': self.security_name,
+                            'vehicle_no': self.vehicle_number,
+                            'driver_name': self.driver_name,
+                            'received_date_time': self.entry_time,
+                        }
+                    )
                 
         self.submit()
 

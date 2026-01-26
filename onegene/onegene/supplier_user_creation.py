@@ -14,9 +14,9 @@ def supp_user(doc,method):
             new_user_doc.username = doc.supplier_code
             new_user_doc.supplier_group = doc.supplier_group
             if doc.supplier_group =="Outsourcing":
-                new_user_doc.role_profile_name = "OUTSOURCING"
+                new_user_doc.role_profile_name = "Supplier-Outsourcing"
             else:         
-                new_user_doc.role_profile_name = "Supplier"
+                new_user_doc.role_profile_name = "Supplier-Purchase"
             new_user_doc.module_profile = "Supplier"
             new_user_doc.user_category = "Supplier"
             new_user_doc.send_welcome_email = 1
@@ -114,19 +114,19 @@ def supp_user_exist(doc=None, method=None):
 
         existing_user_by_email = frappe.db.exists("User", {"email": supplier.email_id})
         existing_user_by_username = frappe.db.exists("User", {"username": supplier.supplier_code})
-
+        role_profile = "Supplier-Outsourcing" if supplier.supplier_group == "Outsourcing" else "Supplier-Purchase"
         user_values = {
             "first_name": supplier.supplier_name,
             "username": supplier.supplier_code,
             "supplier_group": supplier.supplier_group,
-            "role_profile_name": "Supplier",
+            "role_profile_name": role_profile,
             "module_profile": "Supplier",
         }
 
         user_values_2 = {
             "first_name": supplier.supplier_name,
             "supplier_group": supplier.supplier_group,
-            "role_profile_name": "Supplier",
+            "role_profile_name": role_profile,
             "module_profile": "Supplier",
         }
 
@@ -163,7 +163,7 @@ def supp_user_exist(doc=None, method=None):
                 "first_name": supplier.supplier_name,
                 "username": supplier.supplier_code,
                 "supplier_group": supplier.supplier_group,
-                "role_profile_name": "Supplier",
+                "role_profile_name": role_profile,
                 "module_profile": "Supplier",
                 "send_welcome_email": 1,
                 "new_password": "wonjin@321"

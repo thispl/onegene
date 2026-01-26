@@ -2,7 +2,7 @@ import frappe
 
 @frappe.whitelist()
 def move_old_items_stock(old_item, new_item):
-    warehouses = frappe.db.get_all("Warehouse", "Finished Goods - WAIP", pluck="name")
+    warehouses = frappe.db.get_all("Warehouse", filters={"name": "Finished Goods - WAIP"}, pluck="name")
     stock_items = [] # Stock Entry Details
 
     for warehouse in warehouses:

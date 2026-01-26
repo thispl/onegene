@@ -30,11 +30,11 @@ class GeneralDC(Document):
 		entry_time = now_datetime()
 		if self.is_return==1:
 			entry='Inward'
-			vehicle=self.vehicle_no
+			
 		else:
 			entry='Outward'
-			vehicle=self.vehicle_number
-		
+			
+		vehicle=self.vehicle_no
 		params = {
 			"entry_time": entry_time.isoformat(),
 			"document_id": self.name,
@@ -59,7 +59,7 @@ class GeneralDC(Document):
 			self.account_manager_approved_on=now_datetime()
 
 	def on_submit(self):
-		if self.workflow_state in ['DC Received','Approved']:
+		if self.workflow_state in ['DC Received','Approved','Returned']:
 			if self.dc_type == 'Non Returnable':
 				if self.warehouse:
 					se = frappe.new_doc('Stock Entry')
@@ -194,16 +194,16 @@ class GeneralDC(Document):
 							se.custom_reference_document='General DC'
 							se.custom_reference_id=self.name
 							
-							from_warehouse=item.warehouse
-							to_warehouse='DC Warehouse - WAIP'
+							from_warehouse='DC Warehouse - WAIP'
+							to_warehouse=item.warehouse
 							se.from_warehouse=from_warehouse
 							se.to_warehouse=to_warehouse
 							# for i in self.items:
 							se.append('items', {
 								's_warehouse': from_warehouse,
 								't_warehouse':to_warehouse,
-								'item_code': i.item_code,
-								'qty': i.qty,
+								'item_code': item.item_code,
+								'qty': item.qty,
 								'allow_zero_valuation_rate':1
 							})
 							se.insert()
@@ -227,6 +227,7 @@ class GeneralDC(Document):
 					dc.save(ignore_permissions=True)
 				# if r_status=='':
 				# 	self.receipt_status=r_status
+		
 		
 	def on_cancel(self):
 		se=frappe.db.get_all('Stock Entry',{'custom_reference_id':self.name,'docstatus':1},['name'])
@@ -275,14 +276,26 @@ def print_html_view(doc):
     <tr>
         <td colspan="2" style="border-right:none"><img src="/files/wonjin logo.png" alt="logo" width="130px;"></td>
         <td colspan="4" style="border:1px solid black;border-left:none;border-right:none;">
-            <div style="text-align:center;font-size:11px;padding-right:70px;">
-                <strong><p>Wonjin Autoparts India Pvt Ltd</p></strong>
-                Plot No : A1K, CMDA Industrial Complex<br>
-                Maraimalai Nagar, Chennai - 603 209<br>
-                Phone No : 044 - 4740 4415 / 4740 4436 &nbsp; Fax No : 044-4740 0142<br>
-                Email id : finance@onegeneindia.in &nbsp; Web : www.onegeneindia.in<br>
-                GSTIN No : 33AADCP2334E1ZY &nbsp; State : Tamil Nadu
-            </div>
+            {% if doc.company == "WONJIN AUTOPARTS INDIA PVT.LTD. PLANT-II" %}
+                <div style="text-align:center;font-size:11px;padding-right:70px;">
+                    <strong><p>Wonjin Autoparts India Pvt. Ltd. Plant-II </p></strong>
+                    Plot No : 88/1 & 88/2, Thennery Post<br>
+                    Panrutti Village, Sriperumbadur Taluk,
+                    Kanchipuram District - 631 604<br>
+                    Phone No : 044 - 4740 4415 / 4740 4436 &nbsp; Fax No : 044-4740 0142<br>
+                    Email id : finance@onegeneindia.in &nbsp; Web : www.onegeneindia.in<br>
+                    GSTIN No : 33AADCP2334E1ZY &nbsp; State : Tamil Nadu
+                </div>
+            {% else %}
+                <div style="text-align:center;font-size:11px;padding-right:70px;">
+                    <strong><p>Wonjin Autoparts India Pvt. Ltd.</p></strong>
+                    Survey No : A1K, CMDA Industrial Complex<br>
+                    Maraimalai Nagar, Chennai - 603 209<br>
+                    Phone No : 044 - 4740 4415 / 4740 4436 &nbsp; Fax No : 044-4740 0142<br>
+                    Email id : finance@onegeneindia.in &nbsp; Web : www.onegeneindia.in<br>
+                    GSTIN No : 33AADCP2334E1ZY &nbsp; State : Tamil Nadu
+                </div>
+            {% endif %}
             
         </td>
         <td colspan="2" style="text-align:right;">
@@ -312,18 +325,44 @@ def print_html_view(doc):
     </tr>
     <tr>
         <td colspan="4" style="border:1px solid black;font-size:11px;">
-           M/S. <b>{{doc.party}}</b><br><div style="padding-left:25px;">
-           {{ frappe.db.get_value('Address',{'name':address},'address_line1') or "" }}<br>
-            {{ frappe.db.get_value('Address',{'name':address},'address_line2') or "" }}
-            {{ frappe.db.get_value('Address',{'name':address},'city') or "" }} 
-            {{ frappe.db.get_value('Address',{'name':address},'pincode') or "" }}<br>
-            {% set phone = frappe.db.get_value('Address',{'name':address},'phone') %}
-            {% if phone %} Phone: {{ phone }} {% endif %}
-            {% set email = frappe.db.get_value('Address',{'name':address},'email_id') %}
-            {% set web = frappe.db.get_value('Company',{'name':address},'domain') %}
-            &nbsp;&nbsp;&nbsp;&nbsp;{% if email %} Email: {{ email }} {% endif %}<br>
-            {% if web %} | Web: {{ web }} {% endif %}
-            GSTIN: {{ frappe.db.get_value('Address',{'name':address},'gstin') or "" }}</div>
+           {% if doc.party_type == "Customer" %}    
+         {% set party = frappe.db.get_value("Customer",{"name":doc.party},"customer_name")  %}    
+        {% elif doc.party_type == "Supplier" %}
+         {% set party = frappe.db.get_value("Supplier",{"name":doc.party},"supplier_name")  %}  
+        {% endif %}
+        {% if doc.party == "WONJIN AUTOPARTS INDIA PVT.LTD. PLANT-II" %}
+                   M/S.  <strong>Wonjin Autoparts India Pvt. Ltd. Plant-II</strong><div style="padding-left:25px;">
+                    Plot No : 88/1 & 88/2, Thennery Post<br>
+                    Panrutti Village, Sriperumbadur Taluk,
+                    Kanchipuram District - 631 604<br>
+                    Phone No : 044 - 4740 4415 / 4740 4436 &nbsp; Fax No : 044-4740 0142<br>
+                    Email id : finance@onegeneindia.in &nbsp; Web : www.onegeneindia.in<br>
+                    GSTIN No : 33AADCP2334E1ZY &nbsp; State : Tamil Nadu
+                    </div>
+        {% else %}
+           M/S. <b>{{party or ''}}</b><br>
+          
+           <div style="margin-left:10px;">
+           {{ frappe.db.get_value('Address',{'address_title':party},'address_line1') or "" }}<br>
+            {{ frappe.db.get_value('Address',{'address_title':party},'address_line2') or "" }}<br>
+            {{ frappe.db.get_value('Address',{'address_title':party},'city') or "" }}&nbsp;-&nbsp; 
+            {{ frappe.db.get_value('Address',{'address_title':party},'pincode') or "" }}<br>
+            {% set phone = frappe.db.get_value('Address',{'address_title':party},'phone') %}
+            {% set fax = frappe.db.get_value('Address',{'address_title':party},'fax') %}
+            {% if phone %} Phone No: {{ phone }} {% endif %}<br>
+            {% if fax %} Fax No: {{ fax }} {% endif %}<br>
+            {% set email = frappe.db.get_value('Address',{'address_title':party},'email_id') %}
+            {% set web = frappe.db.get_value('Company',{'name':party},'domain') %}
+            {% if email %} Email: {{ email }} {% endif %}<br>
+            {% if web %}  Web: {{ web }} {% endif %}<br>
+            {% set gstin = frappe.db.get_value('Address', {'address_title': party}, 'gstin') %}
+            {% set state = frappe.db.get_value('Address', {'address_title': party}, 'state') %}
+            {% if gstin %}GSTIN: {{ gstin }}{% endif %}<br>
+            {% if state %}State: {{ state }}{% endif %}
+            
+            </div>
+        {% endif %}
+       
            
         </td>
         <td colspan="4" style="border:1px solid black;font-size:11px;">

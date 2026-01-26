@@ -26,12 +26,24 @@ def get_data_system(dept, desn):
     
     if dept == "1":
         # frappe.errprint("HI")
-        shift=frappe.get_all("Shift Type",{'name':('!=',"4")},['*'],order_by='name ASC')
+        # shift=frappe.get_all("Shift Type",{'name':('!=',"4")},['*'],order_by='name ASC')
+        shift = frappe.db.sql("""
+            SELECT *
+            FROM `tabShift Type`
+            WHERE name != %s
+            ORDER BY name ASC
+        """, ("4",), as_dict=True)
         shift2=4
         for i in shift:
             shift2+=1
         ec1=0
-        ec_count=frappe.get_all("Employee Category",{'name':('not in',['Sub Staff','Director'])},['*'])
+        # ec_count=frappe.get_all("Employee Category",{'name':('not in',['Sub Staff','Director'])},['*'])
+        ec_count = frappe.db.sql("""
+            SELECT *
+            FROM `tabEmployee Category`
+            WHERE name NOT IN (%s, %s)
+        """, ("Sub Staff", "Director"), as_dict=True)
+
         for i in ec_count:
             ec1 +=1 
         data = "<table class='table table-bordered=1'>"
@@ -45,15 +57,35 @@ def get_data_system(dept, desn):
             data += "<td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>{}</td>".format(i.name)
         data += "<td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>Total Present</td>"        
         
-        ec=frappe.get_all("Employee Category",{'name':('not in',['Sub Staff','Director'])},['*'])
+        # ec=frappe.get_all("Employee Category",{'name':('not in',['Sub Staff','Director'])},['*'])
+        ec = frappe.db.sql("""
+            SELECT *
+            FROM `tabEmployee Category`
+            WHERE name NOT IN (%s, %s)
+        """, ("Sub Staff", "Director"), as_dict=True)
+
         for i in ec:
             data += "<td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>{}</td>".format(i.name)
         data +="</tr>"
         total = 0
-        department = frappe.get_all("Department", {'disabled': ('!=', 1),"parent_department":"All Departments"}, ['name'])        
+        # department = frappe.get_all("Department", {'disabled': ('!=', 1),"parent_department":"All Departments"}, ['name'])
+        department = frappe.db.sql("""
+            SELECT name
+            FROM `tabDepartment`
+            WHERE disabled != %s
+            AND parent_department = %s
+        """, (1, "All Departments"), as_dict=True)
+        
         for d in department:
             length=2
-            department1 = frappe.get_all("Department", {'disabled': ('!=', 1),"parent_department":d.name}, ['name'])
+            # department1 = frappe.get_all("Department", {'disabled': ('!=', 1),"parent_department":d.name}, ['name'])
+            department1 = frappe.db.sql("""
+                SELECT name
+                FROM `tabDepartment`
+                WHERE disabled != %s
+                AND parent_department = %s
+            """, (1, d.name), as_dict=True)
+
             for dep in department1:
                 length+=1
             frappe.errprint(length)
@@ -143,7 +175,14 @@ def get_data_system(dept, desn):
             totl_ch_out+=ch_out
             data += "<td style='border: 1px solid black;text-align:center;background-color:#ADD8E6'>%s</td><td style='border: 1px solid black;text-align:center'>%s</td><td style='border: 1px solid black;text-align:center'>%s</td><td style='border: 1px solid black;text-align:center'>%s</td><td style='border: 1px solid black;text-align:center'>%s</td><td style='border: 1px solid black;text-align:center'>%s</td><td style='border: 1px solid black;text-align:center;background-color:#BACC81'>%s</td>" % ((staff+ops+trainee+cl+tr),tr,cl,trainee,ops,staff,ch_out)
             data += '</tr>'
-            department = frappe.get_all("Department", {'disabled': ('!=', 1),"parent_department":d.name}, ['name'])
+            # department = frappe.get_all("Department", {'disabled': ('!=', 1),"parent_department":d.name}, ['name'])
+            department = frappe.db.sql("""
+                SELECT name
+                FROM `tabDepartment`
+                WHERE disabled != %s
+                AND parent_department = %s
+            """, (1, d.name), as_dict=True)
+
             for d in department:
                 data += "<tr><td style='border: 1px solid black;text-align:center'>%s</td>"%(d.name)
                 for i in shift:
@@ -234,7 +273,14 @@ def get_data_system(dept, desn):
                 """, (date1, i.name, parent_dep), as_dict=True)
                 shift_attendance = shift_attendance_count[0].count if shift_attendance_count else 0
                 shift_count+=shift_attendance
-                department = frappe.get_all("Department", {'disabled': ('!=', 1),"parent_department":parent_dep}, ['name'])
+                # department = frappe.get_all("Department", {'disabled': ('!=', 1),"parent_department":parent_dep}, ['name'])
+                department = frappe.db.sql("""
+                    SELECT name
+                    FROM `tabDepartment`
+                    WHERE disabled != %s
+                    AND parent_department = %s
+                """, (1, parent_dep), as_dict=True)
+
                 for d in department:
                     shift_attendance_count = frappe.db.sql("""
                         SELECT COUNT(*) AS count
@@ -258,7 +304,12 @@ def get_data_system(dept, desn):
         data += "<tr><td colspan = 4 style='border: 1px solid black;background-color:#f6d992;text-align:center'><b>Live Attendance</b></td><td colspan = 3 style='border: 1px solid black;background-color:#f6d992;text-align:center'><b>Date & Time %s </b></td><tr>" % (nwt)
 
         # frappe.errprint("HI")
-        designation = frappe.get_all("Designation", ['name'])
+        # designation = frappe.get_all("Designation", ['name'])
+        designation = frappe.db.sql("""
+            SELECT name
+            FROM `tabDesignation`
+        """, as_dict=True)
+
         data += "<tr><td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>Designation</td><td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>Staff</td><td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>Operators</td><td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>Apprentice</td><td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>CL</td><td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>Trainee</td><td style='border: 1px solid black;background-color:#FFA500;font-weight:bold;text-align:center'>Total</td></tr>"
         total = 0
         for d in designation:

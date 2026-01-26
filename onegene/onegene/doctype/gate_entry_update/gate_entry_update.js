@@ -96,6 +96,8 @@ frappe.ui.form.on("Gate Entry Update", {
     },
 	refresh(frm) {
 
+        set_document_id_query(frm);
+
         frm.set_query("party_type", function() {
             return {
                 filters: {
@@ -136,13 +138,13 @@ frappe.ui.form.on("Gate Entry Update", {
         if (!frm.doc.entry_type || !frm.doc.entry_document || !frm.doc.document_id){
                         frm.fields_dict.items.$wrapper.empty().append('');
             }
-        frm.set_query("entry_document", function() {
-            return {
-                filters: {
-                    name: ["in", ["General DC", "Job Order","Sales Invoice",'Advance Shipping Note']]
-                }
-            };
-        });
+        // frm.set_query("entry_document", function() {
+        //     return {
+        //         filters: {
+        //             name: ["in", ["General DC", "Job Order","Sales Invoice",'Advance Shipping Note']]
+        //         }
+        //     };
+        // });
         if (frm.doc.entry_document!='General DC'){
             frm.set_query("document_id", function() {
                 return {
@@ -243,9 +245,72 @@ frappe.ui.form.on("Gate Entry Update", {
         frm.disable_save()
         
         },
+
+        entry_type(frm){
+
+         let allowed_docs = [];
+
+        if (frm.doc.entry_type === "Inward") {
+            allowed_docs = ["General DC", "Advance Shipping Note"];
+        }
+        else if (frm.doc.entry_type === "Outward") {
+            allowed_docs = ["General DC", "Sales Invoice"];
+        }
+        else {
+            allowed_docs = [""];
+        }
+
+        frm.set_query("entry_document", () => {
+            return {
+                filters: {
+                    name: ["in", allowed_docs]
+                }
+            };
+        });
+
+       
+        // frm.set_value("entry_document","")
+        // frm.set_value("document_id","")
+        // frm.set_value("party_type","")
+        // frm.set_value("party","")
+        // frm.set_value("no_of_box","")
+        // frm.set_value("ref_no","")
+        // frm.set_value("security_name","")
+        // frm.set_value("vehicle_number","")
+        // frm.set_value("driver_name","")
+        // frm.set_value("gate_entry_item","")
+        // frm.set_value("end_bit_scrap","")
+
+
+    },
+
+
+
+
     entry_document(frm) {
 
             fetch_items(frm);
+            set_document_id_query(frm);
+            
+
+
+        
+        // frm.set_value("party_type","")
+        // frm.set_value("party","")
+        // frm.set_value("no_of_box","")
+        // frm.set_value("ref_no","")
+        // frm.set_value("security_name","")
+        // frm.set_value("vehicle_number","")
+        // frm.set_value("driver_name","")
+        // frm.set_value("gate_entry_item","")
+        // frm.set_value("end_bit_scrap","")
+        // frm.set_value("document_id","")
+
+             
+
+       
+
+       
 
 
 //         if (frm.doc.document_id && frm.doc.entry_document){
@@ -346,3 +411,48 @@ function fetch_items(frm) {
         });
     }
 }
+
+ function set_document_id_query(frm) {
+        console.log("Updating filter for:", frm.doc.entry_document);
+
+        if (!frm.doc.entry_document) return;
+
+        let doctype = frm.doc.entry_document;
+
+        if (doctype === "Advance Shipping Note") {
+            frm.set_query("document_id", () => {
+                return {
+                    filters: { workflow_state: "In Transit" },
+                    doctype: "Advance Shipping Note"  
+                };
+            });
+        }
+
+        else if (doctype === "Sales Invoice") {
+            frm.set_query("document_id", () => {
+                return {
+                    filters: { workflow_state: "Approved" },
+                    doctype: "Sales Invoice"  
+                };
+            });
+        }
+        else if (doctype === "General DC") {
+            frm.set_query("document_id", () => {
+                return {
+                    filters: { workflow_state: "Approved" },
+                    doctype: "General DC"  
+                };
+            });
+        }
+
+        else {
+            frm.set_query("document_id", () => {
+                return {
+                    doctype: doctype,
+                    filters: {}
+                };
+            });
+        }
+
+        frm.refresh_field("document_id");
+    }

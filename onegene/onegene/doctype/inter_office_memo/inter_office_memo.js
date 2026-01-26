@@ -1541,6 +1541,27 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 d.show();
             });
         }
+        // if (frm.doc.docstatus === 1 && frm.doc.workflow_state === "Rejected" && (frappe.user.has_role("ERP Team"))) {
+        // setTimeout(() => {
+        //     frm.page.add_action_item(__("Revert"), function () {
+        //             frappe.call({
+        //                 method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.revert_iom_workflow",
+        //                 args: {
+        //                     doc: frm.doc.name,
+        //                 },
+        //                 callback: function (r) {
+        //                     if (!r.exc) {
+        //                         frappe.show_alert({
+        //                             message: __("Document Reverted to the Previous state"),
+        //                             indicator: "green"
+        //                         });
+        //                         frm.reload_doc();
+        //                     }
+        //                 }
+        //             });
+        //         });
+        //     }, 900);
+        // }
         if (frm.doc.docstatus === 1 && frm.doc.workflow_state === "Rejected" && (frappe.session.user == frm.doc.owner || frappe.user.has_role("ERP Team"))) {
             setTimeout(() => {
                 frm.page.add_action_item(__("Reopen"), function() {
@@ -8991,3 +9012,29 @@ function toggle_order_type(frm) {
     );
   
 }
+
+frappe.ui.form.on('Travel Visit Schedule', {
+    date: function(frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+
+        if (!row.date || !frm.doc.travel_itinerary) return;
+
+        let is_valid = false;
+
+        frm.doc.travel_itinerary.forEach(r => {
+            if (row.date >= r.departure_date && row.date <= r.arrival_date) {
+                is_valid = true;
+            }
+        });
+
+        if (!is_valid) {
+            frappe.msgprint({
+                title: __("Invalid Date"),
+                message: __("Visit Schedule date should be between Departure and Arrival date."),
+                indicator: "red"
+            });
+
+            frappe.model.set_value(cdt, cdn, "date", "");
+        }
+    }
+});

@@ -13,12 +13,13 @@
   "customer_code",
   "customer_name",
   "customer_group",
-  "schedule_date",
-  "column_break_dbru",
-  "sales_order_number",
-  "order_type",
   "schedule_month",
   "schedule_year",
+  "column_break_dbru",
+  "sales_order_number",
+  "customers_purchase_order",
+  "order_type",
+  "schedule_date",
   "currency_section",
   "currency",
   "column_break_jqpw",
@@ -140,7 +141,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Order Type",
-   "options": "\nFixed\nOpen"
+   "options": "\nFixed\nOpen\nProto"
   },
   {
    "fieldname": "column_break_woiq",
@@ -304,9 +305,11 @@
   },
   {
    "fieldname": "schedule_year",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
    "label": "Schedule Year",
-   "read_only": 1
+   "options": "2025\n2026",
+   "reqd": 1
   },
   {
    "fieldname": "revision_section",
@@ -443,12 +446,20 @@
   {
    "fieldname": "column_break_jqpw",
    "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "sales_order_number.po_no",
+   "fieldname": "customers_purchase_order",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Customer's Purchase Order",
+   "options": "Customer Purchase Order"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-01 12:02:00.781174",
+ "modified": "2026-01-06 15:55:26.645551",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Sales Order Schedule",

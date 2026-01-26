@@ -8,8 +8,29 @@ frappe.ui.form.on("General DC", {
             delete frm.doc.__from_general_dc; 
         }
     },
+    party_type: function(frm) {
+        if (frm.doc.party_type){
+            frm.trigger("set_dynamic_field_label");
+        }
+    },
+    division: function(frm) {
+        if (frm.doc.division) {
+            if (frm.doc.division == 'Plant 1') {
+                frm.set_value('company', 'WONJIN AUTOPARTS INDIA PVT.LTD.');
+            }
+            else if (frm.doc.division == 'Plant 2') {
+                frm.set_value('company', 'WONJIN AUTOPARTS INDIA PVT.LTD. PLANT-II');
+            }
+        }
+        else {
+            frm.set_value('company', '');
+        }
+    },
 	refresh: function(frm) {
-        frm.trigger("set_dynamic_field_label");
+        if (frm.doc.party_type){
+            frm.trigger("set_dynamic_field_label");
+        }
+    
         if (frm.doc.docstatus==1 && frm.doc.is_return==0 && frm.doc.dc_type=='Returnable' && frm.doc.pending_qty > 0 && (frappe.user.has_role('System Manager') || frappe.user.has_role('Supplier') )){
             frm.add_custom_button(__('Create Return'), function () {
             newdoc = frappe.model.make_new_doc_and_get_name('General DC');
@@ -140,8 +161,45 @@ frappe.ui.form.on("General DC Item", {
     //     }
     // },
 	item_code(frm,cdt,cdn) {
-        
         var child=locals[cdt][cdn]  
+        if (child.item_code){
+            frappe.db.get_value("Item",child.item_code,["item_type", "last_purchase_rate"],(r) => {
+                    if (!r) return;
+
+                    const valid_groups = ["Consumables", "Raw Material", "Process Item", "Purchase Item"];
+
+                    if (
+                        valid_groups.includes(r.item_type) &&
+                        r.last_purchase_rate &&
+                        r.last_purchase_rate > 0
+                    ) {
+                        frappe.model.set_value(cdt, cdn, "rate", r.last_purchase_rate);
+                    }
+                    else {
+                        
+                    frappe.db.get_list("Item Price", {
+                        filters: {
+                            item_code: child.item_code,
+                            buying: 1
+                        },
+                        fields: ["price_list_rate"],
+                        order_by: "valid_from desc",
+                        limit: 1
+                    }).then((res) => {
+                        if (res && res.length && res[0].price_list_rate > 0) {
+                            frappe.model.set_value(cdt,cdn,"rate",res[0].price_list_rate);
+                        }
+                    });
+            
+                    }
+                }
+            );
+        }else{
+            frappe.model.set_value(cdt,cdn,"rate",0);
+            frappe.model.set_value(cdt,cdn,"amount",0);
+            frappe.model.set_value(cdt,cdn,"qty",0);
+        }
+        
         if (child.item_code && child.warehouse){
             
             if (frm.doc.is_return==1){
@@ -184,6 +242,8 @@ frappe.ui.form.on("General DC Item", {
                         child.item_code=''
                         child.item_name=''
                         child.uom=''
+                        child.rate=0
+                        child.amount=0
                         frappe.throw('Insufficient qty for this item')
                     }else{
                         child.stock_qty=r.message
@@ -193,20 +253,7 @@ frappe.ui.form.on("General DC Item", {
                             'company': 'WONJIN AUTOPARTS INDIA PVT.LTD.',
                             'allow_zero_valuation': 1,
                         };
-                        frappe.call({
-				            method: "erpnext.stock.utils.get_incoming_rate",
-                            args: {
-                                args:args,
-                            },
-                            callback: function(r) {
-                                if(r.message){
-                                    frappe.model.set_value(cdt, cdn, 'rate', (r.message || 0.0));
-                                    frappe.model.set_value(cdt, cdn, 'amount', (r.message*child.qty || 0.0));
-                                }
-					            
-                                }
-                            // }
-                        });
+                        
                     }
                 }
                 
@@ -216,23 +263,27 @@ frappe.ui.form.on("General DC Item", {
         }    
     },
     qty(frm, cdt, cdn) {
+        
         var child = locals[cdt][cdn];
+
         if(!child.item_code && child.qty > 0){
             frappe.model.set_value(cdt, cdn, 'qty', 0);
             frappe.throw('Kindly enter the item code to specify qty')
         }
-        
-        if (child.warehouse){
-            warehouse=child.warehouse
+        if (child.qty > 0 && child.rate > 0){
+            console.log('HII')
+            console.log(child.qty*child.rate)
+            frappe.model.set_value(cdt, cdn, 'amount', child.qty*child.rate);
         }else{
-            warehouse=''
+            frappe.model.set_value(cdt, cdn, 'amount', 0);
         }
-        if (child.qty && warehouse) {
+        
+        if (child.qty && child.warehouse) {
             frappe.call({
                 method: "onegene.onegene.doctype.general_dc.general_dc.get_stock_qty", 
                 args: {
                     item_code: child.item_code,
-                    warehouse: warehouse,
+                    warehouse: child.warehouse,
                 },
                 callback: function(r) {
                     if (r.message && r.message < child.qty) {
@@ -248,25 +299,7 @@ frappe.ui.form.on("General DC Item", {
 
 
             });
-            const args = {
-                'item_code': child.item_code,
-                'warehouse': warehouse,
-                'company': 'WONJIN AUTOPARTS INDIA PVT.LTD.',
-                'allow_zero_valuation': 1,
-            };
-            frappe.call({
-                method: "erpnext.stock.utils.get_incoming_rate",
-                args: {
-                    args:args,
-                },
-                callback: function(r) {
-                    if(r.message){
-                        frappe.model.set_value(cdt, cdn, 'rate', (r.message || 0.0));
-                        frappe.model.set_value(cdt, cdn, 'amount', (r.message*child.qty || 0.0));
-                    }
-                    
-                    }
-            });
+             
         }
     },
     warehouse(frm,cdt,cdn) {
@@ -314,29 +347,12 @@ frappe.ui.form.on("General DC Item", {
                         child.item_code=''
                         child.item_name=''
                         child.uom=''
+                        child.rate=0
+                        child.amount=0
                         frappe.throw('Insufficient qty for this item')
                     }else{
                         child.stock_qty=r.message
-                        const args = {
-                            'item_code'	: child.item_code,
-                            'warehouse'	: warehouse,
-                            'company': 'WONJIN AUTOPARTS INDIA PVT.LTD.',
-                            'allow_zero_valuation': 1,
-                        };
-                        frappe.call({
-				            method: "erpnext.stock.utils.get_incoming_rate",
-                            args: {
-                                args:args,
-                            },
-                            callback: function(r) {
-                                if(r.message){
-                                    frappe.model.set_value(cdt, cdn, 'rate', (r.message || 0.0));
-                                    frappe.model.set_value(cdt, cdn, 'amount', (r.message*child.qty || 0.0));
-                                }
-					            
-                                }
-                            // }
-                        });
+                        
                     }
                 }
                 
@@ -345,7 +361,14 @@ frappe.ui.form.on("General DC Item", {
             
         }    
     },
-
+    rate(frm, cdt, cdn) {
+        var child = locals[cdt][cdn];
+        if (child.qty > 0 && child.rate > 0){
+            child.amount=child.qty*child.rate
+        }else{
+            child.amount=0
+        }
+    }
 });
 
 frappe.ui.form.on("General DC Return", {

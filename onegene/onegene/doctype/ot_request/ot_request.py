@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 from time import strptime
 from datetime import date, timedelta,time
-from frappe.utils import today,get_first_day, get_last_day, add_days
+from frappe.utils import today,get_first_day, get_last_day, add_days, flt, getdate
 
 class OTRequest(Document):
     # Update the OT hours in attendance and OT hours in OT Balance
@@ -36,8 +36,20 @@ class OTRequest(Document):
                             otb.from_date=month_start
                             otb.to_date=month_end
                             otb.total_ot_hours = ot_hr
-                            draft=frappe.db.count("Leave Application",{'employee':i.employee_code,'from_date':('between',[month_start,month_end]),'to_date':('between',[month_start,month_end]),'workflow_state':'Draft','custom_select_leave_type':'Comp-off from OT','docstatus':('!=',2)})
-                            approved=frappe.db.count("Leave Application",{'employee':i.employee_code,'from_date':('between',[month_start,month_end]),'to_date':('between',[month_start,month_end]),'workflow_state':'Approved','custom_select_leave_type':'Comp-off from OT','docstatus':('!=',2)})
+                            draft=frappe.db.sql("""
+                                    SELECT SUM(custom_total_leave_days) as total_leave_days
+                                    FROM `tabLeave Application`
+                                    WHERE employee = %s AND custom_select_leave_type = "Comp-off from OT" AND 
+                                        posting_date BETWEEN %s AND %s AND 
+                                        docstatus = 0 AND workflow_state not in ("Cancelled", "Rejected", "Approved")
+                                    """, (i.employee_code, month_start, month_end), as_dict=1)[0]['total_leave_days'] or 0
+                            approved=frappe.db.sql("""
+                                    SELECT SUM(custom_total_leave_days) as total_leave_days
+                                    FROM `tabLeave Application`
+                                    WHERE employee = %s AND custom_select_leave_type = "Comp-off from OT" AND 
+                                        posting_date BETWEEN %s AND %s AND
+                                        docstatus = 0 AND workflow_state = "Approved"
+                                    """, (i.employee_code, month_start, month_end), as_dict=1)[0]['total_leave_days'] or 0
                             otb.comp_off_pending_for_approval = draft
                             otb.comp_off_used = approved
                             otb.ot_balance = otb.total_ot_hours - ((draft * 8)+(approved * 8))
@@ -45,8 +57,20 @@ class OTRequest(Document):
                         else:
                             otb=frappe.get_doc("OT Balance",{'employee':i.employee_code,'from_date':month_start,'to_date':month_end})
                             otb.total_ot_hours += ot_hr
-                            draft=frappe.db.count("Leave Application",{'employee':i.employee_code,'from_date':('between',[month_start,month_end]),'to_date':('between',[month_start,month_end]),'workflow_state':'Draft','custom_select_leave_type':'Comp-off from OT','docstatus':('!=',2)})
-                            approved=frappe.db.count("Leave Application",{'employee':i.employee_code,'from_date':('between',[month_start,month_end]),'to_date':('between',[month_start,month_end]),'workflow_state':'Approved','custom_select_leave_type':'Comp-off from OT','docstatus':('!=',2)})
+                            draft=frappe.db.sql("""
+                                    SELECT SUM(custom_total_leave_days) as total_leave_days
+                                    FROM `tabLeave Application`
+                                    WHERE employee = %s AND custom_select_leave_type = "Comp-off from OT" AND 
+                                        posting_date BETWEEN %s AND %s AND 
+                                        docstatus = 0 AND workflow_state not in ("Cancelled", "Rejected", "Approved")
+                                    """, (i.employee_code, month_start, month_end), as_dict=1)[0]['total_leave_days'] or 0
+                            approved=frappe.db.sql("""
+                                    SELECT SUM(custom_total_leave_days) as total_leave_days
+                                    FROM `tabLeave Application`
+                                    WHERE employee = %s AND custom_select_leave_type = "Comp-off from OT" AND 
+                                        posting_date BETWEEN %s AND %s AND 
+                                        docstatus = 0 AND workflow_state = "Approved"
+                                    """, (i.employee_code, month_start, month_end), as_dict=1)[0]['total_leave_days'] or 0
                             otb.comp_off_pending_for_approval = draft
                             otb.comp_off_used = approved
                             otb.ot_balance = otb.total_ot_hours - ((draft * 8)+(approved * 8))
@@ -118,14 +142,22 @@ def get_details(name,dep=None, ot_requested_date=None):
         else:
             emp = frappe.db.get_value("Employee", {'name': name}, ['employee_name', 'designation', 'employee_category'], as_dict=1)
             ot_limit_details = frappe.db.get_value("Employee Category", emp.employee_category, ['custom_limit_ot', 'custom_ot_limit'], as_dict=1)
-            total_ot = get_total_ot(name, ot_requested_date)
+            total_ot = get_total_ot(name, ot_requested_date) - get_comp_off_bulk(name, ot_requested_date)
+            ot_used = get_ot_used(name, ot_requested_date)
+            balance_ot = total_ot - ot_used
+            balance_ot = balance_ot if balance_ot >= 0 else 0
+            
+            available_balance = ot_limit_details.custom_ot_limit - balance_ot
+            available_balance = available_balance if available_balance >= 0 else 0
             return {
                 "employee_name": emp.employee_name,
                 "designation": emp.designation,
                 "employee_category": emp.employee_category,
                 "limit_ot": ot_limit_details.custom_limit_ot,
-                "ot_limit": ot_limit_details.custom_ot_limit,
+                "ot_limit": ot_limit_details.custom_ot_limit if ot_limit_details.custom_limit_ot else 0,
                 "total_ot": total_ot,
+                "ot_used": ot_used,
+                "available_balance": available_balance if ot_limit_details.custom_limit_ot else 0,
             }
 
 @frappe.whitelist()
@@ -213,7 +245,43 @@ def get_total_ot(name, ot_requested_date):
                 (ot.docstatus != 2 OR ot.workflow_state NOT IN ('Rejected', 'Cancelled'))
                 AND otc.employee_code = %s AND ot.ot_requested_date BETWEEN %s AND %s
             """, (name, month_start_date, ot_requested_date), as_dict=1)[0]['total_ot_requested'] or 0
-    return total_ot
+    sundays = get_sundays_of_month(ot_requested_date)
+    sunday_ot = 0
+    if sundays:
+        sunday_ot = frappe.db.sql("""
+                SELECT SUM(custom_overtime_hours) as total_ot_hours
+                FROM `tabAttendance`
+                WHERE docstatus != '2' AND employee = %s
+                    AND attendance_date in %s
+                """, (name, sundays), as_dict=1)[0]['total_ot_hours'] or 0
+    total_ot_hours = total_ot + sunday_ot
+    return total_ot_hours
+
+def get_ot_used(name, ot_requested_date):
+    month_start_date = get_month_start(ot_requested_date)
+    result = frappe.db.sql("""
+            SELECT (comp_off_pending_for_approval + comp_off_used) as ot_balance
+            FROM `tabOT Balance`
+            WHERE employee = %s AND from_date = %s
+        """, (name, month_start_date), as_dict=1)
+    ot_balance = result[0].ot_balance if result else 0
+    ot_used = flt(ot_balance) * 8
+    return ot_used
+
+def get_comp_off_bulk(name, ot_requested_date):
+    month_start_date = get_month_start(ot_requested_date)
+    month_end_date = get_last_day(ot_requested_date)
+    result = frappe.db.sql("""
+        SELECT SUM(total_leave_days) as total
+        FROM `tabLeave Application`
+        WHERE employee = %s AND 
+            from_date BETWEEN %s AND %s AND
+            to_date BETWEEN %s AND %s AND
+            docstatus != 2 AND
+            description = 'Created automatically Via Bulk compensation allocation document'
+    """, (name, month_start_date, month_end_date, month_start_date, month_end_date), as_dict=1)
+    comp_off_bulk = result[0].total if result else 0
+    return flt(comp_off_bulk) * 8
 
 def get_month_start(date_value):
     from datetime import datetime
@@ -221,3 +289,19 @@ def get_month_start(date_value):
     if isinstance(date_value, str):
         date_value = datetime.strptime(date_value, "%Y-%m-%d")
     return date_value.replace(day=1).date()
+
+def get_sundays_of_month(date):
+
+    first_day = get_first_day(date)
+    last_day = get_last_day(date)
+
+    sundays = []
+    current_date = first_day
+
+    while current_date <= last_day:
+        # weekday(): Monday = 0 ... Sunday = 6
+        if current_date.weekday() == 6:
+            sundays.append(current_date)
+        current_date = add_days(current_date, 1)
+
+    return sundays

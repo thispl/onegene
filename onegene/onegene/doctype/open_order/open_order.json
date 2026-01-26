@@ -10,6 +10,8 @@
  "field_order": [
   "sales_order_number",
   "disable_update_items",
+  "column_break_emyv",
+  "customers_purchase_order",
   "section_break_jd2co",
   "open_order_table"
  ],
@@ -37,11 +39,24 @@
    "fieldname": "disable_update_items",
    "fieldtype": "Check",
    "label": "Disable Update Items"
+  },
+  {
+   "fieldname": "column_break_emyv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "sales_order_number.po_no",
+   "fieldname": "customers_purchase_order",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer's Purchase Order",
+   "options": "Customer Purchase Order"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-11 16:19:52.026188",
+ "modified": "2025-12-26 09:57:46.350965",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Open Order",
