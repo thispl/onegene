@@ -12,6 +12,7 @@
   "date_time",
   "priority",
   "month",
+  "year",
   "order_type",
   "company",
   "reports_to",
@@ -1133,7 +1134,7 @@
    "fieldtype": "Select",
    "label": "Order Type",
    "mandatory_depends_on": "eval:doc.iom_type==\"Approval for New Business PO\"||doc.iom_type==\"Approval for New Business JO\" || doc.iom_type==\"Approval for New Business SO\"",
-   "options": "\nOpen Order\nFixed Order"
+   "options": "\nOpen Order\nFixed Order\nProto"
   },
   {
    "depends_on": "eval:doc.iom_type==\"Approval for Air Shipment\"",
@@ -2291,13 +2292,21 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Created By"
+  },
+  {
+   "fieldname": "year",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_standard_filter": 1,
+   "label": "Year",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2025-12-15 10:11:39.690759",
+ "modified": "2026-01-22 15:32:40.500240",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Inter Office Memo",
@@ -2307,5 +2316,6 @@
  "sort_field": "name",
  "sort_order": "DESC",
  "states": [],
- "title_field": "iom_type"
+ "title_field": "iom_type",
+ "track_changes": 1
 }

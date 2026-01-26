@@ -19,9 +19,6 @@ frappe.ui.form.on("OT Request", {
 
 
     },
-    // department(frm){
-
-    // },
     refresh(frm) {
         frm.set_query("employee_category", function () {
             return {
@@ -42,57 +39,8 @@ frappe.ui.form.on("OT Request", {
 
     },
     validate(frm) {
-        // frm.doc.employee_details.forEach((e) => {
-        //     frappe.call({
-        //         method: "frappe.client.get",
-        //         args: {
-        //             doctype : "Employee",
-        //             filters:{
-        //                 'name':e.employee_code
-        //             },
-        //             fields:['employee_category']
-        //         },
-        //         callback: function(r) {
-
-        //             if (["Staff", "Sub Staff"].includes(r.message.employee_category)) {
-        //                 frappe.validated=false
-        //                 frappe.msgprint("Row" +e.idx+ ":Employee is in "+r.message.employee_category + " category. Kindly remove that row and save.")
-        //             }
-        //             else{
-        //                 frappe.validated=true
-        //             }
-        //         }
-        //     })
-        // })
-        // frm.doc.employee_details.forEach((e) => {
-        // frappe.call({
-        //     method: "frappe.client.get",
-        //     args: {
-        //         doctype : "Employee",
-        //         filters:{
-        //             'name':e.employee_code
-        //         },
-        //         fields:['department']
-        //     },
-        //     callback: function(r) {
-
-        //         if (r.message.department!=frm.doc.department) {
-        //             frappe.validated=false
-        //             frappe.msgprint("Row" +e.idx+ ":Employee is in "+r.message.department + " department.So it was removed.")
-        //             // frappe.model.clear_doc(child.doctype, child.name); // Removes the row
-        //             // cur_frm.refresh_field("employee_details");
-        //         }
-        //         else{
-        //             frappe.validated=true
-        //         }
-        //     }
-        // })
-        // })
         current_date = frappe.datetime.nowdate()
         if (frm.doc.ot_requested_date < current_date) {
-            // if (frappe.session.user!='senthilkumar.r@onegeneindia.in'){
-            //     frappe.throw("Not allowed to apply OT Request for the Past Date")
-            // }
         }
         let total_ot = 0;
         frm.doc.employee_details.forEach((detail) => {
@@ -140,12 +88,6 @@ frappe.ui.form.on("OT Request", {
                 }
             })
         }
-    },
-    ot_requested_date(frm) {
-        current_date = frappe.datetime.nowdate()
-        // if(frm.doc.ot_requested_date<current_date){
-        //     frappe.throw("Not allowed to apply OT Request for the Past Date")
-        // }
     },
 
 });
@@ -198,47 +140,13 @@ frappe.ui.form.on('OT Request Child', {
                         frappe.model.set_value(cdt, cdn, 'limit_ot', r.message.limit_ot || 0);
                         frappe.model.set_value(cdt, cdn, 'ot_limit', r.message.ot_limit || 0);
                         frappe.model.set_value(cdt, cdn, 'total_requested', r.message.total_ot || 0);
+                        frappe.model.set_value(cdt, cdn, 'ot_used', r.message.ot_used || 0);
+                        frappe.model.set_value(cdt, cdn, 'available_balance', r.message.available_balance || 0);
                     }
                 }
 
             }
         });
-        // frappe.call({
-        //     method: "frappe.client.get",
-        //     args: {
-        //         doctype : "Employee",
-        //         filters:{
-        //             'name':child.employee_code
-        //         },
-        //         fields:['employee_category']
-        //     },
-        //     callback: function(r) {
-
-        //         if (["Staff", "Sub Staff"].includes(r.message.employee_category)) {
-        //             frappe.msgprint("Row" +child.idx+ ":Employee is in "+r.message.employee_category + " category.So it was removed.")
-        //             frappe.model.clear_doc(child.doctype, child.name); // Removes the row
-        //             cur_frm.refresh_field("employee_details");
-        //         }
-        //     }
-        // })
-        // frappe.call({
-        //     method: "frappe.client.get",
-        //     args: {
-        //         doctype : "Employee",
-        //         filters:{
-        //             'name':child.employee_code
-        //         },
-        //         fields:['department']
-        //     },
-        //     callback: function(r) {
-
-        //         if (r.message.department!=frm.doc.department) {
-        //             frappe.msgprint("Row" +child.idx+ ":Employee is in "+r.message.department + " department.So it was removed.")
-        //             frappe.model.clear_doc(child.doctype, child.name); // Removes the row
-        //             cur_frm.refresh_field("employee_details");
-        //         }
-        //     }
-        // })
 
     },
     requested_ot_hours: function (frm, cdt, cdn) {
@@ -323,10 +231,21 @@ function check_ot_limit(frm, cdt, cdn) {
                 }
             });
             if (child.limit_ot) {
-                if ((Number(child.requested_ot_hours) + Number(child.total_requested)) > Number(child.ot_limit)) {
+                if ((Number(child.requested_ot_hours) <= (Number(child.available_balance)))) {
+                    if (Number(child.available_balance) - (Number(child.requested_ot_hours)) > Number(child.ot_limit)) {
+                        frappe.msgprint({
+                            title: "OT Limit Exceeded",
+                            message: `For employee category ${child.employee_category}, allowed limit is ${child.ot_limit} hours.`,
+                            indicator: "red"
+                        });
+                        frappe.model.set_value(cdt, cdn, "requested_ot_hours", "");
+                        frm.refresh_field("employee_details");
+                    }
+                } 
+                else {
                     frappe.msgprint({
                         title: "OT Limit Exceeded",
-                        message: `For employee category ${child.employee_category}, allowed limit is ${child.ot_limit} hours.`,
+                        message: `Requested OT hours exceed available balance of ${child.available_balance} hours.`,
                         indicator: "red"
                     });
                     frappe.model.set_value(cdt, cdn, "requested_ot_hours", "");

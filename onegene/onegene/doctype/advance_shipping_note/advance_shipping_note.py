@@ -14,13 +14,17 @@ class AdvanceShippingNote(Document):
 	def after_insert(self):
 		url = f"https://erp.onegeneindia.in/app/advance-shipping-note/{self.name}"
 		frappe.db.set_value(self.doctype, self.name, "scan_barcode", url)
-		
+	
+	def before_insert(self):
+		get_month_and_year(self)
+  
 	def validate(self):
 		validate_items_table(self)
-		get_month(self)
 		get_address(self)
 		validate_supplier_dn_item_table(self)
 		# validate_security(self)
+		if not frappe.db.exists("Gate Entry", {'entry_against': "Advance Shipping Note", 'entry_id': self.name,"docstatus":1}) and self.workflow_state=="Gate Received":
+			create_gate_entry(self)
 		entry_time = now_datetime()
 		params = {
 			"entry_time": entry_time.isoformat(),
@@ -44,15 +48,66 @@ class AdvanceShippingNote(Document):
 		for row in self.item_table:   
 			if row.no_of_bins <= 0:
 				frappe.throw("Bin value must be greater than 0")
-    
+	
 def validate_items_table(self):
-    item_table_count = len(self.item_table) if self.item_table else 0
-    end_bit_scrap_count = len(self.end_bit_scrap) if self.end_bit_scrap else 0
-    if item_table_count == 0 and end_bit_scrap_count == 0:
-    	frappe.throw("Please fill at least one table: <b>Item Table</b> or <b>End Bit Scrap & Return</b>.")
+	item_table_count = len(self.item_table) if self.item_table else 0
+	end_bit_scrap_count = len(self.end_bit_scrap) if self.end_bit_scrap else 0
+	if item_table_count == 0 and end_bit_scrap_count == 0:
+		frappe.throw("Please fill at least one table: <b>Item Table</b> or <b>End Bit Scrap & Return</b>.")
+
+def create_gate_entry(self):
+	tot_qty=0
+	if not frappe.db.exists("Gate Entry", {'entry_against': "Advance Shipping Note", 'entry_id': self.name,"docstatus":1}):
+		frappe.errprint("jkwnkjwn")
+		ge = frappe.new_doc("Gate Entry")
+		ge.entry_type = 'Inward'
+		ge.entry_against = "Advance Shipping Note"
+		ge.entry_id = self.name
+		ge.party_type = "Supplier"
+		ge.party = self.supplier
+		ge.supplier_code = frappe.db.get_value("Supplier",{"name":self.supplier},"supplier_code") or ""
+		from frappe.utils import now_datetime
+
+		if self.received_date_time:
+			ge.entry_time = self.received_date_time
+			ge.entry_date = self.received_date_time.date()
+		else:
+			current_dt = now_datetime()
+			ge.entry_time = current_dt
+			ge.entry_date = current_dt.date()
+
+		ge.ref_no = self.confirm_supplier_dn
+		ge.security_name = self.security_name
+		ge.vehicle_number = self.vehicle_no
+		ge.driver_name = self.driver_name or 'Test'
+
+		if self.item_table:
+			for item in self.item_table:
+				tot_qty+=item.dis_qty or 0
+				ge.append("gate_entry_items", {
+					"item_code": item.item_code,
+					"item_name": item.item_name,
+					"uom": item.uom,
+					"qty": item.dis_qty,
+					"box": item.no_of_bins
+				})
+
+		if self.end_bit_scrap:
+			
+			for item in self.end_bit_scrap:
+				tot_qty+=item.qty or 0
+				ge.append("end_bit_scrap", {
+					"item_name": item.item_name,
+					"uom": item.uom,
+					"qty": item.qty,
+					"actual_qty": item.actual_qty
+				})
+
+		ge.no_of_box = tot_qty
+		ge.save(ignore_permissions=True)
 
 @frappe.whitelist()
-def get_month(self):
+def get_month_and_year(self):
 	if self.datetime:
 		date_obj = self.datetime
 		if isinstance(self.datetime, str):
@@ -60,6 +115,7 @@ def get_month(self):
 
 		month_abbr = date_obj.strftime("%b")
 		self.month = month_abbr.upper()
+		self.year = date_obj.strftime("%Y")
 
 
 @frappe.whitelist()
@@ -483,31 +539,6 @@ def validate_purchase_order(item_code, purchase_order, supplier):
 
 	if not data:
 		return "purchase order not found"
-
-@frappe.whitelist()
-def test_check():
-	data = frappe.db.sql("""
-		SELECT 
-			DISTINCT poi.item_code,
-			i.item_name
-		FROM `tabPurchase Order Item` poi
-		LEFT JOIN `tabItem` i ON poi.item_code = i.name
-		LEFT JOIN `tabPurchase Order` po ON po.name = poi.parent
-		WHERE po.supplier = %s
-			AND (po.status IN ('To Receive', 'To Receive and Bill') OR po.status IS NULL)
-			AND (poi.item_code LIKE %s OR i.item_name LIKE %s)
-		LIMIT %s OFFSET %s
-	""", ("WV0013", "%", "%", 50, 0))
-	print(data)
- 
- 
- 
- 
- 
- 
- 
- 
- 
  
 @frappe.whitelist()
 def update_address_display(supplier):
@@ -565,4 +596,9 @@ def update_address_display(supplier):
 	return address_str
 
 
- 
+@frappe.whitelist()
+def get_item_name(item_code):
+	item_name = frappe.db.get_value("Item", item_code, "item_name") or "Nothing"
+	frappe.errprint([item_code, item_name])
+	return item_name
+	

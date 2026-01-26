@@ -465,6 +465,28 @@ frappe.ui.form.on('Supplier-DN Item', {
             }
         });
 
+            // frappe.call({
+            //     method: "onegene.onegene.doctype.advance_shipping_note.advance_shipping_note.get_item_name",
+            //     args: {
+            //         item_code: row.item_code,
+            //     },
+            //     callbback(r) {
+            //         console.log("dknswflwken")
+            //         if (r.message) {
+            //             console.log("item", r.message)
+            //             frappe.model.set_value(cdt, cdn, "item_name", r.message);
+            //         } 
+            //     }
+            // })
+            // frappe.db.get_value("Item", row.item_code, "item_name").then((r) => {
+            //     if (r.message) {
+            //         console.log([row.item_code, r.message])
+            //         frappe.model.set_value(cdt, cdn, "item_name", r.message.item_name);
+            //     }
+            // });
+
+        
+
     },
     purchase_order: function(frm, cdt, cdn) {
         let current_row = locals[cdt][cdn];

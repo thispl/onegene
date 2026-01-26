@@ -93,14 +93,16 @@ def _process_upload(file, records):
 	# === STEP 1: Create Sales Order Schedules ===
 	for pp in records:
 		try:
-			cust_no, so_number, item, schedule_month = pp[0], pp[1], pp[2], pp[3]
+			cust_no, customer_purchase_order, item, schedule_month = pp[0], pp[1], pp[2], pp[3]
 			s_qty = pp[4]
 			tp_1 = pp[5]
 			tp_2 = pp[6]
 
+			if not customer_purchase_order:
+				continue
+			so_number = frappe.db.get_value("Sales Order", {"po_no": customer_purchase_order, "docstatus": 1, "custom_customer_code": cust_no}, "name")
 			if not so_number:
 				continue
-
 			sales = frappe.get_doc("Sales Order", so_number)
 
 			if sales.customer_order_type == "Open":
@@ -110,6 +112,7 @@ def _process_upload(file, records):
 
 				if not frappe.db.exists("Sales Order Schedule", {
 					'sales_order_number': so_number,
+					'customer_code': cust_no,
 					'schedule_month': schedule_month,
 					'item_code': item,
 					'docstatus': 1
@@ -135,6 +138,7 @@ def _process_upload(file, records):
 				else:
 					if not frappe.db.exists("Sales Order Schedule", {
 							'sales_order_number': so_number,
+							'customer_code': cust_no,
 							'schedule_month': schedule_month,
 							'item_code': item,
 							'docstatus': 1,
@@ -142,6 +146,7 @@ def _process_upload(file, records):
 						}):
 						doc = frappe.get_doc("Sales Order Schedule", {
 							'sales_order_number': so_number,
+							'customer_code': cust_no,
 							'schedule_month': schedule_month,
 							'item_code': item,
 							'docstatus': 1
@@ -228,7 +233,7 @@ def _process_upload(file, records):
 			order_open.disable_update_items = 0
 			order_open.save(ignore_permissions=True)
 		except Exception as e:
-			frappe.log_error(f"Update failed for PO {so_number}: {e}", "Sales Order Upload Error")
+			frappe.log_error(f"Update failed for SO {so_number}: {e}", "Sales Order Upload Error")
 
 		current_step += 1
 		publish_progress(current_step, total_steps, "Updating Sales Order")
@@ -290,11 +295,15 @@ def precheck_records(file,records,job_id):
 	
 	for idx, pp in enumerate(records, start=1):
 		try:
-			cust_no, so_number, item, schedule_month = pp[0], pp[1], pp[2], pp[3]
+			cust_no, customer_purchase_order, item, schedule_month = pp[0], pp[1], pp[2], pp[3]
 			s_qty = pp[4]
 			tp_1 = pp[5]
 			tp_2 = pp[6]
 
+			if not customer_purchase_order:
+				continue
+				
+			so_number = frappe.db.get_value("Sales Order", {"po_no": customer_purchase_order, "docstatus": 1, "custom_customer_code": cust_no}, "name")
 			if not so_number:
 				continue
 
@@ -416,11 +425,15 @@ def precheck_records_without_enqueue(file,records,job_id):
 	
 	for idx, pp in enumerate(records, start=1):
 		try:
-			cust_no, so_number, item, schedule_month = pp[0], pp[1], pp[2], pp[3]
+			cust_no, customer_po_number, item, schedule_month = pp[0], pp[1], pp[2], pp[3]
 			s_qty = pp[4]
 			tp_1 = pp[5]
 			tp_2 = pp[6]
 
+			if not customer_po_number:
+				continue
+
+			so_number = frappe.db.get_value("Sales Order", {"po_no": customer_po_number, "docstatus": 1, "custom_customer_code": cust_no}, "name")
 			if not so_number:
 				continue
 
@@ -539,7 +552,7 @@ def make_xlsx(data, sheet_name=None, wb=None, column_widths=None):
 	if wb is None:
 		wb = openpyxl.Workbook()
 	ws = wb.create_sheet(sheet_name, 0)
-	ws.append(["Customer Code","Sales Order Number","Item Code","Schedule Period (month)","Schedule Qty", "Tentative Plan 1", "Tentative Plan 2"])
+	ws.append(["Customer Code","Customer's Purchase Order","Item Code","Schedule Period (month)","Schedule Qty", "Tentative Plan 1", "Tentative Plan 2"])
 	ws.append(["","","","Example: Apr, May, Jun, Jul, Aug, Sep, ...",""])
 	xlsx_file = BytesIO()
 	wb.save(xlsx_file)
@@ -558,7 +571,7 @@ def get_data(file):
 	<tr><td style="background-color:#FFA500; padding:1px; border: 1px solid black; font-size:10px;"><center><b>S.NO</b></center></td>
 	<td style="background-color:#FFA500; padding:1px; border: 1px solid black; font-size:10px;"><center><b>Customer Code</b></center></td>
 	<td style="background-color:#FFA500; padding:1px; border: 1px solid black; font-size:10px;"><center><b>Customer Name</b></center></td>
-	<td style="background-color:#FFA500; padding:1px; border: 1px solid black; font-size:10px;"><center><b>Sales Order Number</b></center></td>
+	<td style="background-color:#FFA500; padding:1px; border: 1px solid black; font-size:10px;"><center><b>Customer's Purchase Order</b></center></td>
 	<td style="background-color:#FFA500; padding:1px; border: 1px solid black; font-size:10px;"><center><b>Item Code</b></center></td>
 	<td style="background-color:#FFA500; padding:1px; border: 1px solid black; font-size:10px;"><center><b>Item Name</b></center></td>
 
@@ -572,7 +585,7 @@ def get_data(file):
 		if pp[0] != 'Customer Code':
 			cust_no = pp[0]
 			customer_name = frappe.db.get_value("Customer",{"customer_code": pp[0]},'name')
-			so_number = pp[1]
+			customer_purchase_order = pp[1]
 			item = pp[2]
 			item_name =frappe.db.get_value("Item",pp[2],'item_name')
 			sch_date = pp[3]
@@ -592,10 +605,6 @@ def get_data(file):
 			<td style="padding:1px; border: 1px solid black; font-size:10px;">%s</td>
 			<td style="padding:1px; border: 1px solid black; font-size:10px; text-align: right;">%s</td>
 			
-			</tr>"""%(i,cust_no or '',customer_name or '',so_number or '',item or '',item_name or '',sch_date or '',s_qty or 0)
+			</tr>"""%(i,cust_no or '',customer_name or '',customer_purchase_order or '',item or '',item_name or '',sch_date or '',s_qty or 0)
 			i += 1
 	return data
-
-
-
-

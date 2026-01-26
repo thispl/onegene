@@ -79,6 +79,7 @@
    "fieldname": "employees_list",
    "fieldtype": "Table",
    "label": "Employees List",
+   "no_copy": 1,
    "options": "Employees List"
   },
   {
@@ -90,6 +91,7 @@
    "fieldname": "number_of_employees",
    "fieldtype": "Int",
    "label": "Number of Employees",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -97,6 +99,7 @@
    "fieldname": "compensation_marked",
    "fieldtype": "Check",
    "label": "Compensation Marked",
+   "no_copy": 1,
    "read_only": 1
   },
   {
@@ -112,7 +115,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-17 12:26:28.594034",
+ "modified": "2026-01-21 11:45:45.598766",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Bulk Compensation Off Option",

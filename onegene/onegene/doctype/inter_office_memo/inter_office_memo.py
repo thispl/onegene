@@ -909,9 +909,11 @@ class InterOfficeMemo(Document):
         if self.date_time:
             dt = frappe.utils.get_datetime(self.date_time)  # handles date & datetime
             month_short = dt.strftime('%b')
-
+            year = dt.year
             if not self.month and self.date_time:
                 self.month = month_short
+            if not self.year and self.date_time:
+                self.year = year
         if self.supplier_stock_reconciliation:
             tot_erp_stock=0
             tot_phy_stock=0
@@ -1459,7 +1461,7 @@ class InterOfficeMemo(Document):
                 self.bmd_approved_on=now_datetime()
             if self.has_value_changed("workflow_state") and self.workflow_state == "Approved":
                 self.cmd_approved_on=now_datetime()
-        if (self.iom_type=="Approval for Tools & Dies Invoice" and self.department_from=="M P L & Purchase - WAIP" ):
+        if (self.iom_type=="Approval for Tools & Dies Invoice"):
             if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for ERP Team":
                 self.hod_approved_on=now_datetime()
             if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for Marketing Manager":
@@ -15543,7 +15545,14 @@ def get_travel_request_html(doc):
 
 <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">Customer / Supplier Name</span>
+    {%if doc.party_type=="Customer"%}
     <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.party_name or 'NA' }}</span>
+    {%elif doc.party_type=="Supplier"%}
+    {% set supplier_name=frappe.db.get_value("Supplier",{"name":doc.party_name},"supplier_name") %}
+    <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{supplier_name or 'NA' }}</span>
+    {%else%}
+    <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{"Others" or 'NA' }}</span>
+    {% endif%}
 </div>
 
 
@@ -16285,3 +16294,28 @@ def get_supplier_reqest_html(doc):
         "py": {"show_till": show_till}
     })
     return {"html": html}
+
+@frappe.whitelist()
+def revert_iom_workflow(doc):
+    iom_doc = frappe.get_doc("Inter Office Memo", doc)
+    if not iom_doc.get("rejection_remarks"):
+        frappe.throw("No rejection history found to revert workflow state")
+    last_row = iom_doc.rejection_remarks[-1]
+    if not last_row.previous_workflow_state:
+        frappe.throw("Previous workflow state not found in rejection remarks")
+    frappe.db.sql(
+        """
+        UPDATE `tabInter Office Memo`
+        SET workflow_state = %s, docstatus = 0
+        WHERE name = %s
+        """,
+        (last_row.previous_workflow_state, doc)
+    )
+    frappe.db.set_value(
+        last_row.doctype,
+        last_row.name,
+        "revised_iom",
+        1
+    )
+
+    frappe.db.commit()

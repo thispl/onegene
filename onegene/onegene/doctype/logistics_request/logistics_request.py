@@ -343,7 +343,7 @@ def update_workflow(self):
 			if row.attach:
 				attachment_count += 1
 		# if row_count !=0 and row_count == attachment_count:
-		if self.custom_shipping_bill_number and self.custom_shipping_bill_number_date and ((self.master_bl_number__awb and self.custom_master_bl_number__awb_date) or (self.normal_bl_number__awb and self.custom_normal_bl_number__awb_date)):
+		if (self.custom_shipping_bill_number and self.custom_shipping_bill_number_date) or (self.master_bl_number__awb and self.custom_master_bl_number__awb_date) or (self.normal_bl_number__awb and self.custom_normal_bl_number__awb_date):
 			self.status = "In Transit"
 			if self.po_so == "Sales Invoice":
 				frappe.db.set_value("Sales Invoice", self.order_no, "custom_lr_status", "Ready to Ship")
@@ -1069,7 +1069,7 @@ def create_html_EI(sales_invoice):
             {% endif %}
         </td>
         <td style="vertical-align:bottom;text-align:center;border-left:hidden;">
-            {% if finance and doc.workflow_state not in ['Pending For HOD', 'Draft', 'Pending for Finance'] %}
+            {% if finance and doc.workflow_state in ['Approved', 'Dispatched'] %}
                 <img src="{{ finance }}" class="signature-img">
             {% endif %}
         </td>

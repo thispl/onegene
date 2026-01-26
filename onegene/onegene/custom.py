@@ -907,7 +907,7 @@ def sick_leave_allocation():
 				# leave_all.carry_forward=1
 				leave_all.save(ignore_permissions=True)
 				leave_all.submit()
-
+	
 def update_leave_policy():
 	# earned leave will be allocated automatically based on the present and half days
 	pre_year = date.today().year - 1
@@ -1617,10 +1617,11 @@ def validate_ot(employee,total_leave_days,from_date,to_date,employee_category):
 				else:
 					from_date = datetime.strptime(from_date, "%Y-%m-%d")
 					last_date_of_year = date(from_date.year, 12, 31)
+					first_date_of_year = date(from_date.year, 1, 1)
 					lal=frappe.new_doc("Leave Allocation")
 					lal.employee=employee
 					lal.leave_type='Compensatory Off'
-					lal.from_date=from_date
+					lal.from_date=first_date_of_year
 					lal.to_date=last_date_of_year
 					lal.new_leaves_allocated=total_leave_days
 					lal.save(ignore_permissions=True)
@@ -2639,6 +2640,7 @@ def get_department_hierarchy():
 		department_hierarchy[parent].append(child)
 
 	return department_hierarchy
+
 from datetime import datetime, date
 @frappe.whitelist()
 def allocate_el():
@@ -2655,28 +2657,23 @@ def allocate_el():
 		first_date_next_year = datetime(next_year, 1, 1).date()
 		last_date_next_year = datetime(next_year, 12, 31).date()
 		current_year = current_date.year
+	# next_year = current_date.year
+	# first_date_next_year = datetime(next_year, 1, 1).date()
+	# last_date_next_year = datetime(next_year, 12, 31).date()
+	# current_year = current_date.year-1
 	start_date=datetime(current_year, 1, 1).date()
 	yesterday=add_days(current_date,-1)
 	# print(emp)
 	for e in emp:
 		print(e.name)
 		count=0
-		if e.employee_category in ['Sub Staff','Staff','Operator']:
-			act=20
-		else:
-			act=30
 		current_date = datetime.now().date()
 		doj = e.date_of_joining
 		diff = current_date - doj
 		years = diff.days / 365.25 
-		if int(years)>0:
-			if years < 2 and doj.year==current_year-1:
-				doj_date=e.date_of_joining.day
-				doj_month=e.date_of_joining.month
-				doj=datetime(current_year, doj_month, doj_date).date()
-				start_date=doj
-			else:
-				start_date=datetime(current_year, 1, 1).date()
+		if e.employee_category in ['Sub Staff','Staff']:
+			act=20
+			start_date=datetime(current_year, 1, 1).date()
 			print(start_date)
 			dates=get_dates(start_date,yesterday)
 			for date in dates:
@@ -2708,6 +2705,51 @@ def allocate_el():
 						alloc.total_leaves_allocated = int(leave)
 						alloc.save(ignore_permissions=True)
 						frappe.db.commit
+		else:
+			if e.employee_category == "Operator":
+				act=20
+			else:
+				act=30
+		
+			if int(years)>0:
+				if years < 2 and doj.year==current_year-1:
+					doj_date=e.date_of_joining.day
+					doj_month=e.date_of_joining.month
+					doj=datetime(current_year, doj_month, doj_date).date()
+					start_date=doj
+				else:
+					start_date=datetime(current_year, 1, 1).date()
+				print(start_date)
+				dates=get_dates(start_date,yesterday)
+				for date in dates:
+					hh=check_holiday(date,e.name)
+					if not hh:
+						if frappe.db.exists("Attendance",{'docstatus':['!=',2],'status': 'Present','employee': e.name,"attendance_date":date}):
+							count+=1
+				print(count)
+				if count>0:
+					leave=count/act
+					if leave>=1:
+						if not frappe.db.exists('Leave Allocation',{'leave_type':'Earned Leave','from_date':('between',(first_date_next_year,last_date_next_year)),'to_date':('between',(first_date_next_year,last_date_next_year)),'docstatus':['!=',2],'employee':e.name}):
+							allow = frappe.new_doc("Leave Allocation")
+							allow.employee = e.name
+							allow.company = e.company
+							allow.leave_type = "Earned Leave"
+							allow.from_date = first_date_next_year
+							allow.to_date = last_date_next_year
+							allow.new_leaves_allocated = int(leave)
+							allow.total_leaves_allocated = int(leave)
+							allow.insert()
+							allow.save(ignore_permissions=True)
+							allow.submit()	
+							frappe.db.commit
+						else:
+							allow=frappe.db.get_value('Leave Allocation',{'leave_type':'Earned Leave','from_date':first_date_next_year,'to_date':last_date_next_year,'docstatus':['!=',2],'employee':e.name},['name'])
+							alloc = frappe.get_doc("Leave Allocation",allow)
+							alloc.new_leaves_allocated = int(leave)
+							alloc.total_leaves_allocated = int(leave)
+							alloc.save(ignore_permissions=True)
+							frappe.db.commit
 
 @frappe.whitelist()
 def enqueue_el_allocation():
@@ -5421,12 +5463,12 @@ def change_workflow_state(doc, method):
 			frappe.db.set_value("Sales Invoice", sales_invoice.name, "workflow_state", "Pending for LR")
 			frappe.db.commit()
 			sales_invoice.reload()
-
 @frappe.whitelist()
-def update_workflow(doctype,name):
+def update_workflow(doctype,name,transporter):
 	sales_invoice =  frappe.get_doc("Sales Invoice", name)
 	if sales_invoice.workflow_state == "Pending for LR":
 		frappe.db.set_value("Sales Invoice", sales_invoice.name, "workflow_state", "LR Approved")
+		frappe.db.set_value("Sales Invoice", sales_invoice.name, "transporter", transporter)
 		frappe.db.set_value("Sales Invoice", sales_invoice.name,"custom_logistics_status", 'Request Approved')
 		frappe.db.commit()
 		sales_invoice.reload()
@@ -6847,15 +6889,27 @@ def create_html_lr_export(doc):
 						<td style="border: 1px solid black; text-align: center;"><b>No of Pallets</b></td>
 					</tr>
 				
-					{%- for row in doc.product_description_so -%}
-					<tr>
-						
-						<td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length }}</td>
-						<td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth }}</td>
-						<td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height }}</td>
-						<td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets }}</td>
-					</tr>
-					{%- endfor -%}
+					{%- set ns = namespace(total_boxes_1=0, total_length_1=0, total_height_1=0, total_breadth_1 =0) -%}
+                
+                    {%- for row in doc["product_description_so"] -%}
+                        {% set ns.total_boxes_1 = ns.total_boxes_1 + (row.custom_no_of_pallets or 0) %}
+                        {% set ns.total_length_1 = ns.total_length_1 + (row.custom_pallet_length or 0) %}
+                        {% set ns.total_height_1 = ns.total_height_1 + (row.custom_calculated_height or 0) %}
+                        {% set ns.total_breadth_1 = ns.total_breadth_1 + (row.custom_pallet_breadth or 0) %}
+                    <tr>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length or "" }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth or "" }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height or "" }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets or 0 }}</td>
+                    </tr>
+                    {%- endfor -%}
+                    
+                    <tr style="background-color:#D3D3D3;">  
+                        
+                        <td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Pallets</b></td>
+                         <td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes_1 }}</b></td>
+                        
+                    </tr>
 				</table>
 			</td>
 			<td colspan="4" style="border: 1px solid black; border-bottom: none; border-left: 1px solid transparent !important;">
@@ -6878,24 +6932,25 @@ def create_html_lr_export(doc):
 						<b>No of Boxes</b>
 					</td>
 				</tr>
-				{%- for row in doc.product_description_so -%}
-				<tr>
-
-					
-					<td style="border: 1px solid black; text-align: center;">
-						{{ row.custom_box_length or "" }}
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ row.custom_box_breadth or "" }}
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ row.custom_box_height or "" }}
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ row.custom_no_of_boxes or 0 }}
-					</td>
-				</tr>
-				{%- endfor-%}
+				{%- set ns = namespace(total_boxes=0, total_length=0, total_height=0, total_breadth =0) -%}
+                
+                {%- for row in doc["product_description_so"] -%}
+                    {% set ns.total_boxes = ns.total_boxes + (row.custom_no_of_boxes or 0) %}
+                    {% set ns.total_length = ns.total_length + (row.custom_box_length or 0) %}
+                    {% set ns.total_height = ns.total_height + (row.custom_box_height or 0) %}
+                    {% set ns.total_breadth = ns.total_breadth + (row.custom_box_breadth or 0) %}
+                <tr>
+                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_length or "" }}</td>
+                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_breadth or "" }}</td>
+                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_height or "" }}</td>
+                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_boxes or 0 }}</td>
+                </tr>
+                {%- endfor -%}
+                
+                <tr style="background-color:#D3D3D3;">  
+                    <td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Boxes</b></td>
+                    <td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes }}</b></td>
+                </tr>
 			</table>
 		</td>
 	</tr>
@@ -7572,7 +7627,7 @@ def create_html_EI(doc):
 			{% endif %}
 		</td>
 		<td style="vertical-align:bottom;">
-			{% if finance and doc.workflow_state not in ['Pending For HOD', 'Draft', 'Pending for Finance'] %}
+			{% if finance and doc.workflow_state in ['Approved', 'Dispatched'] %}
 				<img src="{{ finance }}" class="signature-img">
 			{% endif %}
 		</td>
@@ -8438,16 +8493,26 @@ def create_html_packing(doc):
 						<td style="border: 1px solid black; text-align: center;"><b>Height</b></td>
 						<td style="border: 1px solid black; text-align: center;"><b>No of Pallets</b></td>
 					</tr>
+					{%- set ns = namespace(total_boxes_1=0, total_length_1=0, total_height_1=0, total_breadth_1 =0) -%}
+                
+                    {%- for row in doc["items"] -%}
+                        {% set ns.total_boxes_1 = ns.total_boxes_1 + (row.custom_no_of_pallets or 0) %}
+                        {% set ns.total_length_1 = ns.total_length_1 + (row.custom_pallet_length or 0) %}
+                        {% set ns.total_height_1 = ns.total_height_1 + (row.custom_calculated_height or 0) %}
+                        {% set ns.total_breadth_1 = ns.total_breadth_1 + (row.custom_pallet_breadth or 0) %}
+                    <tr>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length or "" }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth or "" }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height or "" }}</td>
+                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets or 0 }}</td>
+                    </tr>
+                    {%- endfor -%}
+                    
+                    <tr style="background-color:#D3D3D3;">  
+                        <td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Pallets</b></td>
+                        <td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes_1 }}</b></td>
+                    </tr>
 				
-					{% for row in doc["items"] %}
-					<tr>
-						
-						<td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length }}</td>
-						<td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth }}</td>
-						<td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height }}</td>
-						<td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets }}</td>
-					</tr>
-					{% endfor %}
 				</table>
 			</td>
 			<td colspan="4" style="border: 1px solid black; border-bottom: none; border-left: 1px solid transparent !important;">
@@ -8470,24 +8535,26 @@ def create_html_packing(doc):
 						<b>No of Boxes</b>
 					</td>
 				</tr>
-				{% for row in doc["items"] %}
-				<tr>
-
-					
-					<td style="border: 1px solid black; text-align: center;">
-						{{ row.custom_box_length or "" }}
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ row.custom_box_breadth or "" }}
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ row.custom_box_height or "" }}
-					</td>
-					<td style="border: 1px solid black; text-align: center;">
-						{{ row.custom_no_of_boxes or 0 }}
-					</td>
-				</tr>
-				{% endfor %}
+				{%- set ns = namespace(total_boxes=0, total_length=0, total_height=0, total_breadth =0) -%}
+                
+                {%- for row in doc["items"] -%}
+                    {% set ns.total_boxes = ns.total_boxes + (row.custom_no_of_boxes or 0) %}
+                    {% set ns.total_length = ns.total_length + (row.custom_box_length or 0) %}
+                    {% set ns.total_height = ns.total_height + (row.custom_box_height or 0) %}
+                    {% set ns.total_breadth = ns.total_breadth + (row.custom_box_breadth or 0) %}
+                <tr>
+                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_length or "" }}</td>
+                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_breadth or "" }}</td>
+                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_height or "" }}</td>
+                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_boxes or 0 }}</td>
+                </tr>
+                {%- endfor -%}
+                
+                <tr style="background-color:#D3D3D3;">  
+                    
+                    <td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Boxes</b></td>
+                    <td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes }}</b></td>
+                </tr>
 			</table>
 		</td>
 
@@ -8600,7 +8667,7 @@ def create_html_supplier_delivery(doc):
 			<p style="text-transform: uppercase; font-size: 13px;">
 			<b>{{doc.supplier_name1 or ''}} ({{doc.supplier or ''}})</b>
 			</p>
-			<p>{{doc.address_display or ''}}</p>
+			<p>{{ (doc.address_display or '').replace('\n', '<br>') | safe }}</p>
 		</div>
 		<div style="flex: 1; padding-left: 10px;">
 			<p><b>Shipping Address: </b></p>
@@ -9413,10 +9480,17 @@ def check_location_in_custom_locations(filters):
 @frappe.whitelist()
 def update_datetime_and_approver_details_in_Si(doc, method):
 	if doc.custom_invoice_type == "Export Invoice":
-		if doc.has_value_changed("workflow_state") and doc.workflow_state == "Pending for Finance":
+		if doc.has_value_changed("workflow_state") and doc.workflow_state == "Waiting for LR Request":
 			doc.custom_hod_approved_on=now_datetime()
 			doc.custom_hod=frappe.session.user
-		if doc.has_value_changed("workflow_state") and doc.workflow_state == "Waiting for LR Request":
+		if doc.has_value_changed("workflow_state") and doc.workflow_state == "Approved":
+			doc.custom_finance_approver_approved_on=now_datetime()
+			doc.custom_finance_approver=frappe.session.user
+
+@frappe.whitelist()
+def update_datetime_and_approver_details_finance(doc, method):
+	if doc.custom_invoice_type == "Export Invoice":
+		if doc.has_value_changed("workflow_state") and doc.workflow_state == "Approved":
 			doc.custom_finance_approver_approved_on=now_datetime()
 			doc.custom_finance_approver=frappe.session.user
 
@@ -10244,8 +10318,8 @@ def has_permission(doc, user):
 
 
 @frappe.whitelist()
-def get_balance_schedule(pdate, item_code=None, po_no=None):
-	if not (pdate and po_no):
+def get_balance_schedule(pdate, item_code=None, po_no=None, customer_code=None):
+	if not (pdate and po_no and customer_code):
 		return None
 
 	date_obj = getdate(pdate)
@@ -10259,6 +10333,8 @@ def get_balance_schedule(pdate, item_code=None, po_no=None):
 			"schedule_month": month_str,
 			"schedule_year": year,
 			"item_code":item_code,
+			"customer_code":customer_code,
+			"docstatus": 1,
 		},
 		["pending_qty"],
 		as_dict=True,
@@ -10754,21 +10830,49 @@ def today_req_qty_update(item_code, date):
 
 
 @frappe.whitelist()
-def get_rate_from_sales_order(item_code, customer_po):
+def get_rate_from_sales_order(item_code, customer_po, customer_code):
 	rate = frappe.db.sql("""
 		SELECT soi.rate
 		FROM `tabSales Order Item` AS soi
 		JOIN `tabSales Order` AS so ON so.name = soi.parent
 		WHERE soi.item_code = %s
-		AND so.po_no = %s
+		AND so.po_no = %s AND so.custom_customer_code = %s
 		AND so.docstatus = 1
 		LIMIT 1
-	""", (item_code, customer_po), as_dict=True)
+	""", (item_code, customer_po, customer_code), as_dict=True)
 
 	if rate:
 		return rate[0].rate
 	else:
 		return None
+	
+def validate_customer_po(doc, method):
+	"""Do not allow saving Sales Order with duplicate Customer PO Number for the same Customer"""
+
+	if doc.po_no and doc.customer:
+		existing_so = frappe.db.get_value(
+			"Sales Order",
+			{
+				"po_no": doc.po_no,
+				"customer": doc.customer,
+				"docstatus": ["!=", 2],
+				"name": ["!=", doc.name]
+			},
+			"name"
+		)
+
+		if existing_so:
+			frappe.throw(
+				f"""
+				<b>Duplicate Customer Purchase Order</b><br><br>
+				Customer: <b>{doc.customer}</b><br>
+				PO Number: <b>{doc.po_no}</b><br><br>
+				This PO is already used in Sales Order:
+				<a href="/app/sales-order/{existing_so}" target="_blank"><b>{existing_so}</b></a>
+				""",
+				title="Duplicate Customer PO"
+			)
+
 
 @frappe.whitelist()
 def get_inspection_ids(exclude_qids, customer):
@@ -11359,27 +11463,158 @@ def update_customer_tax_category(doc, method):
 					doc.tax_category = "In-State"
 				else:
 					doc.tax_category = "Out-State"
-     
 def test_check():
-    data = frappe.db.sql("""
-        SELECT DISTINCT parent 
-        FROM `tabPurchase Order Item`
-        GROUP BY parent, item_code
-        HAVING COUNT(*) > 1
-    """, as_dict=True)
+	data = frappe.db.sql("""
+		SELECT parent AS sales_order, item_code, COUNT(*) AS duplicate_count
+		FROM `tabSales Order Item`
+		GROUP BY parent, item_code
+		HAVING COUNT(*) > 1
+	""", as_dict=True)
 
-    print(data)
-    
+	sales_order = []
+	for row in data:
+		sales_order.append(row.sales_order)
+	print(data)
+	print(sales_order)
+
+# Method to delete duplicate items from POI
 def delete_duplicate():
-    data = frappe.db.sql("""
-        DELETE poi1
-        FROM `tabPurchase Order Item` poi1
-        INNER JOIN `tabPurchase Order Item` poi2
+	data = frappe.db.sql("""
+		DELETE poi1
+        FROM `tabSales Order Item` poi1
+        INNER JOIN `tabSales Order Item` poi2
             ON poi1.parent = poi2.parent
             AND poi1.item_code = poi2.item_code
-            AND poi1.creation < poi2.creation;
-        """)
-    print(data)
+            AND poi1.creation < poi2.creation
+		""")
+	print(data)
 
-	
-	
+# Method to correct the OT Balance
+def correct_ot_balance():
+	from frappe.utils import get_first_day, get_last_day, nowdate
+	current_month_start_date = get_first_day(nowdate())
+	current_month_end_date = get_last_day(nowdate())
+	ot_balances = frappe.db.get_all("OT Balance", {"from_date": current_month_start_date, "to_date": current_month_end_date}, pluck="name")
+	for ot_balance in ot_balances:
+		print(ot_balance)
+		ot_balance_doc = frappe.get_doc("OT Balance", ot_balance)
+		total_ot_hours = frappe.db.sql("""
+						SELECT SUM(custom_overtime_hours) as total_ot_hours
+						FROM `tabAttendance`
+						WHERE employee = %s AND 
+							attendance_date BETWEEN %s AND %s
+						""", (ot_balance_doc.employee, current_month_start_date, current_month_end_date), as_dict=1)[0]['total_ot_hours'] or 0
+		
+		coff_pending = frappe.db.sql("""
+						SELECT SUM(custom_total_leave_days) as total_leave_days
+						FROM `tabLeave Application`
+						WHERE employee = %s AND custom_select_leave_type = "Comp-off from OT" AND 
+							posting_date BETWEEN %s AND %s AND
+							docstatus = 0 AND workflow_state not in ("Cancelled", "Rejected", "Approved")
+						""", (ot_balance_doc.employee, current_month_start_date, current_month_end_date), as_dict=1)[0]['total_leave_days'] or 0
+		
+		coff_approved = frappe.db.sql("""
+						SELECT SUM(custom_total_leave_days) as total_leave_days
+						FROM `tabLeave Application`
+						WHERE employee = %s AND custom_select_leave_type = "Comp-off from OT" AND
+							posting_date BETWEEN %s AND %s AND
+							docstatus = 1 AND workflow_state = "Approved"
+						""", (ot_balance_doc.employee, current_month_start_date, current_month_end_date), as_dict=1)[0]['total_leave_days'] or 0
+		
+		ot_balance = total_ot_hours - ((float(coff_approved) * 8) + (float(coff_pending) * 8))
+		
+		ot_balance_doc.total_ot_hours = total_ot_hours
+		ot_balance_doc.comp_off_pending_for_approval = coff_pending
+		ot_balance_doc.comp_off_used = coff_approved
+		ot_balance_doc.ot_balance = ot_balance
+		ot_balance_doc.save()
+
+def carry_forward_compoff():
+	employees = frappe.db.get_all("Employee", {"employee_category": ("in", ("Staff", "Sub Staff")), "status": "Active"}, pluck="name")
+	for employee in employees:
+
+		allocation = frappe.db.sql("""
+			SELECT total_leaves_allocated
+			FROM `tabLeave Allocation`
+			WHERE leave_type = 'Compensatory Off'
+				AND from_date BETWEEN '2025-01-01' AND '2025-12-31'
+				AND to_date BETWEEN '2025-01-01' AND '2025-12-31'
+				AND employee = %s
+				AND docstatus = 1
+		""", (employee,), as_dict=True)
+
+		leaves_allocated = allocation[0]['total_leaves_allocated'] if allocation else 0
+
+		leaves_used = frappe.db.sql("""
+			SELECT SUM(total_leave_days) AS leaves_used
+			FROM `tabLeave Application`
+			WHERE from_date BETWEEN '2025-01-01' AND '2025-12-31'
+				AND to_date BETWEEN '2025-01-01' AND '2025-12-31'
+				AND docstatus = 1
+				AND workflow_state = 'Approved'
+				AND employee = %s
+				AND leave_type = "Compensatory Off"
+		""", (employee,), as_dict=True)[0]['leaves_used'] or 0
+  
+		if leaves_allocated - leaves_used > 0:
+			employee_category = frappe.db.get_value("Employee", employee, "employee_category")
+			la = frappe.new_doc("Leave Allocation")
+			la.leave_type = "Compensatory Off"
+			la.from_date = "2026-01-01"
+			la.to_date = "2026-12-31"
+			la.custom_employee_category = employee_category
+			la.employee = employee
+			la.new_leaves_allocated = leaves_allocated - leaves_used
+			la.total_leaves_allocated = leaves_allocated - leaves_used
+			la.save()
+
+@frappe.whitelist()
+def update_pallet_height(name):
+	so = frappe.get_doc("Sales Invoice", name)
+
+	for row in so.items:
+		height = update_pallet_h(name, row.item_code)
+		row.db_set('custom_calculated_height', height, update_modified=False)
+
+	so.save(ignore_permissions=True)
+	so.reload()
+
+	return "OK"
+
+
+@frappe.whitelist()
+def update_pallet_h(name,item):
+	doc=frappe.get_doc("Sales Invoice",name)
+	for i in doc.items:
+		if i.item_code==item:
+			final_height=0
+			pallet=i.custom_pallet
+			box=i.custom_box
+			if pallet and box :
+				pal_doc=frappe.get_doc('Pallet',pallet)
+				box_doc=frappe.get_doc('Box',box)
+				pcount=i.custom_no_of_pallets
+				bcount=i.custom_no_of_boxes
+				if pcount > 0 and bcount > 0:
+					# calculate pallet per box
+					pox_per_pallet=bcount/pcount
+
+					# calculate L*B for both pallet and box
+					pallet_l_b=pal_doc.length*pal_doc.breadth
+					box_l_b=box_doc.length*box_doc.breadth
+
+					# divide L*B of pallet by box
+					p_b_l_b=pallet_l_b/box_l_b
+					# p_b_l_b=p_b_l_b/bcount
+					p_b_l_b=int(p_b_l_b)
+
+					# multiply p_b_l_b with box height
+					v4=p_b_l_b*box_doc.height
+
+					# add v4 with pallet height
+					v5=v4+pal_doc.height
+
+					final_height= v5+pal_doc.extra_height
+			i.custom_calculated_height=final_height
+	return final_height
+

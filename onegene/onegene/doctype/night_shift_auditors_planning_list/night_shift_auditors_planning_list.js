@@ -3,6 +3,7 @@
 
 frappe.ui.form.on("Night Shift Auditors Planning List", {
     onload(frm){
+		console.log(frm.doc.owner)
 		if(frm.doc.employee && frm.doc.date){
         frappe.call({
 			method:'onegene.onegene.doctype.night_shift_auditors_planning_list.night_shift_auditors_planning_list.get_att_details',
@@ -27,20 +28,20 @@ frappe.ui.form.on("Night Shift Auditors Planning List", {
             }
         })
 		if (frm.doc.__islocal){
-		if(frm.doc.employee && frm.doc.date){
-			frappe.call({
-				method:'onegene.onegene.doctype.night_shift_auditors_planning_list.night_shift_auditors_planning_list.get_att_details',
-				args:{
-					emp:frm.doc.employee,
-					date:frm.doc.date
-				},
-				callback(r){
-					frm.set_value('in_time',r.message[0])
-					frm.set_value('out_time',r.message[1])
-					frm.set_value('eligible',r.message[2])
-				}
-			})
-		}
+			if(frm.doc.employee && frm.doc.date){
+				frappe.call({
+					method:'onegene.onegene.doctype.night_shift_auditors_planning_list.night_shift_auditors_planning_list.get_att_details',
+					args:{
+						emp:frm.doc.employee,
+						date:frm.doc.date
+					},
+					callback(r){
+						frm.set_value('in_time',r.message[0])
+						frm.set_value('out_time',r.message[1])
+						frm.set_value('eligible',r.message[2])
+					}
+				})
+			}
 		}
 	},
 });

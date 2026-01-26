@@ -68,7 +68,7 @@ class BulkCompensationOffOption(Document):
 							"employee": i.employee,
 							"leave_type": "Compensatory Off",
 						}, as_dict=1)
-
+						frappe.errprint(["Leave Allocation", leave_period[0].from_date, leave_period[0].to_date, i.employee])
 						if leave_allocation:
 							for allocation in leave_allocation:
 								new_leave = allocation['new_leaves_allocated'] + 1
@@ -88,8 +88,8 @@ class BulkCompensationOffOption(Document):
 								from_date=add_days(self.holiday_date, 1),
 								to_date=leave_period[0].to_date,
 								carry_forward=cint(is_carry_forward),
-								new_leaves_allocated="1",
-								total_leaves_allocated="1"
+								new_leaves_allocated="2" if i.employee=="Q0030" else "1",
+								total_leaves_allocated="2" if i.employee=="Q0030" else "1"
 							))
 							allocation.insert(ignore_permissions=True)
 							allocation.submit()
@@ -98,7 +98,6 @@ class BulkCompensationOffOption(Document):
 							select *
 							from `tabLeave Application`
 							where employee=%(employee)s and leave_type=%(leave_type)s
-								and docstatus=1
 								and (
 									from_date between %(from_date)s and %(to_date)s
 									or to_date between %(from_date)s and %(to_date)s
@@ -110,7 +109,8 @@ class BulkCompensationOffOption(Document):
 							"employee": i.employee,
 							"leave_type": "Compensatory Off",
 						}, as_dict=1)
-
+						frappe.errprint(leave_application)
+						frappe.errprint(["comp", self.compensation_off_date])
 						if not leave_application:
 							la = frappe.new_doc('Leave Application')
 							la.employee = i.employee
@@ -189,3 +189,29 @@ class BulkCompensationOffOption(Document):
 	# 		hdate=self.holiday_date,
 	# 		cdate=self.compensation_off_date
 	# 	)
+ 
+def correct_from_date_in_leave_allocation():
+	leave_allocations = frappe.db.get_all("Leave Allocation", filters={"leave_type": "Compensatory Off", "from_date": (">", "2026-01-16")}, fields=["name", "from_date", "employee"])
+	for row in leave_allocations:
+		correct_from_date = '2026-01-01'
+		frappe.db.set_value("Leave Allocation", row.name, "from_date", correct_from_date)
+		frappe.db.set_value("Leave Ledger Entry", {"transaction_name": row.name}, "from_date", correct_from_date)
+		print(row.name, row.employee, row.from_date, "->", correct_from_date)
+	
+def test_check():
+    leave_application = frappe.db.sql("""
+							select *
+							from `tabLeave Application`
+							where employee=%(employee)s and leave_type=%(leave_type)s
+								and (
+									from_date between %(from_date)s and %(to_date)s
+									or to_date between %(from_date)s and %(to_date)s
+									or (from_date < %(from_date)s and to_date > %(to_date)s)
+								)
+						""", {
+							"from_date": '2026-01-16',
+							"to_date": '2026-01-16',
+							"employee": 'P0215',
+							"leave_type": "Compensatory Off",
+						}, as_dict=1)
+    print(leave_application)
