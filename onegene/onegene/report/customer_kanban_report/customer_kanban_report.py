@@ -48,7 +48,6 @@ def get_data(filters):
 			{customer_condition} {item_group_condition} {item_code_condition}
 		GROUP BY customer_name, item_code 
 		ORDER BY item_code
-		LIMIT 10
 	"""
 	conditions = {
 		"schedule_month": schedule_month,

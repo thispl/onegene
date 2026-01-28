@@ -216,36 +216,9 @@ scheduler_events = {
 }
 
 fixtures = [
-    # {
-    #     "dt": "Custom Field",
-    #     "filters": [
-    #         ["module", "=", "ONEGENE"]
-    #     ]
-    # },
     {
-        "dt": "Client Script",
-        "filters": [
-            ["module", "=", "ONEGENE"]
-        ]
+        "dt": "Custom DocPerm",
     },
-    {
-        "dt": "Server Script",
-        "filters": [
-            ["module", "=", "ONEGENE"]
-        ]
-    },
-    # {
-    #     "dt": "Property Setter",
-    #     "filters": [
-    #         ["module", "=", "ONEGENE"]
-    #     ]
-    # },
-    {
-        "dt": "Print Format",
-        "filters": [
-            ["module", "=", "ONEGENE"]
-        ]
-    }
 ]
 
 # Testing

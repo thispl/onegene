@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import flt
+from frappe.utils import flt, now_datetime
 from openpyxl import Workbook
 from frappe.utils.file_manager import save_file
 import json
@@ -86,7 +86,7 @@ def get_data(data, filters=None):
 				"last_sales_rate": last_sales_rate,
 				"warehouse": warehouse
 			})
-			get_exploded_items(bom_filter, data)
+			get_exploded_items(bom=bom_filter, data=data)
 		calculate_totals(data)
 
 def calculate_totals(data):
@@ -155,11 +155,12 @@ def get_exploded_items(bom, data, indent=0, qty=1):
 			"last_purchase_rate": last_purchase_rate,
 			"item_rate": item_rate,
 			"process_cost": process_cost,
-			"warehouse": warehouse
+			"warehouse": warehouse,
+			"parent": bom
 		})
 
 		if item.bom_no:
-			get_exploded_items(item.bom_no, data, indent + 1, flt(item.qty))
+			get_exploded_items(bom=item.bom_no, data=data, indent=indent + 1, qty=flt(item.qty))
 
 def get_last_purchase_rate(item_code):
 	return ITEM_CACHE.get(item_code, {}).get("last_purchase_rate") or 0
@@ -246,7 +247,8 @@ def strip_html(value):
 @frappe.whitelist()
 def get_excel_report(filters=None):
 	from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-	
+	from frappe.utils import cint
+ 
 	bold_font = Font(bold=True)
 	sfg_fill = PatternFill(start_color="ffe699", end_color="ffe699", fill_type="solid")
 	fg_fill = PatternFill(start_color="4a7085", end_color="4a7085", fill_type="solid")
@@ -277,7 +279,7 @@ def get_excel_report(filters=None):
 			serial_no = ""
 		values = [
 			serial_no,
-			strip_html(row.get("item_code")),
+			(row.get('indent') * "   ") + strip_html(row.get("item_code")),
 			strip_html(row.get("item_name")),
 			strip_html(row.get("item_type")),
 			flt(strip_html(row.get("qty"))),
@@ -353,3 +355,106 @@ def get_excel_report(filters=None):
 	)
 
 	return file_doc.file_url
+
+@frappe.whitelist()
+def download_report_json(filters=None):
+	if filters and isinstance(filters, str):
+		filters = json.loads(filters)
+
+	columns, data = execute(filters)
+
+	return data
+
+@frappe.whitelist()
+def update_cost(filters, data):
+	if isinstance(data, str):
+		data = json.loads(data)
+  
+	for row in data:
+		item_code = strip_html(row.get("item_code"))
+		item_type = strip_html(row.get("item_type"))
+		rm_cost = flt(strip_html(row.get("rm_cost"))) / flt(strip_html(row.get("qty")), 9) if flt(strip_html(row.get("qty")), 9) > 0 else flt(strip_html(row.get("rm_cost")))
+		parent = strip_html(row.get("parent"))
+		rate = flt(strip_html(row.get("last_purchase_rate")))
+		amount = flt(strip_html(row.get("qty"))) * flt(strip_html(row.get("last_purchase_rate")))
+  
+		# Update RM Cost in Item
+		if item_type == "Process Item" and flt(rm_cost) > 0:
+			old_rm_cost = frappe.db.get_value("Item", item_code, "custom_rm_cost")
+			if flt(old_rm_cost) != flt(rm_cost):
+				rm_rvision_len = frappe.db.count("Item RM Cost Revision", {"parent": item_code})
+				frappe.db.set_value("Item", item_code, "custom_rm_cost", rm_cost)
+				
+				# Revision Logs
+				frappe.get_doc({
+					"doctype": "Item RM Cost Revision",
+					"parent": item_code,
+					"parenttype": "Item",
+					"parentfield": "custom_rm_cost_revisions",
+
+					"idx": rm_rvision_len + 1,
+					"revised_on": now_datetime(),
+					"revised_by": frappe.session.user,
+					"rm_cost": old_rm_cost,
+					"revised_rm_cost": rm_cost
+				}).insert(ignore_permissions=True)
+
+   
+		# Update Rate in BOM
+		if item_type != "Process Item":
+			frappe.db.set_value("BOM Item", {"parent": parent, "item_code": item_code}, 
+						{"base_rate": rate, "rate": rate, 
+						"amount": amount, "base_amount": amount})
+		else:
+			qty = frappe.db.get_value("BOM Item", {"parent": parent, "item_code": item_code}, "qty") or 1
+			frappe.db.set_value("BOM Item", {"parent": parent, "item_code": item_code}, 
+						{"base_rate": rm_cost, "rate": rm_cost, 
+						"amount": qty * rm_cost, "base_amount": qty * rm_cost})
+  
+
+@frappe.whitelist()
+def update_cost_from_bom(filters):
+	if isinstance(filters, str):
+		filters = json.loads(filters)
+
+	columns, data = execute(filters)
+  
+	for row in data:
+		item_code = strip_html(row.get("item_code"))
+		item_type = strip_html(row.get("item_type"))
+		rm_cost = flt(strip_html(row.get("rm_cost"))) / flt(strip_html(row.get("qty")), 9) if flt(strip_html(row.get("qty")), 9) > 0 else flt(strip_html(row.get("rm_cost")))
+		parent = strip_html(row.get("parent"))
+		rate = flt(strip_html(row.get("last_purchase_rate")))
+		amount = flt(strip_html(row.get("qty"))) * flt(strip_html(row.get("last_purchase_rate")))
+  
+		# Update RM Cost in Item
+		if item_type == "Process Item" and flt(rm_cost) > 0:
+			old_rm_cost = frappe.db.get_value("Item", item_code, "custom_rm_cost")
+			if flt(old_rm_cost) != flt(rm_cost):
+				rm_rvision_len = frappe.db.count("Item RM Cost Revision", {"parent": item_code})
+				frappe.db.set_value("Item", item_code, "custom_rm_cost", rm_cost)
+				
+				# Revision Logs
+				frappe.get_doc({
+					"doctype": "Item RM Cost Revision",
+					"parent": item_code,
+					"parenttype": "Item",
+					"parentfield": "custom_rm_cost_revisions",
+
+					"idx": rm_rvision_len + 1,
+					"revised_on": now_datetime(),
+					"revised_by": frappe.session.user,
+					"rm_cost": old_rm_cost,
+					"revised_rm_cost": rm_cost
+				}).insert(ignore_permissions=True)
+    
+		# Update Rate in BOM
+		if item_type != "Process Item":
+			frappe.db.set_value("BOM Item", {"parent": parent, "item_code": item_code}, 
+						{"base_rate": rate, "rate": rate, 
+						"amount": amount, "base_amount": amount})
+		else:
+			qty = frappe.db.get_value("BOM Item", {"parent": parent, "item_code": item_code}, "qty") or 1
+			frappe.db.set_value("BOM Item", {"parent": parent, "item_code": item_code}, 
+						{"base_rate": rm_cost, "rate": rm_cost, 
+						"amount": qty * rm_cost, "base_amount": qty * rm_cost})

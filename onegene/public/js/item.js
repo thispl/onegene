@@ -77,5 +77,20 @@ frappe.ui.form.on("Item", {
                 }, __("Actions"));
             }
         }
+
+        // Price History
+        if(!frm.doc.__islocal){
+            frappe.call({
+                method: "onegene.onegene.event.item.get_price_history_html",
+                args: {
+                    "item_code": frm.doc.item_code,
+                },
+                callback(r) {
+                    if (r.message) {
+                        frm.fields_dict.custom_price_history_html.$wrapper.html(r.message);
+                    }
+                }
+            });
+        }
     }
 });
