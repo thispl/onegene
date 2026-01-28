@@ -25,7 +25,7 @@
   {
    "hidden": 0,
    "is_query_report": 1,
-   "label": "Production Plan Report",
+   "label": "Production Daily Plan",
    "link_count": 0,
    "link_to": "Production Plan Report",
    "link_type": "Report",
@@ -55,7 +55,7 @@
   {
    "hidden": 0,
    "is_query_report": 1,
-   "label": "Production Sheet",
+   "label": "Production Summary",
    "link_count": 0,
    "link_to": "Production Sheet",
    "link_type": "Report",
@@ -65,7 +65,7 @@
   {
    "hidden": 0,
    "is_query_report": 1,
-   "label": "Job Card",
+   "label": "Production Entry",
    "link_count": 0,
    "link_to": "Job Card",
    "link_type": "Report",
@@ -81,10 +81,20 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Customer Commitment Report",
+   "link_count": 0,
+   "link_to": "Customer Kanban Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2025-10-27 17:58:47.736999",
- "modified_by": "amar.p@groupteampro.com",
+ "modified": "2026-01-28 11:33:15.218710",
+ "modified_by": "senthilkumar.r@onegeneindia.in",
  "module": "ONEGENE",
  "name": "Production",
  "number_cards": [],

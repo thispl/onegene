@@ -189,7 +189,8 @@
    "fieldname": "received_qty",
    "fieldtype": "Float",
    "label": "Received Qty",
-   "no_copy": 1
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
@@ -197,7 +198,8 @@
    "fieldname": "pending_qty",
    "fieldtype": "Float",
    "label": "Pending Qty",
-   "no_copy": 1
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "fieldname": "column_break_bibq",
@@ -443,7 +445,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-06 15:50:21.888864",
+ "modified": "2026-01-28 10:46:56.045874",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "Purchase Order Schedule",

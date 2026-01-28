@@ -10,7 +10,7 @@ frappe.query_reports["BOM Cost"] = {
 			label: __("BOM"),
 			fieldtype: "Link",
 			options: "BOM",
-			reqd: 1,
+			// reqd: 1,
 			get_query: function() {
 				return {
 					filters: {
@@ -21,7 +21,6 @@ frappe.query_reports["BOM Cost"] = {
 				};
 			},
 			onchange: function() {
-				console.log("Filter changed");
 				toggle_download_buttons(frappe.query_report);
 			}
 		},
@@ -33,7 +32,6 @@ frappe.query_reports["BOM Cost"] = {
 		});
 		const bom_filter = report.get_filter("bom");
 		bom_filter.$input.on("change", function() {
-			console.log("Filter changed");
 			toggle_download_buttons(report);
 		});
 		toggle_download_buttons(report);
@@ -43,6 +41,8 @@ frappe.query_reports["BOM Cost"] = {
 // Functions
 function toggle_download_buttons(report) {
 	report.page.clear_inner_toolbar();
+
+	// Download Button
 	report.page.add_inner_button(__("All Items"), () => {
 		frappe.call({
 			method: "onegene.onegene.report.bom_cost.bom_cost.get_excel_report",
@@ -94,4 +94,45 @@ function toggle_download_buttons(report) {
 			}, __('Download'));
 		}
 	}, 1000);
+
+	// JSON
+	if (frappe.session.user == "amar.p@groupteampro.com") {
+		report.page.add_inner_button(__("JSON"), () => {
+			frappe.call({
+				method: "onegene.onegene.report.bom_cost.bom_cost.download_report_json",
+				args: {
+					filters: frappe.query_report.get_filter_values()
+				},
+				callback: function(r) {
+					const jsonData = JSON.stringify(r.message, null, 2);
+
+					const blob = new Blob([jsonData], { type: "application/json" });
+					const url = URL.createObjectURL(blob);
+
+					const a = document.createElement("a");
+					a.href = url;
+					a.download = "bom_cost.json";
+					a.click();
+
+					URL.revokeObjectURL(url);
+				}
+			});
+		});
+	}
+	
+	// Update Cost
+	report.page.add_inner_button(__("Update Cost"), () => {
+		frappe.call({
+			method: "onegene.onegene.report.bom_cost.bom_cost.update_cost",
+			args: {
+				filters: frappe.query_report.get_filter_values(),
+				data: frappe.query_report.data
+			},
+			freeze: true,
+			freeze_message: "Updating Cost ...",
+			callback: function(r) {
+				frappe.msgprint("RM Costs have been updated successfully")
+			}
+		});
+	});
 }
