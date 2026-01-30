@@ -1515,7 +1515,7 @@ def att_request_cancel(doc, method):
 def condition_for_la(doc, method):
 	if doc.workflow_state == "Draft" or doc.is_new():
 		diff = date_diff(today(), doc.from_date)
-		role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager"]]})
+		role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager", "System Manager"]]})
 		if not role:
 			employee_category = frappe.db.get_value("Employee",doc.employee,"employee_category")
 			if employee_category in ["Staff","Sub Staff"]:
@@ -1532,38 +1532,62 @@ def return_items(doctype,docname):
 @frappe.whitelist()
 # restriction to apply attendance request when days exceeded 3 
 def condition_for_ar(doc,method):
-	diff = date_diff(today(), doc.from_date)
-	role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager","HOD"]]})
-	if not role:
-		if diff > 3:
-			frappe.throw("The Attendance Request must be apply within 3 days")
+	if doc.is_new():
+		diff = date_diff(today(), doc.from_date)
+		role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager", "System Manager"]]})
+		if not role:
+			employee_category = frappe.db.get_value("Employee",doc.employee,"employee_category")
+			if employee_category in ["Staff","Sub Staff"]:
+				if diff > 3:
+					frappe.throw("The Attendance Request must be apply within 3 days from the request date")
+			if employee_category in ["Apprentice","Operator", "Contractor", "Trainee"]:
+				if diff > 0:
+					frappe.throw("Attendance Request must be applied on or before the same day.")
 
 @frappe.whitelist()
 # restriction to apply comp leave request when days exceeded 3 
 def condition_for_compoff_lr(doc,method):
-	diff = date_diff(today(), doc.work_from_date)
-	role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager","HOD"]]})
-	if not role:
-		if diff > 3:
-			frappe.throw("The Compensatory Leave Request must be apply within 3 days")
+	if doc.is_new():
+		diff = date_diff(today(), doc.work_from_date)
+		role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager", "System Manager"]]})
+		if not role:
+			employee_category = frappe.db.get_value("Employee",doc.employee,"employee_category")
+			if employee_category in ["Staff","Sub Staff"]:
+				if diff > 3:
+					frappe.throw("The Compensatory Leave Request must be apply within 3 days from the request date")
+			if employee_category in ["Apprentice","Operator", "Contractor", "Trainee"]:
+				if diff > 0:
+					frappe.throw("Compensatory Leave Request must be applied on or before the same day.")
 
 @frappe.whitelist()
 # restriction to apply attendance permission when days exceeded 3 
 def condition_for_ap(doc,method):
-	diff = date_diff(today(), doc.permission_date)
-	role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager","HOD"]]})
-	if not role:
-		if diff > 3:
-			frappe.throw("The Attendance Permission must be apply within 3 days")
+	if doc.is_new():
+		diff = date_diff(today(), doc.permission_date)
+		role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager", "System Manager"]]})
+		if not role:
+			employee_category = frappe.db.get_value("Employee",doc.employee,"employee_category")
+			if employee_category in ["Staff","Sub Staff"]:
+				if diff > 3:
+					frappe.throw("The Attendance Permission must be apply within 3 days from the permission date")
+			if employee_category in ["Apprentice","Operator", "Contractor", "Trainee"]:
+				if diff > 0:
+					frappe.throw("Attendance Permission must be applied on or before the same day.")
 
 @frappe.whitelist()
 # restriction to apply night shift auditors plan swapping when days exceeded 3 
 def condition_for_nsaps(doc,method):
-	diff = date_diff(today(), doc.requesting_date)
-	role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager","HOD"]]})
-	if not role:
-		if diff > 3:
-			frappe.throw("The Night Shift Auditors Plan Swapping must be apply within 3 days")
+	if doc.is_new():
+		diff = date_diff(today(), doc.requesting_date)
+		role = frappe.db.get_value("Has Role",{"parent":frappe.session.user,"role":["in",["HR User","HR Manager", "System Manager"]]})
+		if not role:
+			employee_category = frappe.db.get_value("Employee",doc.employee,"employee_category")
+			if employee_category in ["Staff","Sub Staff"]:
+				if diff > 3:
+					frappe.throw("The Night Shit Auditors Plan Swapping must be apply within 3 days")
+			if employee_category in ["Apprentice","Operator", "Contractor", "Trainee"]:
+				if diff > 0:
+					frappe.throw("Night Shit Auditors Plan Swapping must be applied on or before the same day.")
 
 @frappe.whitelist()
 # method to return the table in the leave application with the ot value and balance
@@ -6890,26 +6914,26 @@ def create_html_lr_export(doc):
 					</tr>
 				
 					{%- set ns = namespace(total_boxes_1=0, total_length_1=0, total_height_1=0, total_breadth_1 =0) -%}
-                
-                    {%- for row in doc["product_description_so"] -%}
-                        {% set ns.total_boxes_1 = ns.total_boxes_1 + (row.custom_no_of_pallets or 0) %}
-                        {% set ns.total_length_1 = ns.total_length_1 + (row.custom_pallet_length or 0) %}
-                        {% set ns.total_height_1 = ns.total_height_1 + (row.custom_calculated_height or 0) %}
-                        {% set ns.total_breadth_1 = ns.total_breadth_1 + (row.custom_pallet_breadth or 0) %}
-                    <tr>
-                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length or "" }}</td>
-                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth or "" }}</td>
-                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height or "" }}</td>
-                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets or 0 }}</td>
-                    </tr>
-                    {%- endfor -%}
-                    
-                    <tr style="background-color:#D3D3D3;">  
-                        
-                        <td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Pallets</b></td>
-                         <td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes_1 }}</b></td>
-                        
-                    </tr>
+				
+					{%- for row in doc["product_description_so"] -%}
+						{% set ns.total_boxes_1 = ns.total_boxes_1 + (row.custom_no_of_pallets or 0) %}
+						{% set ns.total_length_1 = ns.total_length_1 + (row.custom_pallet_length or 0) %}
+						{% set ns.total_height_1 = ns.total_height_1 + (row.custom_calculated_height or 0) %}
+						{% set ns.total_breadth_1 = ns.total_breadth_1 + (row.custom_pallet_breadth or 0) %}
+					<tr>
+						<td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length or "" }}</td>
+						<td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth or "" }}</td>
+						<td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height or "" }}</td>
+						<td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets or 0 }}</td>
+					</tr>
+					{%- endfor -%}
+					
+					<tr style="background-color:#D3D3D3;">  
+						
+						<td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Pallets</b></td>
+						 <td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes_1 }}</b></td>
+						
+					</tr>
 				</table>
 			</td>
 			<td colspan="4" style="border: 1px solid black; border-bottom: none; border-left: 1px solid transparent !important;">
@@ -6933,24 +6957,24 @@ def create_html_lr_export(doc):
 					</td>
 				</tr>
 				{%- set ns = namespace(total_boxes=0, total_length=0, total_height=0, total_breadth =0) -%}
-                
-                {%- for row in doc["product_description_so"] -%}
-                    {% set ns.total_boxes = ns.total_boxes + (row.custom_no_of_boxes or 0) %}
-                    {% set ns.total_length = ns.total_length + (row.custom_box_length or 0) %}
-                    {% set ns.total_height = ns.total_height + (row.custom_box_height or 0) %}
-                    {% set ns.total_breadth = ns.total_breadth + (row.custom_box_breadth or 0) %}
-                <tr>
-                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_length or "" }}</td>
-                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_breadth or "" }}</td>
-                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_height or "" }}</td>
-                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_boxes or 0 }}</td>
-                </tr>
-                {%- endfor -%}
-                
-                <tr style="background-color:#D3D3D3;">  
-                    <td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Boxes</b></td>
-                    <td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes }}</b></td>
-                </tr>
+				
+				{%- for row in doc["product_description_so"] -%}
+					{% set ns.total_boxes = ns.total_boxes + (row.custom_no_of_boxes or 0) %}
+					{% set ns.total_length = ns.total_length + (row.custom_box_length or 0) %}
+					{% set ns.total_height = ns.total_height + (row.custom_box_height or 0) %}
+					{% set ns.total_breadth = ns.total_breadth + (row.custom_box_breadth or 0) %}
+				<tr>
+					<td style="border: 1px solid black; text-align: center;">{{ row.custom_box_length or "" }}</td>
+					<td style="border: 1px solid black; text-align: center;">{{ row.custom_box_breadth or "" }}</td>
+					<td style="border: 1px solid black; text-align: center;">{{ row.custom_box_height or "" }}</td>
+					<td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_boxes or 0 }}</td>
+				</tr>
+				{%- endfor -%}
+				
+				<tr style="background-color:#D3D3D3;">  
+					<td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Boxes</b></td>
+					<td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes }}</b></td>
+				</tr>
 			</table>
 		</td>
 	</tr>
@@ -8494,24 +8518,24 @@ def create_html_packing(doc):
 						<td style="border: 1px solid black; text-align: center;"><b>No of Pallets</b></td>
 					</tr>
 					{%- set ns = namespace(total_boxes_1=0, total_length_1=0, total_height_1=0, total_breadth_1 =0) -%}
-                
-                    {%- for row in doc["items"] -%}
-                        {% set ns.total_boxes_1 = ns.total_boxes_1 + (row.custom_no_of_pallets or 0) %}
-                        {% set ns.total_length_1 = ns.total_length_1 + (row.custom_pallet_length or 0) %}
-                        {% set ns.total_height_1 = ns.total_height_1 + (row.custom_calculated_height or 0) %}
-                        {% set ns.total_breadth_1 = ns.total_breadth_1 + (row.custom_pallet_breadth or 0) %}
-                    <tr>
-                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length or "" }}</td>
-                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth or "" }}</td>
-                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height or "" }}</td>
-                        <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets or 0 }}</td>
-                    </tr>
-                    {%- endfor -%}
-                    
-                    <tr style="background-color:#D3D3D3;">  
-                        <td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Pallets</b></td>
-                        <td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes_1 }}</b></td>
-                    </tr>
+				
+					{%- for row in doc["items"] -%}
+						{% set ns.total_boxes_1 = ns.total_boxes_1 + (row.custom_no_of_pallets or 0) %}
+						{% set ns.total_length_1 = ns.total_length_1 + (row.custom_pallet_length or 0) %}
+						{% set ns.total_height_1 = ns.total_height_1 + (row.custom_calculated_height or 0) %}
+						{% set ns.total_breadth_1 = ns.total_breadth_1 + (row.custom_pallet_breadth or 0) %}
+					<tr>
+						<td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_length or "" }}</td>
+						<td style="border: 1px solid black; text-align: center;">{{ row.custom_pallet_breadth or "" }}</td>
+						<td style="border: 1px solid black; text-align: center;">{{ row.custom_calculated_height or "" }}</td>
+						<td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_pallets or 0 }}</td>
+					</tr>
+					{%- endfor -%}
+					
+					<tr style="background-color:#D3D3D3;">  
+						<td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Pallets</b></td>
+						<td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes_1 }}</b></td>
+					</tr>
 				
 				</table>
 			</td>
@@ -8536,25 +8560,25 @@ def create_html_packing(doc):
 					</td>
 				</tr>
 				{%- set ns = namespace(total_boxes=0, total_length=0, total_height=0, total_breadth =0) -%}
-                
-                {%- for row in doc["items"] -%}
-                    {% set ns.total_boxes = ns.total_boxes + (row.custom_no_of_boxes or 0) %}
-                    {% set ns.total_length = ns.total_length + (row.custom_box_length or 0) %}
-                    {% set ns.total_height = ns.total_height + (row.custom_box_height or 0) %}
-                    {% set ns.total_breadth = ns.total_breadth + (row.custom_box_breadth or 0) %}
-                <tr>
-                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_length or "" }}</td>
-                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_breadth or "" }}</td>
-                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_box_height or "" }}</td>
-                    <td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_boxes or 0 }}</td>
-                </tr>
-                {%- endfor -%}
-                
-                <tr style="background-color:#D3D3D3;">  
-                    
-                    <td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Boxes</b></td>
-                    <td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes }}</b></td>
-                </tr>
+				
+				{%- for row in doc["items"] -%}
+					{% set ns.total_boxes = ns.total_boxes + (row.custom_no_of_boxes or 0) %}
+					{% set ns.total_length = ns.total_length + (row.custom_box_length or 0) %}
+					{% set ns.total_height = ns.total_height + (row.custom_box_height or 0) %}
+					{% set ns.total_breadth = ns.total_breadth + (row.custom_box_breadth or 0) %}
+				<tr>
+					<td style="border: 1px solid black; text-align: center;">{{ row.custom_box_length or "" }}</td>
+					<td style="border: 1px solid black; text-align: center;">{{ row.custom_box_breadth or "" }}</td>
+					<td style="border: 1px solid black; text-align: center;">{{ row.custom_box_height or "" }}</td>
+					<td style="border: 1px solid black; text-align: center;">{{ row.custom_no_of_boxes or 0 }}</td>
+				</tr>
+				{%- endfor -%}
+				
+				<tr style="background-color:#D3D3D3;">  
+					
+					<td colspan="3" style="border: 1px solid black; text-align: right;"><b>Total No of Boxes</b></td>
+					<td style="border: 1px solid black; text-align: center;"><b>{{ ns.total_boxes }}</b></td>
+				</tr>
 			</table>
 		</td>
 
@@ -11415,8 +11439,8 @@ def get_calculated_height(doc,method):
 		if pallet and box :
 			pal_doc=frappe.get_doc('Pallet',pallet)
 			box_doc=frappe.get_doc('Box',box)
-			pcount=i.custom_no_of_pallets
-			bcount=i.custom_no_of_boxes
+			pcount=flt(i.custom_no_of_pallets)
+			bcount=flt(i.custom_no_of_boxes)
 			if pcount > 0 and bcount > 0:
 				# calculate pallet per box
 				pox_per_pallet=bcount/pcount
@@ -11463,7 +11487,7 @@ def update_customer_tax_category(doc, method):
 					doc.tax_category = "In-State"
 				else:
 					doc.tax_category = "Out-State"
-def test_check():
+def find_duplicate_sales_order_item():
 	data = frappe.db.sql("""
 		SELECT parent AS sales_order, item_code, COUNT(*) AS duplicate_count
 		FROM `tabSales Order Item`
@@ -11481,11 +11505,11 @@ def test_check():
 def delete_duplicate():
 	data = frappe.db.sql("""
 		DELETE poi1
-        FROM `tabSales Order Item` poi1
-        INNER JOIN `tabSales Order Item` poi2
-            ON poi1.parent = poi2.parent
-            AND poi1.item_code = poi2.item_code
-            AND poi1.creation < poi2.creation
+		FROM `tabSales Order Item` poi1
+		INNER JOIN `tabSales Order Item` poi2
+			ON poi1.parent = poi2.parent
+			AND poi1.item_code = poi2.item_code
+			AND poi1.creation < poi2.creation
 		""")
 	print(data)
 
