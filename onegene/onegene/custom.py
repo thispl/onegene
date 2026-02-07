@@ -11221,7 +11221,8 @@ def update_tax_category_by_state(doc, method):
 			tax_category = "Out-State"
 		doc.tax_category = tax_category
 		for row in doc.links:
-			frappe.db.set_value(row.link_doctype, row.link_name, "tax_category", tax_category)
+			if row.link_doctype !="Company":
+				frappe.db.set_value(row.link_doctype, row.link_name, "tax_category", tax_category)
 
 def bom_connection_from_fg_to_child(doc, method):
 	frappe.db.set_value("BOM Item", {"item_code": doc.item,  "bom_no": ["in", [None, ""]]}, "bom_no", doc.name)
@@ -11451,7 +11452,7 @@ def get_calculated_height(doc,method):
 
 				# divide L*B of pallet by box
 				p_b_l_b=pallet_l_b/box_l_b
-				p_b_l_b=int(p_b_l_b)
+				p_b_l_b=pox_per_pallet/int(p_b_l_b)
 
 				# multiply p_b_l_b with box height
 				v4=p_b_l_b*box_doc.height
@@ -11459,7 +11460,7 @@ def get_calculated_height(doc,method):
 				# add v4 with pallet height
 				v5=v4+pal_doc.height
 
-				final_height= v5+pal_doc.extra_height
+				final_height= v5+i.custom_extra_height
 		i.custom_calculated_height=final_height
 	  
 def mark_order_created_in_iom(doc, method):
@@ -11630,7 +11631,7 @@ def update_pallet_h(name,item):
 					# divide L*B of pallet by box
 					p_b_l_b=pallet_l_b/box_l_b
 					# p_b_l_b=p_b_l_b/bcount
-					p_b_l_b=int(p_b_l_b)
+					p_b_l_b=pox_per_pallet/int(p_b_l_b)
 
 					# multiply p_b_l_b with box height
 					v4=p_b_l_b*box_doc.height
@@ -11638,7 +11639,6 @@ def update_pallet_h(name,item):
 					# add v4 with pallet height
 					v5=v4+pal_doc.height
 
-					final_height= v5+pal_doc.extra_height
+					final_height= v5+i.custom_extra_height
 			i.custom_calculated_height=final_height
 	return final_height
-

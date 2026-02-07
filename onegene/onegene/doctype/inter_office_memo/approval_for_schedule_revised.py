@@ -251,10 +251,10 @@ def revise_schedule(docname):
                                         schedule_month = iom.schedule_month
                                         schedule_date = datetime.strptime(f"01-{schedule_month}-{current_year}", "%d-%b-%Y")
                                         
-                                        order_rate = frappe.db.get_value("Sales Order Item", {"parent":purchase_order, "item_code":iom_row.part_no}, "rate")
-                                        order_rate_inr = frappe.db.get_value("Sales Order Item", {"parent":purchase_order, "item_code":iom_row.part_no}, "base_rate")
-                                        currency = frappe.db.get_value("Sales Order", purchase_order, "currency")
-                                        exchange_rate = frappe.db.get_value("Sales Order", purchase_order, "conversion_rate")
+                                        order_rate = frappe.db.get_value("Purchase Order Item", {"parent":purchase_order, "item_code":iom_row.part_no}, "rate")
+                                        order_rate_inr = frappe.db.get_value("Purchase Order Item", {"parent":purchase_order, "item_code":iom_row.part_no}, "base_rate")
+                                        currency = frappe.db.get_value("Purchase Order", purchase_order, "currency")
+                                        exchange_rate = frappe.db.get_value("Purchase Order", purchase_order, "conversion_rate")
                                         
                                         
                                         po_type = frappe.db.get_value("Purchase Order",{"name":purchase_order},"custom_po_type")
