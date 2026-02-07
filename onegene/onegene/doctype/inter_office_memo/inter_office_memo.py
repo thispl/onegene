@@ -9,6 +9,8 @@ from frappe.model.workflow import apply_workflow
 from erpnext.accounts.doctype.tax_withholding_category.tax_withholding_category import get_party_tax_withholding_details
 from datetime import datetime
 from collections import defaultdict
+from frappe.utils import flt
+
 
 
 from frappe.utils import now_datetime
@@ -928,10 +930,10 @@ class InterOfficeMemo(Document):
             total_new_price_value=0
             total_new_price_value_inr=0
             for i in self.price_revision_po:
-                if i.new_price and i.new_price>0:
+                if i.new_price and flt(i.new_price)>0:
                     total_new_price_value+=float(i.new_price)
-                if i.new_priceinr and i.new_priceinr>0:
-                    total_new_price_value_inr+=i.new_priceinr
+                if i.new_priceinr and flt(i.new_priceinr)>0:
+                    total_new_price_value_inr+=float(i.new_priceinr)
             self.total_new_price_value=total_new_price_value
             self.total_new_price_value_inr=total_new_price_value_inr
         if self.owner:
@@ -1461,7 +1463,7 @@ class InterOfficeMemo(Document):
                 self.bmd_approved_on=now_datetime()
             if self.has_value_changed("workflow_state") and self.workflow_state == "Approved":
                 self.cmd_approved_on=now_datetime()
-        if (self.iom_type=="Approval for Tools & Dies Invoice"):
+        if (self.iom_type=="Approval for Tools & Dies Invoice"  and self.department_from!="M P L & Purchase - WAIP"):
             if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for ERP Team":
                 self.hod_approved_on=now_datetime()
             if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for Marketing Manager":

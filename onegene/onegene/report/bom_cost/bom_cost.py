@@ -96,12 +96,12 @@ def calculate_totals(data):
 
 		item_type = row.get("item_type")
 		warehouse = row.get("warehouse")
-
-		only_direct_child = (
-			item_type in ("Process Item")
-			and warehouse not in ("Semi Finished Goods - WAIP", "Finished Goods - WAIP")
-			and current_indent != 0
-		)
+  
+		# only_direct_child = (
+		# 	item_type in ("Process Item")
+		# 	and warehouse in ("Semi")
+		# 	and current_indent != 0
+		# )
 
 		for j in range(i + 1, len(data)):
 			next_row = data[j]
@@ -111,8 +111,8 @@ def calculate_totals(data):
 				break
 
 			# If only direct children are allowed, skip deeper levels
-			if only_direct_child and next_row.get("indent") != current_indent + 1:
-				continue
+			# if only_direct_child and next_row.get("indent") != current_indent + 1:
+			# 	continue
 
 			item_rate = flt(next_row.get("item_rate") or 0)
 			process_cost = flt(next_row.get("process_cost") or 0)
@@ -135,6 +135,7 @@ def get_exploded_items(bom, data, indent=0, qty=1):
 		"BOM Item",
 		filters={"parent": bom},
 		fields=["qty", "bom_no", "item_code", "item_name", "uom"],
+		order_by="idx"
 	)
 
 	for item in exploded_items:
@@ -272,7 +273,7 @@ def get_excel_report(filters=None):
 	ws.append(headers)
 	idx = 0
 	for row in data:
-		if strip_html(row.get('warehouse')) == "Finished Goods - WAIP":
+		if strip_html(row.get('indent')) == 0:
 			idx += 1
 			serial_no = idx
 		else:
@@ -296,11 +297,9 @@ def get_excel_report(filters=None):
 			for col in range(1, len(values) + 1):
 				cell = ws.cell(row=last_row, column=col)
 				cell.font = bold_font
-				if strip_html(row.get('warehouse')) == "Finished Goods - WAIP":
+				if strip_html(row.get('indent')) == 0:
 					cell.fill = fg_fill
 					cell.font = fg_font
-				if strip_html(row.get('warehouse')) == "Semi Finished Goods - WAIP":
-					cell.fill = sfg_fill
 	 
 	# styles
 	for row in ws.iter_rows(
@@ -366,7 +365,7 @@ def download_report_json(filters=None):
 	return data
 
 @frappe.whitelist()
-def update_cost(filters, data):
+def update_cost(data):
 	if isinstance(data, str):
 		data = json.loads(data)
   
@@ -410,7 +409,14 @@ def update_cost(filters, data):
 			frappe.db.set_value("BOM Item", {"parent": parent, "item_code": item_code}, 
 						{"base_rate": rm_cost, "rate": rm_cost, 
 						"amount": qty * rm_cost, "base_amount": qty * rm_cost})
-  
+
+@frappe.whitelist() 
+def update_bom_cost_scheduler():
+    data = download_report_json(filters=None)
+    if not data:
+        return
+    update_cost(data)
+    frappe.log_error(title="BOM Cost Scheduler", message=f"Auto Update Cost executed rows: {len(data)}")
 
 @frappe.whitelist()
 def update_cost_from_bom(filters):

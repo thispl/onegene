@@ -453,7 +453,7 @@ doc_events = {
  
 	"Address":{
 		"before_save":"onegene.onegene.custom.customer_address_validate",
-		# "validate": "onegene.onegene.custom.update_tax_category_by_state",
+		"validate": "onegene.onegene.custom.update_tax_category_by_state",
 	},
 	
 	"Purchase Receipt": {

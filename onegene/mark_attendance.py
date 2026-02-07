@@ -92,6 +92,7 @@ def mark_att():
 	submit_present_att(from_date,to_date) 
 	mark_late_early(from_date,to_date)
 
+	
 @frappe.whitelist()
 def update_regularize(from_date,to_date):
 	attendance=frappe.db.get_all("Attendance",{'docstatus':['!=',2],'custom_attendance_regularize':['!=',''],'custom_regularize_marked':1,'attendance_date':('between',(from_date,to_date))},['name','custom_attendance_regularize'])
@@ -166,9 +167,11 @@ def mark_attendance_from_checkin(employee,time,log_type):
 	att_date = time.date()
 	att_time = time.time()
 	if log_type == 'IN':
+		
 		att = frappe.db.exists('Attendance',{"employee":employee,'attendance_date':att_date,'docstatus':['!=','2']})   
 		checkins = frappe.db.sql(""" select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'IN' and date(time) = '%s' and device_id != "Canteen" order by time ASC"""%(employee,att_date),as_dict=True)
 		if not att:
+			print(employee)
 			att = frappe.new_doc("Attendance")
 			att.employee = employee
 			att.attendance_date = att_date
@@ -1702,12 +1705,14 @@ def get_urc_to_ec(date,employee):
 
 def mark_attendance_from_checkin_new(employee,time,log_type):
 	# replica of mark_attendance_from_checkin with employee id
+	print(employee)
 	att_date = time.date()
 	att_time = time.time()
 	if log_type == 'IN':
 		att = frappe.db.exists('Attendance',{"employee":employee,'attendance_date':att_date,'docstatus':['!=','2']})   
 		checkins = frappe.db.sql(""" select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'IN' and date(time) = '%s' and device_id != "Canteen" order by time ASC"""%(employee,att_date),as_dict=True)
 		if not att:
+			print(employee)
 			att = frappe.new_doc("Attendance")
 			att.employee = employee
 			att.attendance_date = att_date

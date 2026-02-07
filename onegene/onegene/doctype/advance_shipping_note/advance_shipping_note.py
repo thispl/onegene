@@ -7,8 +7,7 @@ from frappe.model.document import Document
 from datetime import datetime
 import json
 import urllib.parse
-from frappe.utils import flt
-from frappe.utils import now_datetime
+from frappe.utils import now_datetime, flt, get_link_to_form
 
 class AdvanceShippingNote(Document):
 	def after_insert(self):
@@ -19,6 +18,7 @@ class AdvanceShippingNote(Document):
 		get_month_and_year(self)
   
 	def validate(self):
+		validate_duplicate_entry(self)
 		validate_items_table(self)
 		get_address(self)
 		validate_supplier_dn_item_table(self)
@@ -55,6 +55,19 @@ def validate_items_table(self):
 	if item_table_count == 0 and end_bit_scrap_count == 0:
 		frappe.throw("Please fill at least one table: <b>Item Table</b> or <b>End Bit Scrap & Return</b>.")
 
+def validate_duplicate_entry(self):
+	if self.supplier_delivery_note:
+		if frappe.db.exists("Advance Shipping Note", {"name": ("!=", self.name), "supplier": self.supplier, "supplier_delivery_note": self.supplier_delivery_note, "workflow_State": ("!=", "Cancellled")}):
+			duplicate_asn = frappe.db.get_value("Advance Shipping Note", {"name": ("!=", self.name), "supplier": self.supplier, "supplier_delivery_note": self.supplier_delivery_note, "workflow_State": ("!=", "Cancellled")}, "name")
+			frappe.throw(
+				_(
+					"Advance Shipping Note {0} already exists against Supplier DC Number {1}"
+				).format(
+					frappe.bold(get_link_to_form("Advance Shipping Note", duplicate_asn)),
+					frappe.bold(self.supplier_delivery_note),
+				)
+			)
+   
 def create_gate_entry(self):
 	tot_qty=0
 	if not frappe.db.exists("Gate Entry", {'entry_against': "Advance Shipping Note", 'entry_id': self.name,"docstatus":1}):

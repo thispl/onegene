@@ -1619,6 +1619,8 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             $.each(frm.fields_dict, function(fieldname, field) {
                 if (frm.doc.iom_type === "Approval for Schedule Revised") {
                     frm.set_df_property(fieldname, 'read_only', 0);
+                    frm.set_df_property("approval_remarks", 'read_only', 0);
+                    frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
                 }
                 
 
@@ -1629,43 +1631,54 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             if (frm.doc.iom_type === "Approval for Schedule Revised") {
                 frm.set_df_property('customer', 'read_only', 1);
             }
-            frm.set_df_property("approval_remarks", 'read_only', 0);
             frm.set_df_property("total_erp_value", 'read_only', 1);
             frm.set_df_property("total_phy_value", 'read_only', 1);
             frm.set_df_property("tot_short_value", 'read_only', 1);
             frm.set_df_property("total_shortage_value", 'read_only', 1);
             frm.set_df_property("total_excess_value", 'read_only', 1);
             frm.set_df_property("supplier_not_accept_debit_value", 'read_only', 1);
+            frm.set_df_property("approval_remarks", 'read_only', 0);
+            frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
             toggle_phy_stock(frm);
 
             frm.set_intro(__(""));
         } else {
-            // If not owner, make all fields read-only
             $.each(frm.fields_dict, function(fieldname, field) {
-                frm.set_df_property(fieldname, 'read_only', 1);
+                if(fieldname!="approval_remarks"){
+                    if(fieldname!="custom_rejection_remarks"){
+                        frm.set_df_property(fieldname, 'read_only', 1);
+                    }
+                }
             });
-            frm.set_df_property("approval_remarks", 'read_only', 0);
             frm.set_df_property("total_erp_value", 'read_only', 1);
             frm.set_df_property("total_phy_value", 'read_only', 1);
             frm.set_df_property("tot_short_value", 'read_only', 1);
             frm.set_df_property("total_shortage_value", 'read_only', 1);
             frm.set_df_property("total_excess_value", 'read_only', 1);
+            
             frm.set_df_property("supplier_not_accept_debit_value", 'read_only', 1);
             toggle_phy_stock(frm);
             if(frm.doc.workflow_state=="Pending for Supplier"){
             frm.set_df_property("remarks", 'read_only', 0);
             }
+            frm.set_df_property("approval_remarks", 'read_only', 0);
+            frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
             frm.set_intro(__("Only the user who prepared this document can edit it."));
+            
         }
 
         if (frappe.user.has_role("ERP Team")) {
             frm.set_df_property("department_from", "read_only", 0);
-            frm.set_df_property("approver_remarks", 'read_only', 0);
+            frm.set_df_property("approval_remarks", 'read_only', 0);
+            frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
         } else {
-            frm.set_df_property("approver_remarks", 'read_only', 0);
+            frm.set_df_property("approval_remarks", 'read_only', 0);
+            frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
                
             frm.set_df_property("department_from", "read_only", 1);
         }
+        frm.set_df_property("approval_remarks", 'read_only', 0);
+        frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
 
         frm.set_query("department_from", function() {
             return {

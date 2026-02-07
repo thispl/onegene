@@ -7,7 +7,7 @@ from frappe.model.document import Document
 
 
 class GateEntry(Document):
-    def before_insert(self):
+    def before_save(self):
         if frappe.db.exists('Gate Entry',{'docstatus':['!=',2],'entry_against':self.entry_against,'entry_id':self.entry_id,'name':['!=',self.name]}):
             frappe.throw('Gate entry already created for this document')
           
