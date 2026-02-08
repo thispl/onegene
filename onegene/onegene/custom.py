@@ -1880,7 +1880,7 @@ def return_options():
 @frappe.whitelist()
 #return the last execution time of attendance cron
 def update_last_execution():
-	doc=frappe.db.get_value("Scheduled Job Log",{"scheduled_job_type":"mark_attendance.mark_att","status":"Complete"},["creation"])
+	doc=frappe.db.get_value("Scheduled Job Log",{"scheduled_job_type":"mark_attendance.enqueue_mark_att","status":"Complete"},["creation"])
 	if doc:
 		return doc
 	
@@ -8680,7 +8680,7 @@ def create_html_supplier_delivery(doc):
 			<b>SUPPLIER DELIVERY NOTE</b>
 			<br></h2>
 			<h2><b>{{ doc.name }}</b></h2>
-			<p>Date & Time: {{ frappe.format(doc.datetime,{"fieldtype":'Datetime'})}}</p>
+			
 
 		</div>
 		</div>

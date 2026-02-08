@@ -36,7 +36,7 @@ frappe.pages['live-attendance'].on_page_load = function(wrapper) {
                         lastExecutionDiv.style.fontSize = '15px';     // Adjust font size to make it more prominent
                         
                         // Append the execution time div to the main content
-                        page.main.append(lastExecutionDiv);
+                        page.main.prepend(lastExecutionDiv);
                     }
                 }
             });

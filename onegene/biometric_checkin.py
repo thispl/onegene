@@ -7,7 +7,7 @@ from frappe.utils import cstr, cint, getdate, get_last_day, get_first_day, add_d
 def mark_checkin(**args):
 	if frappe.db.exists('Employee',{'name':args['employee'],'status':'Active'}):
 		if not frappe.db.exists('Employee Checkin',{'employee':args['employee'],'time':args['time']}):
-			if args['device_id'] == 'IN':
+			if 'IN' in args['device_id']:
 				ec = frappe.new_doc('Employee Checkin')
 				ec.employee = args['employee'].upper()
 				ec.time = args['time']
@@ -16,7 +16,7 @@ def mark_checkin(**args):
 				ec.save(ignore_permissions=True)
 				frappe.db.commit()
 				return "Checkin Marked" 
-			elif args['device_id'] == 'OUT':
+			elif 'OUT' in args['device_id']:
 				ec = frappe.new_doc('Employee Checkin')
 				ec.employee = args['employee'].upper()
 				ec.time = args['time']
@@ -25,7 +25,7 @@ def mark_checkin(**args):
 				ec.save(ignore_permissions=True)
 				frappe.db.commit()
 				return "Checkin Marked"
-			if args['device_id'] == 'Canteen':
+			if 'Canteen' in args['device_id']:
 				ec = frappe.new_doc('Employee Checkin')
 				ec.employee = args['employee'].upper()
 				ec.time = args['time']
@@ -48,7 +48,7 @@ def mark_checkin(**args):
 			return "Checkin Marked"
 	else:
 		if not frappe.db.exists('Unregistered Employee Checkin',{'employee':args['employee'],'time':args['time']}):
-			if args['device_id'] == 'IN':
+			if 'IN' in args['device_id']:
 				ec = frappe.new_doc('Unregistered Employee Checkin')
 				ec.employee = args['employee'].upper()
 				ec.time = args['time']
@@ -57,7 +57,7 @@ def mark_checkin(**args):
 				ec.save(ignore_permissions=True)
 				frappe.db.commit()
 				return "Checkin Marked"
-			elif args['device_id'] == 'OUT':
+			elif 'OUT' in args['device_id']:
 				ec = frappe.new_doc('Unregistered Employee Checkin')
 				ec.employee = args['employee'].upper()
 				ec.time = args['time']
@@ -66,7 +66,7 @@ def mark_checkin(**args):
 				ec.save(ignore_permissions=True)
 				frappe.db.commit()
 				return "Checkin Marked" 
-			elif args['device_id'] == 'Canteen':
+			elif 'Canteen' in args['device_id']:
 				ec = frappe.new_doc('Unregistered Employee Checkin')
 				ec.employee = args['employee'].upper()
 				ec.time = args['time']

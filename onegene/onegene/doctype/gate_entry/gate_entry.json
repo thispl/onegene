@@ -103,9 +103,9 @@
   {
    "fieldname": "security_no",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Security",
-   "options": "Employee",
-   "reqd": 1
+   "options": "Employee"
   },
   {
    "fieldname": "vehicle_number",
@@ -165,11 +165,11 @@
    "search_index": 1
   },
   {
-   "fetch_from": "security_no.employee_name",
    "fieldname": "security_name",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
    "label": "Security Name",
-   "read_only": 1
+   "options": "\nS0388 - B KAVITHA\nSB0020 - GUNASEKARAN MR\nSB0005 - SUNDARESAN A",
+   "reqd": 1
   },
   {
    "fieldname": "entry_time",
@@ -182,8 +182,8 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-10-22 18:00:44.067259",
- "modified_by": "Administrator",
+ "modified": "2026-02-07 16:13:53.099064",
+ "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Gate Entry",
  "naming_rule": "Expression (old style)",
@@ -203,6 +203,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

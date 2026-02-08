@@ -171,7 +171,7 @@ scheduler_events = {
 		"0 */2 * * *":"onegene.onegene.doctype.production_material_request.production_material_request.make_prepared_report",
 		"30 8 * * *":"onegene.onegene.custom.update_jobcard_posting_date",
 		"*/20 * * * *" : [
-			"onegene.mark_attendance.mark_att"
+			"onegene.mark_attendance.enqueue_mark_att"
 		],
 		"00 00 01 * *" : [
 			"onegene.onegene.custom.bday_allocate"

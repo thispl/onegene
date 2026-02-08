@@ -1,0 +1,31 @@
+{
+ "add_total_row": 1,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2025-10-08 20:11:46.388203",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 3,
+ "is_standard": "Yes",
+ "letter_head": null,
+ "modified": "2025-12-18 19:25:42.872132",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Stock Balance Report",
+ "owner": "riyaz.a@groupteampro.com",
+ "prepared_report": 0,
+ "ref_doctype": "Stock Ledger Entry",
+ "report_name": "Stock Balance Report",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ],
+ "timeout": 0
+}

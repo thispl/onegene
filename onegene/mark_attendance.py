@@ -74,8 +74,16 @@ def mark_att_multidate():
 	submit_present_att(from_date,to_date) 
 	mark_late_early(from_date,to_date)
 	 
-
-	
+@frappe.whitelist()
+def enqueue_mark_att():
+    print("ji")
+    frappe.enqueue(
+        "onegene.mark_attendance.mark_att",
+        queue="long",
+        timeout=17*60,
+        job_name="mark_att",
+    )
+    
 @frappe.whitelist()
 def mark_att():
 	# method update yesterday and today attendance
