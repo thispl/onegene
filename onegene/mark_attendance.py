@@ -76,7 +76,6 @@ def mark_att_multidate():
 	 
 @frappe.whitelist()
 def enqueue_mark_att():
-    print("ji")
     frappe.enqueue(
         "onegene.mark_attendance.mark_att",
         queue="long",
