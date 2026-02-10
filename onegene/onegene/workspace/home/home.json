@@ -356,6 +356,7 @@
    "link_to": "SUP JO",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "Purchase Order",
    "type": "Link"
   },
   {
@@ -504,6 +505,7 @@
    "link_to": "SUP JO",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "Purchase Order",
    "type": "Link"
   },
   {
@@ -606,8 +608,8 @@
    "type": "Link"
   }
  ],
- "modified": "2025-10-31 09:16:12.669350",
- "modified_by": "senthilkumar.r@onegeneindia.in",
+ "modified": "2026-02-09 15:26:51.690297",
+ "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Home",
  "number_cards": [],

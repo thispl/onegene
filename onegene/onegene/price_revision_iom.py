@@ -110,7 +110,7 @@ def item_price_revision_iom(docname):
                                             "pending_amount": sos_doc.pending_qty * row.new_price,
                                             "pending_amount_inr": sos_doc.pending_qty * row.new_price * sos_doc.exchange_rate
                                         }
-
+                                        frappe.db.set_value("Item", row.part_no, "custom_last_sales_rate", sos_doc.exchange_rate * row.new_price)
                                         frappe.db.set_value("Sales Order Schedule", sos_doc.name, update_vals)
                                 break
                     
@@ -233,7 +233,7 @@ def item_price_revision_iom(docname):
                                             "pending_amount": pos_doc.pending_qty * row.new_price,
                                             "pending_amount_inr": pos_doc.pending_qty * row.new_price * pos_doc.exchange_rate
                                         }
-
+                                        frappe.db.set_value("Item", row.part_no, "last_purchase_rate", pos_doc.exchange_rate * row.new_price)
                                         frappe.db.set_value("Purchase Order Schedule", pos_doc.name, update_vals)
                                 break
                     

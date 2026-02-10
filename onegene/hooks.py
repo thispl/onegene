@@ -160,10 +160,6 @@ scheduler_events = {
 	# "all": [
 	# 	"onegene.tasks.all"
 	# ],
-	"daily": [
-		"onegene.tasks.daily",
-		"onegene.onegene.custom.generate_production_plan"
-	],
 	"cron": {
 		 "0 2 * * * *" : [
 			"onegene.mark_attendance.mark_att_multidate"
@@ -184,6 +180,9 @@ scheduler_events = {
 		],
         "0 8 * * *": [
             "onegene.onegene.custom.zero_ot"
+        ],
+        "0 */2 * * *": [
+            "onegene.onegene.report.bom_cost.bom_cost.update_bom_cost_scheduler"
         ]
 	},
 	# "hourly": [
@@ -196,8 +195,6 @@ scheduler_events = {
 	# 	"onegene.tasks.all"
 	# ],
 	"daily": [
-		"onegene.tasks.daily",
-		"onegene.onegene.production_plan_settings.production_plan_settings.generate_production_plan",
 		"onegene.onegene.custom.update_quality_inspection_age",
 		# "onegene.onegene.custom.generate_production_plan",
 		"onegene.onegene.custom.update_machine_age",

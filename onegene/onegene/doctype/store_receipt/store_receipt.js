@@ -3,6 +3,14 @@
 
 frappe.ui.form.on("Store Receipt", {
 	refresh(frm) {
+
+        frappe.after_ajax(() => {
+                if (frm.fields_dict.item && frm.fields_dict.item.grid) {
+                    control_childtable_actions(frm);
+                }
+            });
+        
+
         // Route to the script report on clicking the Breadcrumb link
         setTimeout(() => {
             const $breadcrumb = $('#navbar-breadcrumbs li a').filter(function () {
@@ -194,3 +202,30 @@ frappe.ui.form.on("Store Receipt", {
         });
     }
 });
+
+function control_childtable_actions(frm) {
+        const grid = frm.fields_dict.item.grid;
+    
+        const hide_toolbar = () => {
+            grid.wrapper.find('.grid-add-row').hide();
+            grid.wrapper.find('.grid-add-multiple-rows').hide();
+            // grid.wrapper.find('.grid-remove-rows').hide();
+            // grid.wrapper.find('.grid-bulk-actions').hide();
+        };
+    
+        // const hide_row_actions = () => {
+        //     grid.wrapper.find('.row-actions').hide();
+        // };
+    
+        hide_toolbar();
+        // hide_row_actions();
+    
+        grid.off('grid-render').on('grid-render', () => {
+            hide_toolbar();
+            // hide_row_actions();
+        });
+    
+        // grid.off('grid-row-render').on('grid-row-render', (row) => {
+        //     $(row.row).find('.row-actions').hide();
+        // });
+    }

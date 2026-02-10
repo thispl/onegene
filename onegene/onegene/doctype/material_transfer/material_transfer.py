@@ -165,8 +165,10 @@ def make_material_transfer(material_request):
         child.requested_qty = remaining_qty   
         child.source_warehouse = material_request.set_from_warehouse
         child.target_warehouse = "Shop Floor - WAIP"
+        child.material_request = material_request.name
         child.material_request_item = row.name
         child.pack_size = row.custom_pack_size
+        child.parent_bom = row.custom_parent_bom
 
     return mt
 
@@ -210,7 +212,7 @@ def get_mt_table(name):
     items = frappe.get_all(
         "Material Request Item",
         filters={"parent": name},
-        fields=["name", "item_code", "item_name", "qty", "stock_uom"]
+        fields=["name", "item_code", "item_name", "qty", "stock_uom", "parent", "custom_parent_bom"]
     )
     return {"items": items}
 

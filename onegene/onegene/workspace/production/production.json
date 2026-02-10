@@ -93,8 +93,8 @@
    "type": "Link"
   }
  ],
- "modified": "2026-01-28 11:33:15.218710",
- "modified_by": "senthilkumar.r@onegeneindia.in",
+ "modified": "2026-02-09 15:26:52.728325",
+ "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Production",
  "number_cards": [],
@@ -116,7 +116,7 @@
    "role": "Stock User"
   }
  ],
- "sequence_id": 23.0,
+ "sequence_id": 27.0,
  "shortcuts": [],
  "title": "Production"
 }

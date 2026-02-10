@@ -242,20 +242,13 @@ frappe.ui.form.on("Stock Transfer Item", {
                     method: "onegene.onegene.doctype.stock_transfer.stock_transfer.get_stock_qty", 
                     args: {
                         item_code: current_row.item_code,
-                        warehouse: current_row.warehouse
+                        warehouse: current_row.warehouse,
+                        item_type: current_row.item_type
                     },
                     callback: function(r) {
-                        if (r.message == 0) {
-                            current_row.item_code=''
-                            current_row.item_name=''
-                            current_row.uom=''
-                            current_row.rate=0
-                            current_row.amount=0
-                            frappe.throw('Insufficient qty for this item')
-                        }else{
-                            current_row.stock_qty=r.message
-                            
-                            
+                        if (r.message) {
+                            current_row.stock_qty=r.message[0]
+                            current_row.rate=r.message[1]
                         }
                     }
                     

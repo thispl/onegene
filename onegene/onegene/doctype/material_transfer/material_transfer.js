@@ -4,7 +4,55 @@
 frappe.ui.form.on('Material Transfer', {
 
    
+    material_request :function(frm){
+            
+        console.log(frm.doc.material_request);
+        // setTimeout(() => {    
+        if (frm.doc.material_request) {
+            frappe.call({
+                method: 'onegene.onegene.doctype.material_transfer.material_transfer.get_mt_table',
+                args: {
+                    // doctype: 'Material Request',
+                    name: frm.doc.material_request
+                },
+                callback: function(r) {
+                    
+                    if (r.message) {
+                        let dc_items = r.message.items || [];
 
+                        frm.clear_table('item');  
+
+                        dc_items.forEach(function(dc_item) {
+                        let row = frm.add_child('item');
+                        row.item_code = dc_item.item_code;
+                        row.item_name = dc_item.item_name;
+                        row.material_request = dc_item.parent;
+                        row.material_request_item = dc_item.name;
+                        row.requested_qty = dc_item.qty;
+                        row.parent_bom = dc_item.custom_parent_bom;
+                        frappe.db.get_value("Bin", {"warehouse": frm.doc.default_source_warehouse, "item_code": dc_item.item_code}, "actual_qty").then(bin => {
+                            row.stock_qty = bin.message.actual_qty;
+                        })
+                        row.uom = dc_item.stock_uom;
+                        row.source_warehouse=frm.doc.default_source_warehouse;
+                        row.target_warehouse=frm.doc.default_target_warehouse;
+                    });
+                    
+               
+
+
+                    
+                    frm.refresh_field('item');
+                    }
+                }
+            });
+        }else{
+            frm.clear_table('item');  
+            frm.refresh_field('item');
+        }
+
+    // },1000)
+   },
 
     refresh(frm) {
         frm.set_query("material_request", function() {

@@ -32,7 +32,7 @@ frappe.pages['live-attendance'].on_page_load = function(wrapper) {
                         
                         // Add inline styles to center the text
                         lastExecutionDiv.style.marginTop = '20px';    // Add some space from the top
-						lastExecutionDiv.style.paddingLeft = '400px';  
+						lastExecutionDiv.style.textAlign = 'center';  
                         lastExecutionDiv.style.fontSize = '15px';     // Adjust font size to make it more prominent
                         
                         // Append the execution time div to the main content

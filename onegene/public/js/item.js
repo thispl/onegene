@@ -92,5 +92,16 @@ frappe.ui.form.on("Item", {
                 }
             });
         }
+    },
+
+    item_group(frm) {
+        if (frm.doc.item_group == "Maintainence") {
+            frm.set_value("is_fixed_asset", 1)
+            frm.set_value("item_billing_type", "Non Billing")
+        }
+        else {
+            frm.set_value("is_fixed_asset", 0)
+            frm.set_value("item_billing_type", "")
+        }
     }
 });

@@ -106,10 +106,10 @@ def cancel_order_schedule_on_so_cancel(doc,method):
 	inter_office_memo = None
 	if frappe.db.exists("Approval for Schedule Increase", {"sales_order": doc.name, "parenttype": "Inter Office Memo"}):
 		inter_office_memo = frappe.db.get_value("Approval for Schedule Increase", {"sales_order": doc.name, "parenttype": "Inter Office Memo"}, "parent")
-		frappe.errprint(inter_office_memo)
+
 		docstatus = frappe.db.get_value("Inter Office Memo", inter_office_memo, "docstatus")
 		if docstatus == 1:
-			frappe.errprint(inter_office_memo)
+
 			frappe.db.sql("update `tabInter Office Memo` set docstatus = 2 where name = '%s'"%(inter_office_memo))
 	# Delete Sales Open Order
 	if frappe.db.exists("Open Order", {"sales_order_number": doc.name}):
@@ -1098,13 +1098,11 @@ def get_live_attendance():
 	nowtime = datetime.now()
 	att_details = {}
 	att_details['nowtime'] = datetime.strftime(nowtime, '%d-%m-%Y %H:%M:%S')
-	max_out = datetime.strptime('06:30', '%H:%M').time()
-
-	if nowtime.time() > max_out:
-		date1 = nowtime.date()
-	else:
+	max_out = datetime.strptime('07:30', '%H:%M').time()
+	if nowtime.time() < max_out:
 		date1 = (nowtime - timedelta(days=1)).date()
-
+	else:
+		date1 = nowtime.date()
 	staff_count = frappe.db.sql("""
 		SELECT COUNT(*) AS count
 		FROM `tabAttendance`
@@ -4739,8 +4737,8 @@ def get_previous_purchase_rate(item_code):
 
 
 @frappe.whitelist()
-def get_pmr_data(item_code, name=None, warehouse=None):
-	if not warehouse:
+def get_pmr_data(item_code, name=None, warehouse=None, parent_bom=None):
+	if not warehouse or not parent_bom:
 		return
 	current_datetime = now_datetime()
 	if current_datetime.time() > time(8, 30):
@@ -4761,10 +4759,10 @@ def get_pmr_data(item_code, name=None, warehouse=None):
 						FROM `tabMaterial Request` mr
 						INNER JOIN `tabMaterial Request Item` mri
 						ON mri.parent = mr.name 
-						WHERE mri.item_code = %s AND mri.from_warehouse = %s AND
+						WHERE mri.item_code = %s AND mri.from_warehouse = %s AND custom_parent_bom = %s AND
 							mr.material_request_type = 'Material Transfer' AND parent != %s
 							AND mr.creation between %s AND %s""",
-						(item_code, warehouse, name, start_datetime, end_datetime))[0][0] or 0
+						(item_code, warehouse, parent_bom, name, start_datetime, end_datetime))[0][0] or 0
 	if result:
 		production_material_request = result[0][0]
 	else:
@@ -4791,7 +4789,8 @@ def get_pmr_data(item_code, name=None, warehouse=None):
 			WHERE 
 				rm.parent = %s AND 
 				rm.item_code = %s AND 
-				rm.warehouse = %s
+				rm.warehouse = %s AND
+				rm.parent_bom = %s
 
 			UNION ALL
 
@@ -4804,13 +4803,14 @@ def get_pmr_data(item_code, name=None, warehouse=None):
 			WHERE 
 				sai.parent = %s AND 
 				sai.item_code = %s AND 
-				sai.warehouse = %s
+				sai.warehouse = %s AND
+				sai.parent_bom = %s
 		) AS combined
 		GROUP BY item_code, item_name
 	""", (
 		flt(mr_qty), 
-		production_material_request, item_code, warehouse,  # for Raw Materials
-		production_material_request, item_code, warehouse   # for Sub Assembly Item
+		production_material_request, item_code, warehouse, parent_bom, # for Raw Materials
+		production_material_request, item_code, warehouse, parent_bom   # for Sub Assembly Item
 	), as_dict=1)
 
 	data = []
@@ -4829,6 +4829,7 @@ def get_pmr_data(item_code, name=None, warehouse=None):
 			}, "actual_qty")) or 0
 		})
 	return data
+
 
 
 # @frappe.whitelist()
@@ -7627,7 +7628,7 @@ def create_html_EI(doc):
 
 	{% set prepared_by = frappe.db.get_value("Employee", {"user_id": doc.owner}, ["custom_digital_signature"]) %}
 	{% set hod = frappe.db.get_value("Employee", {"user_id": doc.custom_hod}, ["custom_digital_signature"]) %}
-	{% set finance = frappe.db.get_value("Employee", {"name": 'S0189'}, ["custom_digital_signature"]) %}
+	{% set finance = frappe.db.get_value("Employee", {"user_id": doc.custom_finance_approver}, ["custom_digital_signature"]) %}
 
 	<style>
 		.signature-img {
@@ -8962,13 +8963,10 @@ def si_qty_warehouse_qty_validation(item_code,name):
 	""", (name, item_code), as_dict=True)
 	
 	draft_si_qty = si_data[0].total_si_qty or 0
-	frappe.errprint(draft_si_qty)
 	if tot_qty:
-		frappe.errprint(tot_qty)
 		qty=tot_qty-draft_si_qty
 		if qty < 0:
 			qty=0
-		frappe.errprint(qty)
 		return qty
 
 def get_amount_in_words():
@@ -10829,7 +10827,7 @@ def make_xlsx_css(sheet_name, records, from_date, to_date, wb=None):
 
 	
 @frappe.whitelist()
-def today_req_qty_update(item_code, date):
+def today_req_qty_update(item_code, date, parent_bom):
 	from frappe.utils import get_datetime, format_datetime
 	from datetime import timedelta
 
@@ -10837,21 +10835,21 @@ def today_req_qty_update(item_code, date):
 	end_dt = start_dt + timedelta(days=1) - timedelta(seconds=1)
 
 	result = frappe.db.sql("""
-	SELECT SUM(mti.issued_qty)
-	FROM `tabMaterial Transfer Items` mti
-	JOIN `tabMaterial Transfer` mt ON mti.parent = mt.name
-	WHERE
-	mt.creation >= %s
-	AND mt.creation <= %s
-	AND mti.item_code = %s
-""", (start_dt, end_dt, item_code))
-
+		SELECT SUM(mti.issued_qty)
+		FROM `tabMaterial Transfer Items` mti
+		JOIN `tabMaterial Transfer` mt ON mti.parent = mt.name
+		WHERE
+		mt.creation >= %s
+		AND mt.creation <= %s
+		AND mti.item_code = %s
+		AND mti.parent_bom = %s
+	""", (start_dt, end_dt, item_code, parent_bom))
 	
 	total_issued_qty = result[0][0] if result and result[0][0] is not None else 0
-
 	return total_issued_qty
 
-
+def test_check():
+    today_req_qty_update("HC827-EDFAA-01", "2026-02-10", "BOM-831-HSUAA-SFG-03-001")
 
 @frappe.whitelist()
 def get_rate_from_sales_order(item_code, customer_po, customer_code):
@@ -11185,6 +11183,7 @@ def custom_update_items(data, sales_order=None, purchase_order=None):
 									"pending_amount": os_doc.pending_qty * order_row["rate"],
 									"pending_amount_inr": os_doc.pending_qty * order_row["rate"] * os_doc.exchange_rate
 								}
+								frappe.db.set_value("Item", order_row["item_code"], "custom_last_sales_rate", os_doc.exchange_rate * order_row["rate"])
 							if order_doctype == "Purchase Order":
 								update_vals = {
 									"order_rate": order_row["rate"],
@@ -11196,6 +11195,7 @@ def custom_update_items(data, sales_order=None, purchase_order=None):
 									"pending_amount": os_doc.pending_qty * order_row["rate"],
 									"pending_amount_inr": os_doc.pending_qty * order_row["rate"] * os_doc.exchange_rate
 								}
+								frappe.db.set_value("Item", order_row["item_code"], "last_purchase_rate", os_doc.exchange_rate * order_row["rate"])
 							frappe.db.set_value(order_schedule, os_doc.name, update_vals)
 				break  # Matching row handled → stop looping
 
