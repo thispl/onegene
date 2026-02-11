@@ -12,6 +12,7 @@
   "requested_by",
   "requester_name",
   "status",
+  "requested_department",
   "column_break_uvyg",
   "amended_from",
   "posting_date",
@@ -168,13 +169,19 @@
    "fieldtype": "Small Text",
    "label": "Remark",
    "read_only": 1
+  },
+  {
+   "fieldname": "requested_department",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Requested Department"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-10-30 19:31:17.617258",
- "modified_by": "Administrator",
+ "modified": "2026-02-11 16:47:00.231134",
+ "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Material Transfer",
  "naming_rule": "Expression (old style)",
@@ -194,6 +201,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

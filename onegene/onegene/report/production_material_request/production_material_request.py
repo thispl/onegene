@@ -33,7 +33,6 @@ def execute(filters=None):
 	columns = get_columns(filters)
 	raw = get_data(filters)
 	formatted = format_data(raw, filters)
-	frappe.errprint(formatted)
 	return columns, formatted
 
 # -------------------------
@@ -207,7 +206,7 @@ def _build_default_bom_map(item_codes):
 # -------------------------
 # BOM explosion (recursive until no children)
 # -------------------------
-def explode_bom_recursive_parent_plan(root_bom, parent_plan, bom_children_map, ppc_plan_parent=0, indent=1, visited=None, prefetch_maps=None):
+def explode_bom_recursive_parent_plan(root_bom, parent_plan, bom_children_map, ppc_plan_parent=0, indent=1, visited=None, prefetch_maps=None, fg_item=None, fg_item_group=None, fg_bom=None):
 	"""
 	Explode BOM in-memory, using parent's MR Required (parent_plan) as the child's kanban_plan.
 	For each child:
@@ -291,7 +290,10 @@ def explode_bom_recursive_parent_plan(root_bom, parent_plan, bom_children_map, p
 			# For display consistency, set kanban_plan to child_kanban_plan (propagated plan)
 			"kanban_plan": child_kanban_plan,
 			"parent_bom": root_bom,
-			"reqd_plan": reqd_plan_child
+			"reqd_plan": reqd_plan_child,
+			"fg_item": fg_item,
+			"fg_item_group": fg_item_group,
+			"fg_bom": fg_bom
 		})
 
 		# Recurse if the child has its own BOM
@@ -305,7 +307,10 @@ def explode_bom_recursive_parent_plan(root_bom, parent_plan, bom_children_map, p
 				ppc_plan_parent=child_kanban_plan,
 				indent=indent + 1,
 				visited=visited,
-				prefetch_maps=child_prefetch_maps
+				prefetch_maps=child_prefetch_maps,
+				fg_item=fg_item,
+				fg_item_group=fg_item_group,
+				fg_bom=fg_bom
 			))
 
 	return result
@@ -556,7 +561,10 @@ def get_data(filters):
 			'stock_in_wip': d.stock_in_wip,
 			'sales_order_number': f"<b>{d.sales_order_number}</b>",
 			"indent": 0,
-			"parent_bom": d.parent_bom
+			"parent_bom": d.parent_bom,
+			"fg_item": d.item_code,
+			"fg_item_group": d.item_group,
+			"fg_bom": d.bom,
 		}))
 
 		# Explode using iterative recursion that propagates reqd_plan downward
@@ -569,7 +577,10 @@ def get_data(filters):
 				ppc_plan_parent=float(d.get("ppc_plan") or 0),
 				indent=1,
 				visited=set(),
-				prefetch_maps=prefetch_maps
+				prefetch_maps=prefetch_maps,
+				fg_item=d.item_code,
+				fg_item_group=d.item_group,
+				fg_bom=d.bom
 			)
 
 			# Append exploded rows to da with computed fields
@@ -619,7 +630,10 @@ def get_data(filters):
 					'stock_in_sfs': stock_in_sfs_child,
 					'stock_in_wip': stock_in_wip_child,
 					"indent": item.get("indent"),
-					"parent_bom": parent_bom
+					"parent_bom": parent_bom,
+					"fg_item": item.get("fg_item"),
+					"fg_item_group": item.get("fg_item_group"),
+					"fg_bom": item.get("fg_bom"),
 				}))
 
 	# final_list selection
@@ -688,7 +702,10 @@ def get_data(filters):
 				'reqd_plan': updated.get('reqd_plan') if updated.get('reqd_plan', 0) >= 0 else 0,
 				'mr_qty': mr_qty,
 				'indent': updated.get('indent'),
-				'parent_bom': updated.get('parent_bom')
+				'parent_bom': updated.get('parent_bom'),
+				"fg_item": updated.get("fg_item"),
+				"fg_item_group": updated.get("fg_item_group"),
+				"fg_bom": updated.get("fg_bom"),
 			}))
 
 	return last_list
@@ -710,6 +727,9 @@ def get_columns(filters):
 			{"label": _("Stock In Shop Floor"), "fieldtype": "Float", "fieldname": "stock_in_sfs", "width": 180},
 			{"label": _("Stock In WIP"), "fieldtype": "Float", "fieldname": "stock_in_wip", "width": 150},
 			{"label": _("MR Required"), "fieldtype": "Float", "fieldname": "reqd_plan", "width": 150},
+			{"label": _("FG Item"), "fieldtype": "Data", "fieldname": "fg_item", "width": 150},
+			{"label": _("FG Item Group"), "fieldtype": "Data", "fieldname": "fg_item_group", "width": 150},
+			{"label": _("FG BOM"), "fieldtype": "Data", "fieldname": "fg_bom", "width": 150},
 		]
 	else:
 		return [
@@ -815,7 +835,10 @@ def format_data(data, filters):
 			'mr_qty': row.get('mr_qty'),
 			'indent': row.get('indent'),
 			'sales_order_number': row.get('sales_order_number', ''),
-			'parent_bom': row.get('parent_bom', '')
+			'parent_bom': row.get('parent_bom', ''),
+			"fg_item":row.get("fg_item"),
+			"fg_item_group":row.get("fg_item_group"),
+			"fg_bom":row.get("fg_bom"),
 		})
 	return formatted_data
 

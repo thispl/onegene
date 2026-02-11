@@ -14,7 +14,7 @@ class GateEntryUpdate(Document):
 # from frappe.utils import toda
 
 @frappe.whitelist()
-def create_gate_entry(entry_type,entry_document,document_id,gate_qty,no_of_box,vehicle_number=None,driver_name=None,party_type=None,party=None,entry_time=None,ref_no=None,dc_no=None,security_no=None,security_name=None,items=None,end_bit_scrap=None):
+def create_gate_entry(entry_type,entry_document,document_id,gate_qty,no_of_box,vehicle_number=None,driver_name=None,party_type=None,party=None,entry_time=None,ref_no=None,dc_no=None,security_no=None,security_name=None,items=None,end_bit_scrap=None,company=None):
 	gate=frappe.new_doc('Gate Entry')
 	if party_type =="Customer":
 		gate.customer_code = frappe.db.get_value("Customer",{"name":party},"customer_code") or ""
@@ -30,6 +30,7 @@ def create_gate_entry(entry_type,entry_document,document_id,gate_qty,no_of_box,v
 	gate.entry_date=today()
 	gate.party_type=party_type or ""
 	gate.party=party or ""
+	gate.company=company or ""
 	gate.entry_time = entry_time or ''
 	gate.ref_no= ref_no or ''
 	gate.security_no=security_no or ''

@@ -46,30 +46,6 @@ def make_prepared_report():
 		"as_on_date": to_date,
 		"view_rm":1,
 	}
-	# prepared_report = frappe.get_doc(
-	# 	{
-	# 		"doctype": "Prepared Report",
-	# 		"report_name": report_name,
-	# 		"filters": process_filters_for_prepared_report(filters),
-
-	# 	}
-	# ).insert(ignore_permissions=True)
-	# frappe.db.commit()
-	# max_retries = 300
-	# retry_interval = 10  # seconds
-	# print(prepared_report.name)
-	# for i in range(max_retries):
-	# 	frappe.db.rollback()
-	# 	status = frappe.db.get_value("Prepared Report", prepared_report.name, "status")
-	# 	print(status)
-	# 	if status == "Completed":
-	# 		break
-	# 	time.sleep(retry_interval)
-	# else:
-	# 	frappe.throw("Report generation timed out. Please try again later.")
-
-	# Now read the report result
-	# result = get_prepared_report_data(prepared_report.name, status)
 	result = get_data(filters)
 	today_830_am = datetime.combine(date.today(), dt_time(8, 30))
 	recent_doc = frappe.db.exists(
@@ -114,10 +90,12 @@ def make_prepared_report():
 							"required_plan": row.get("reqd_plan"),
 							"in_progress": row.get("in_progress"),
 							"mr_qty": row.get("mr_qty"),
+							"fg_item": row.get("fg_item"),
+							"fg_item_group": row.get("fg_item_group"),
+							"fg_bom": row.get("fg_bom"),
 							# Add any other fields your child table requires
 						})
 					elif flt(row.get("indent"))>0 and row.get("item_type")=='Process Item':
-						frappe.errprint(row)
 						doc.append("sub_assembly_items", {
 							"item_code": row.get("item_code"),
 							"item_name": row.get("item_name"),
@@ -136,6 +114,9 @@ def make_prepared_report():
 							"mr_qty": row.get("mr_qty"),
 							"item_bom": row.get("bom"),
 							"parent_bom": row.get("parent_bom"),
+							"fg_item": row.get("fg_item"),
+							"fg_item_group": row.get("fg_item_group"),
+							"fg_bom": row.get("fg_bom"),
 							# Add any other fields your child table requires
 						})
 					else:
@@ -157,6 +138,9 @@ def make_prepared_report():
 							"mr_qty": row.get("mr_qty"),
 							"item_bom": row.get("bom"),
 							"parent_bom": row.get("parent_bom"),
+							"fg_item": row.get("fg_item"),
+							"fg_item_group": row.get("fg_item_group"),
+							"fg_bom": row.get("fg_bom"),
 							# Add any other fields your child table requires
 						})
 			doc.save(ignore_permissions=True)
@@ -192,6 +176,9 @@ def make_prepared_report():
 							"required_plan": row.get("reqd_plan"),
 							"in_progress": row.get("in_progress"),
 							"mr_qty": row.get("mr_qty"),
+							"fg_item": row.get("fg_item"),
+							"fg_item_group": row.get("fg_item_group"),
+							"fg_bom": row.get("fg_bom"),
 							# Add any other fields your child table requires
 						})
 					elif flt(row.get("indent"))>0 and row.get("item_type")=='Process Item':
@@ -213,6 +200,9 @@ def make_prepared_report():
 							"mr_qty": row.get("mr_qty"),
 							"item_bom": row.get("bom"),
 							"parent_bom": row.get("parent_bom"),
+							"fg_item": row.get("fg_item"),
+							"fg_item_group": row.get("fg_item_group"),
+							"fg_bom": row.get("fg_bom"),
 							# Add any other fields your child table requires
 						})
 					else:
@@ -234,6 +224,9 @@ def make_prepared_report():
 							"mr_qty": row.get("mr_qty"),
 							"item_bom": row.get("bom"),
 							"parent_bom": row.get("parent_bom"),
+							"fg_item": row.get("fg_item"),
+							"fg_item_group": row.get("fg_item_group"),
+							"fg_bom": row.get("fg_bom"),
 							# Add any other fields your child table requires
 						})
 			doc.save(ignore_permissions=True)
@@ -267,6 +260,9 @@ def make_prepared_report():
 							"required_plan": row.get("reqd_plan"),
 							"in_progress": row.get("in_progress"),
 							"mr_qty": row.get("mr_qty"),
+							"fg_item": row.get("fg_item"),
+							"fg_item_group": row.get("fg_item_group"),
+							"fg_bom": row.get("fg_bom"),
 							# Add any other fields your child table requires
 						})
 					elif flt(row.get("indent"))>0 and row.get("item_type")=='Process Item':
@@ -288,6 +284,9 @@ def make_prepared_report():
 							"mr_qty": row.get("mr_qty"),
 							"item_bom": row.get("bom"),
 							"parent_bom": row.get("parent_bom"),
+							"fg_item": row.get("fg_item"),
+							"fg_item_group": row.get("fg_item_group"),
+							"fg_bom": row.get("fg_bom"),
 							# Add any other fields your child table requires
 						})
 					else:
@@ -309,6 +308,9 @@ def make_prepared_report():
 							"mr_qty": row.get("mr_qty"),
 							"item_bom": row.get("bom"),
 							"parent_bom": row.get("parent_bom"),
+							"fg_item": row.get("fg_item"),
+							"fg_item_group": row.get("fg_item_group"),
+							"fg_bom": row.get("fg_bom"),
 							# Add any other fields your child table requires
 						})
 			doc.insert()

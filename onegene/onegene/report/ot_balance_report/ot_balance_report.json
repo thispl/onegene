@@ -1,0 +1,40 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2024-09-16 10:15:32.298409",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 51,
+ "is_standard": "Yes",
+ "letter_head": null,
+ "modified": "2026-02-11 16:14:31.528420",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "OT Balance Report",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "OT Balance",
+ "report_name": "OT Balance Report",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "HR User"
+  },
+  {
+   "role": "HR Manager"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Leave Approver"
+  },
+  {
+   "role": "HOD"
+  }
+ ],
+ "timeout": 0
+}

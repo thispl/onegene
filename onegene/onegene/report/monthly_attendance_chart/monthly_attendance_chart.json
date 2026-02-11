@@ -1,0 +1,38 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2024-02-10 08:17:48.880197",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 4,
+ "is_standard": "Yes",
+ "json": "{\"filters\":[[\"Attendance\",\"attendance_date\",\"Between\",[\"2024-01-01\",\"2024-01-31\"],false]],\"fields\":[[\"name\",\"Attendance\"],[\"employee\",\"Attendance\"],[\"custom_employee_category\",\"Attendance\"],[\"attendance_date\",\"Attendance\"],[\"status\",\"Attendance\"]],\"order_by\":\"`tabAttendance`.`modified` desc\",\"add_totals_row\":0,\"page_length\":20,\"column_widths\":{\"name\":120,\"employee\":120,\"custom_employee_category\":120,\"attendance_date\":120,\"status\":120},\"group_by\":null}",
+ "letter_head": null,
+ "modified": "2026-02-11 16:18:29.195209",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Monthly Attendance Chart",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Attendance",
+ "report_name": "Monthly Attendance Chart",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "HR User"
+  },
+  {
+   "role": "HR Manager"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Employee Self Service"
+  }
+ ],
+ "timeout": 0
+}

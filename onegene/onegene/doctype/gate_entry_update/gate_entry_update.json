@@ -12,6 +12,7 @@
   "party_type",
   "party",
   "supplier_dc_number",
+  "company",
   "column_break_kmbn",
   "entry_time",
   "ref_no",
@@ -156,14 +157,20 @@
    "label": "End Bit Scrap & Return",
    "options": "Supplier-DN Scrap",
    "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-12-09 10:20:09.826568",
- "modified_by": "Administrator",
+ "modified": "2026-02-10 20:37:25.904478",
+ "modified_by": "riyaz.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "Gate Entry Update",
  "owner": "Administrator",
@@ -179,6 +186,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

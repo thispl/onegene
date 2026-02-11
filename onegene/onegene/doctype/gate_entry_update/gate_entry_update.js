@@ -219,6 +219,7 @@ frappe.ui.form.on("Gate Entry Update", {
                                 driver_name: frm.doc.driver_name,
                                 party_type: frm.doc.party_type,
                                 party: frm.doc.party,
+                                company: frm.doc.company,
                                 entry_time: frm.doc.entry_time,
                                 ref_no: frm.doc.ref_no,
                                 dc_no: frm.doc.supplier_dc_number,
@@ -374,6 +375,7 @@ function fetch_items(frm) {
                     frm.set_value("party_type", r.message.party_type || "");
                     frm.set_value("party", r.message.party || "");
                     frm.set_value("ref_no", r.message.ref_no || "");
+                    frm.set_value("company", r.message.company || "");
                     frm.set_value("security_name", r.message.security_name || "");
                     frm.set_value("vehicle_number", r.message.vehicle_number || "");
                     frm.set_value("driver_name", r.message.driver_name || "");

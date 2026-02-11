@@ -587,6 +587,7 @@ def get_gate_items_geu(entry_document, entry_id):
     if entry_document=='General DC' and entry_doc.is_return==1:
         party_type=entry_doc.party_type
         party=entry_doc.party
+        company=entry_doc.company
         for e in entry_doc.items_:
             si_no = si_no +1
             items.append({
@@ -605,6 +606,7 @@ def get_gate_items_geu(entry_document, entry_id):
         security_name=entry_doc.security_name
         vehicle_number=entry_doc.vehicle_no
         driver_name=entry_doc.security_name
+        company=entry_doc.company
         for e in entry_doc.item_table:
             si_no = si_no +1
         
@@ -631,6 +633,7 @@ def get_gate_items_geu(entry_document, entry_id):
             if entry_document=='Sales Invoice':
                 party_type="Customer"
                 party=entry_doc.customer
+                company=entry_doc.company
                 items.append({
                     "item_code": e.item_code,
                     "item_name": e.item_name,
@@ -644,6 +647,7 @@ def get_gate_items_geu(entry_document, entry_id):
             else:
                 party_type=entry_doc.party_type
                 party=entry_doc.party
+                company=entry_doc.company
                 items.append({
                     "item_code": e.item_code,
                     "item_name": e.item_name,
@@ -663,7 +667,8 @@ def get_gate_items_geu(entry_document, entry_id):
         "security_name":security_name,
         "vehicle_number":vehicle_number,
         "driver_name":driver_name,
-        "scrap_items":scrap_items
+        "scrap_items":scrap_items,
+        "company":company
         
     }
 

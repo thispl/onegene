@@ -11,20 +11,26 @@
   "item_name",
   "item_group",
   "item_bom",
+  "parent_bom",
   "plan",
-  "required_plan",
+  "produced_qty",
   "column_break_mygw",
   "sales_order",
   "item_type",
   "stock_in_sw",
   "stock_in_wip",
-  "produced_qty",
+  "required_plan",
   "column_break_dklg",
   "warehouse",
   "stock_in_sfg",
-  "stock_in_shop_floor",
   "in_progress",
-  "mr_qty"
+  "stock_in_shop_floor",
+  "mr_qty",
+  "reference_section",
+  "fg_item",
+  "fg_item_group",
+  "column_break_eobq",
+  "fg_bom"
  ],
  "fields": [
   {
@@ -132,17 +138,51 @@
    "fieldtype": "Link",
    "label": "Item BOM",
    "options": "BOM"
+  },
+  {
+   "fieldname": "parent_bom",
+   "fieldtype": "Link",
+   "label": "Parent BOM",
+   "options": "BOM"
+  },
+  {
+   "fieldname": "reference_section",
+   "fieldtype": "Section Break",
+   "label": "Reference"
+  },
+  {
+   "fieldname": "fg_item",
+   "fieldtype": "Link",
+   "label": "FG Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "fg_item_group",
+   "fieldtype": "Link",
+   "label": "FG Item Group",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "column_break_eobq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fg_bom",
+   "fieldtype": "Link",
+   "label": "FG BOM",
+   "options": "BOM"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-20 09:34:09.223170",
- "modified_by": "Administrator",
+ "modified": "2026-02-11 14:59:44.966349",
+ "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Assembly Item",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

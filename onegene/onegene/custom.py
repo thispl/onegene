@@ -4737,9 +4737,20 @@ def get_previous_purchase_rate(item_code):
 
 
 @frappe.whitelist()
-def get_pmr_data(item_code, name=None, warehouse=None, parent_bom=None):
-	if not warehouse or not parent_bom:
+def get_pmr_data(item_code, name=None, warehouse=None, department=None):
+	if not warehouse or not department:
 		return
+	replaced_department = department.replace(" - WAIP", "")
+	item_group_map = {
+    	"Evap & AC-Tubing": "EVAP/AC-Tubing", 
+    	"Condenser Assy": "Condenser Assy", 
+    	"HTR-Tubing": "HTR-Tubing", 
+    	"IHX-Tubing": "IHX-Tubing", 
+     	"Machining":"Machining",
+    	"PSA": "PSA AC-Tubing",
+		"Sensor": "Sensor",
+    	}
+	fg_item_group = item_group_map.get(replaced_department)
 	current_datetime = now_datetime()
 	if current_datetime.time() > time(8, 30):
 		start_datetime = f"{today()} 08:31:00"
@@ -4759,10 +4770,10 @@ def get_pmr_data(item_code, name=None, warehouse=None, parent_bom=None):
 						FROM `tabMaterial Request` mr
 						INNER JOIN `tabMaterial Request Item` mri
 						ON mri.parent = mr.name 
-						WHERE mri.item_code = %s AND mri.from_warehouse = %s AND custom_parent_bom = %s AND
+						WHERE mri.item_code = %s AND mri.from_warehouse = %s AND mr.custom_department = %s AND
 							mr.material_request_type = 'Material Transfer' AND parent != %s
 							AND mr.creation between %s AND %s""",
-						(item_code, warehouse, parent_bom, name, start_datetime, end_datetime))[0][0] or 0
+						(item_code, warehouse, department, name, start_datetime, end_datetime))[0][0] or 0
 	if result:
 		production_material_request = result[0][0]
 	else:
@@ -4790,7 +4801,7 @@ def get_pmr_data(item_code, name=None, warehouse=None, parent_bom=None):
 				rm.parent = %s AND 
 				rm.item_code = %s AND 
 				rm.warehouse = %s AND
-				rm.parent_bom = %s
+				rm.fg_item_group = %s
 
 			UNION ALL
 
@@ -4804,13 +4815,14 @@ def get_pmr_data(item_code, name=None, warehouse=None, parent_bom=None):
 				sai.parent = %s AND 
 				sai.item_code = %s AND 
 				sai.warehouse = %s AND
-				sai.parent_bom = %s
+				sai.fg_item_group = %s
+    
 		) AS combined
 		GROUP BY item_code, item_name
 	""", (
 		flt(mr_qty), 
-		production_material_request, item_code, warehouse, parent_bom, # for Raw Materials
-		production_material_request, item_code, warehouse, parent_bom   # for Sub Assembly Item
+		production_material_request, item_code, warehouse, fg_item_group, # for Raw Materials
+		production_material_request, item_code, warehouse, fg_item_group   # for Sub Assembly Item
 	), as_dict=1)
 
 	data = []
@@ -4829,7 +4841,6 @@ def get_pmr_data(item_code, name=None, warehouse=None, parent_bom=None):
 			}, "actual_qty")) or 0
 		})
 	return data
-
 
 
 # @frappe.whitelist()
@@ -10827,7 +10838,7 @@ def make_xlsx_css(sheet_name, records, from_date, to_date, wb=None):
 
 	
 @frappe.whitelist()
-def today_req_qty_update(item_code, date, parent_bom):
+def today_req_qty_update(item_code, date, department):
 	from frappe.utils import get_datetime, format_datetime
 	from datetime import timedelta
 
@@ -10842,11 +10853,12 @@ def today_req_qty_update(item_code, date, parent_bom):
 		mt.creation >= %s
 		AND mt.creation <= %s
 		AND mti.item_code = %s
-		AND mti.parent_bom = %s
-	""", (start_dt, end_dt, item_code, parent_bom))
+		AND mt.requested_department = %s
+	""", (start_dt, end_dt, item_code, department))
 	
 	total_issued_qty = result[0][0] if result and result[0][0] is not None else 0
 	return total_issued_qty
+
 
 def test_check():
     today_req_qty_update("HC827-EDFAA-01", "2026-02-10", "BOM-831-HSUAA-SFG-03-001")
@@ -11642,3 +11654,13 @@ def update_pallet_h(name,item):
 					final_height= v5+i.custom_extra_height
 			i.custom_calculated_height=final_height
 	return final_height
+
+
+@frappe.whitelist()
+def gate_entry_comp():
+    docs = frappe.get_all("Gate Entry",filters={"docstatus":1,"company":["is", "not set"]},fields=["name","entry_against","entry_id"])
+    if docs:
+        for i in docs:
+            doc_company = frappe.get_value(i.entry_against,{"name":i.entry_id},"company")
+            if doc_company:
+            	frappe.db.set_value("Gate Entry",i.name,"company",doc_company)

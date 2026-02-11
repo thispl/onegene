@@ -4,14 +4,6 @@
 
 frappe.query_reports["Production Material Request"] = {
     "filters": [
-        // {
-        //     "fieldname": "from_date",
-        //     "label": __("From Date"),
-        //     "fieldtype": "Date",
-        //     "default": frappe.datetime.add_days(frappe.datetime.month_start()),
-        //     "reqd": 1,
-        // 	// "hidden":1
-        // },
         {
             "fieldname": "month",
             "label": __("Month"),
@@ -42,7 +34,6 @@ frappe.query_reports["Production Material Request"] = {
             "fieldtype": "Date",
 
             "default": frappe.datetime.nowdate(),
-            // "hidden":1
         },
         {
             "fieldname": "customer",
@@ -118,42 +109,15 @@ frappe.query_reports["Production Material Request"] = {
                     callback: function(r) {
                         if (r.message) {
                             frappe.query_report.refresh();
-                            // setTimeout(function() {
-                            //     window.location.href = "https://erp.onegeneindia.in/app/query-report/Production%20Material%20Request";
-                            // }, 3000);
                         }
                     }
                 })
-            // }
-            //  else{
-            //     if(customer && item_group ){
-            //     frappe.msgprint(__("Please remove the filters: <b>Customer</b> and <b>Item Group</b> before posting the Material Request."))
-            //     }
-            //     else if(item_group){
-            //        frappe.msgprint(__("Please remove the <b>Item Group</b> filter before posting the Material Request.")) 
-            //     }
-            //     else if(customer){
-            //         frappe.msgprint(__("Please remove the <b>Customer</b> filter before posting the Material Request."))
-            //     }
-            // }   
-
 
             });
             $(create_mr_button).css({
                 'background-color': 'Black',
                 'color': 'white',
             });
-        // let create_mr_button = report.page.add_inner_button(__("Create MR"), () => {
-        //     let mr = frappe.model.get_new_doc('Material Request');
-        //     mr.naming_series = "MAT-MR-.YYYY.-"
-        //     frappe.set_route('Form', 'Material Request', mr.name);
-        //     // Style the button (optional)
-        //     $(create_mr_button).css({
-        //         'color': 'white',
-        //         'background-color': 'black',
-        //         'border-color': 'black'
-        //     });
-        // })
     },
     refresh: function(report) {
         frappe.realtime.on('material_request_upload_progress', function(data) {

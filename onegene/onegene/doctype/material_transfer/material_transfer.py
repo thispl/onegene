@@ -137,6 +137,7 @@ def make_material_transfer(material_request):
     mt.default_target_warehouse = "Shop Floor - WAIP"
     mt.requested_by = material_request.custom_requested_by
     mt.requester_name = material_request.custom_requester_name
+    mt.requested_department = material_request.custom_department
 
     for row in material_request.items:
         already_issued = get_already_issued_qty(row.item_code)

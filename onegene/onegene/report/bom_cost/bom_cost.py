@@ -53,41 +53,109 @@ def get_columns():
         {"label": _("Sales Rate %"), "fieldtype": "Data", "fieldname": "percentage", "width": 150, "align": "right"},
     ]
 
+# def get_data(data, filters=None):
+#     bom_list = []
+#     if not filters:
+#         bom_list = frappe.db.get_all("BOM",{"custom_item_billing_type": "Billing", "is_active": 1, "is_default": 1, "docstatus": 1},pluck="name")
+#     else:
+#         bom_filter = filters.get('bom')
+#         # if not frappe.db.exists("BOM", {"name": bom_filter, "custom_item_billing_type": "Billing"}):
+#         # 	frappe.publish_realtime("report_error")
+#         # 	frappe.throw(f"The selected BOM <b>{bom_filter}</b> is not a billing item", title="Invalid BOM")
+#         bom_list.append(bom_filter)
+
+#     if bom_list:
+#         for bom_filter in bom_list:
+#             item = frappe.db.get_value("BOM", bom_filter,
+#                 ["item", "item_name", "uom", "custom_item_billing_type"], as_dict=1)
+
+#             item_type = frappe.db.get_value("Item", item.item, "item_type")
+#             last_sales_rate = 0
+#             if item.custom_item_billing_type == "Billing":
+#                 last_sales_rate = get_last_sales_rate(item.item)
+#             warehouse = frappe.db.get_value("Item", item.item, "custom_warehouse")
+#             data.append({
+#                 "item_code": item.item,
+#                 "item_name": item.item_name,
+#                 "item_type": item_type,
+#                 "indent": 0,
+#                 "bom_level": 0,
+#                 "bom": bom_filter,
+#                 "qty": 1,
+#                 "uom": item.uom,
+#                 "last_sales_rate": last_sales_rate,
+#                 "warehouse": warehouse
+#             })
+#             get_exploded_items(bom=bom_filter, data=data)
+#         calculate_totals(data)
+
+
+
 def get_data(data, filters=None):
+    filters = filters or {}
+    item_group = filters.get("item_group")
+    bom_filter = filters.get("bom")
+
     bom_list = []
-    if not filters:
-        bom_list = frappe.db.get_all("BOM",{"custom_item_billing_type": "Billing", "is_active": 1, "is_default": 1, "docstatus": 1},pluck="name")
-    else:
-        bom_filter = filters.get('bom')
-        # if not frappe.db.exists("BOM", {"name": bom_filter, "custom_item_billing_type": "Billing"}):
-        # 	frappe.publish_realtime("report_error")
-        # 	frappe.throw(f"The selected BOM <b>{bom_filter}</b> is not a billing item", title="Invalid BOM")
-        bom_list.append(bom_filter)
 
-    if bom_list:
-        for bom_filter in bom_list:
-            item = frappe.db.get_value("BOM", bom_filter,
-                ["item", "item_name", "uom", "custom_item_billing_type"], as_dict=1)
+    conditions = """
+        WHERE b.custom_item_billing_type = 'Billing'
+        AND b.is_active = 1
+        AND b.is_default = 1
+        AND b.docstatus = 1
+    """
 
-            item_type = frappe.db.get_value("Item", item.item, "item_type")
-            last_sales_rate = 0
-            if item.custom_item_billing_type == "Billing":
-                last_sales_rate = get_last_sales_rate(item.item)
-            warehouse = frappe.db.get_value("Item", item.item, "custom_warehouse")
-            data.append({
-                "item_code": item.item,
-                "item_name": item.item_name,
-                "item_type": item_type,
-                "indent": 0,
-                "bom_level": 0,
-                "bom": bom_filter,
-                "qty": 1,
-                "uom": item.uom,
-                "last_sales_rate": last_sales_rate,
-                "warehouse": warehouse
-            })
-            get_exploded_items(bom=bom_filter, data=data)
-        calculate_totals(data)
+    values = {}
+
+    if bom_filter:
+        conditions += " AND b.name = %(bom)s"
+        values["bom"] = bom_filter
+
+    if item_group:
+        conditions += " AND i.item_group = %(item_group)s"
+        values["item_group"] = item_group
+
+    bom_list = frappe.db.sql(f"""
+        SELECT b.name
+        FROM `tabBOM` b
+        INNER JOIN `tabItem` i ON i.name = b.item
+        {conditions}
+        ORDER BY b.name
+    """, values, pluck="name")
+
+    if not bom_list:
+        return
+
+    for bom in bom_list:
+        item = frappe.db.get_value(
+            "BOM",
+            bom,
+            ["item", "item_name", "uom", "custom_item_billing_type"],
+            as_dict=True
+        )
+
+        item_type = frappe.db.get_value("Item", item.item, "item_type")
+        last_sales_rate = get_last_sales_rate(item.item) if item.custom_item_billing_type == "Billing" else 0
+        warehouse = frappe.db.get_value("Item", item.item, "custom_warehouse")
+
+        data.append({
+            "item_code": item.item,
+            "item_name": item.item_name,
+            "item_type": item_type,
+            "indent": 0,
+            "bom_level": 0,
+            "bom": bom,
+            "qty": 1,
+            "uom": item.uom,
+            "last_sales_rate": last_sales_rate,
+            "warehouse": warehouse
+        })
+
+        get_exploded_items(bom=bom, data=data)
+
+    calculate_totals(data)
+
+
 
 def calculate_totals(data):
     for i, row in enumerate(data):

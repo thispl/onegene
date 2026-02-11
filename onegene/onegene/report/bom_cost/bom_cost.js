@@ -24,6 +24,14 @@ frappe.query_reports["BOM Cost"] = {
 				toggle_download_buttons(frappe.query_report);
 			}
 		},
+
+		{
+			fieldname: "item_group",
+			label: __("Item Group"),
+			fieldtype: "Link",
+			options: "Item Group"
+			
+		},
 	],
 	// Events
 	onload: function(report) {

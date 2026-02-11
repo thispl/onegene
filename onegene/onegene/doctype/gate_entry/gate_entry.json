@@ -13,6 +13,7 @@
   "entry_id",
   "party_type",
   "party",
+  "company",
   "column_break_mcvh",
   "entry_time",
   "entry_date",
@@ -177,13 +178,19 @@
    "label": "Entry Time",
    "read_only": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-07 16:13:53.099064",
- "modified_by": "amar.p@groupteampro.com",
+ "modified": "2026-02-10 20:38:22.947438",
+ "modified_by": "riyaz.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "Gate Entry",
  "naming_rule": "Expression (old style)",
