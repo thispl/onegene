@@ -33,20 +33,21 @@ def revise_schedule(docname):
                                 total_qty = frappe.db.sql("""
                                     SELECT SUM(qty)
                                     FROM `tabSales Order Schedule`
-                                    WHERE sales_order_number = %s AND item_code = %s AND schedule_month != %s AND docstatus = 1
-                                """, (sales_order, iom_row.part_no, iom.schedule_month), as_dict=False)[0][0] or 0
+                                    WHERE sales_order_number = %s AND item_code = %s AND schedule_month != %s AND schedule_year = %s AND docstatus = 1
+                                """, (sales_order, iom_row.part_no, iom.schedule_month, iom.schedule_year), as_dict=False)[0][0] or 0
                                 total_qty += iom_row.revised_schedule_value
                                 op_row.qty = total_qty if total_qty > 0 else 1
                                 if not frappe.db.exists("Sales Order Schedule", {
                                     'sales_order_number': sales_order,
                                     'schedule_month': iom.schedule_month,
+                                    "schedule_year": iom.schedule_year,
                                     'item_code': iom_row.part_no,
                                     'docstatus': 1,
                                     'qty': iom_row.revised_schedule_value
                                 }):
                                     sos = frappe.db.get_value(
                                         "Sales Order Schedule",
-                                        {"sales_order_number": sales_order, "schedule_month": iom.schedule_month, "item_code": iom_row.part_no},
+                                        {"sales_order_number": sales_order, "schedule_month": iom.schedule_month, "schedule_year": iom.schedule_year, "item_code": iom_row.part_no},
                                         ["name", "qty", "delivered_qty", "order_rate", "order_rate_inr"],
                                         as_dict=True
                                     )
@@ -85,6 +86,7 @@ def revise_schedule(docname):
                                     else:
                                         current_year = datetime.now().year
                                         schedule_month = iom.schedule_month
+                                        schedule_year = iom.schedule_year
                                         schedule_date = datetime.strptime(f"01-{schedule_month}-{current_year}", "%d-%b-%Y")
                                         
                                         order_rate = frappe.db.get_value("Sales Order Item", {"parent":sales_order, "item_code":iom_row.part_no}, "rate")
@@ -104,6 +106,7 @@ def revise_schedule(docname):
                                             "schedule_date": schedule_date,
                                             "qty": qty,
                                             "schedule_month": schedule_month,
+                                            "schedule_year": schedule_year,
                                             "pending_qty": qty,
                                             "tentative_plan_1": 0,
                                             "tentative_plan_2": 0,
@@ -197,20 +200,21 @@ def revise_schedule(docname):
                                 total_qty = frappe.db.sql("""
                                     SELECT SUM(qty)
                                     FROM `tabPurchase Order Schedule`
-                                    WHERE purchase_order_number = %s AND item_code = %s AND schedule_month != %s AND docstatus = 1
-                                """, (purchase_order, iom_row.part_no, iom.schedule_month), as_dict=False)[0][0] or 0
+                                    WHERE purchase_order_number = %s AND item_code = %s AND schedule_month != %s AND schedule_year = %s AND docstatus = 1
+                                """, (purchase_order, iom_row.part_no, iom.schedule_month, iom.schedule_year), as_dict=False)[0][0] or 0
                                 total_qty += iom_row.revised_schedule_value
                                 op_row.qty = total_qty if total_qty > 0 else 1
                                 if not frappe.db.exists("Purchase Order Schedule", {
                                     'purchase_order_number': purchase_order,
                                     'schedule_month': iom.schedule_month,
+                                    "schedule_year": iom.schedule_year,
                                     'item_code': iom_row.part_no,
                                     'docstatus': 1,
                                     'qty': iom_row.revised_schedule_value
                                 }):
                                     pos = frappe.db.get_value(
                                         "Purchase Order Schedule",
-                                        {"purchase_order_number": purchase_order, "schedule_month": iom.schedule_month, "item_code": iom_row.part_no},
+                                        {"purchase_order_number": purchase_order, "schedule_month": iom.schedule_month, "schedule_year": iom.schedule_year, "item_code": iom_row.part_no},
                                         ["name", "qty", "received_qty", "order_rate", "order_rate_inr"],
                                         as_dict=True
                                     )
@@ -249,6 +253,7 @@ def revise_schedule(docname):
                                     else:
                                         current_year = datetime.now().year
                                         schedule_month = iom.schedule_month
+                                        schedule_year = iom.schedule_year
                                         schedule_date = datetime.strptime(f"01-{schedule_month}-{current_year}", "%d-%b-%Y")
                                         
                                         order_rate = frappe.db.get_value("Purchase Order Item", {"parent":purchase_order, "item_code":iom_row.part_no}, "rate")
@@ -270,6 +275,7 @@ def revise_schedule(docname):
                                             "schedule_date": schedule_date,
                                             "qty": qty,
                                             "schedule_month": schedule_month,
+                                            "schedule_year": schedule_year,
                                             "pending_qty": qty,
                                             "tentative_plan_1": 0,
                                             "tentative_plan_2": 0,

@@ -999,13 +999,13 @@ def get_qid_for_job_card_from_child_row(parent, child_doctype, child_name):
 			"""
 	html = render_template(template, context)
 
-	page_width = "210mm"
-	if row.custom_rejected_qty > 0 and row.custom_rework_qty > 0:
-		page_height = "210mm"
-	elif row.custom_rejected_qty > 0 or row.custom_rework_qty > 0:
-		page_height = "140mm"
-	else:
-		page_height = "70mm"
+	page_width = "150mm"
+	# if row.custom_rejected_qty > 0 and row.custom_rework_qty > 0:
+	# 	page_height = "120mm"
+	# elif row.custom_rejected_qty > 0 or row.custom_rework_qty > 0:
+	# 	page_height = "80mm"
+	# else:
+	page_height = "49mm"
 
 	pdf_file = get_pdf(html, options={
 		"page-width": page_width,

@@ -166,7 +166,7 @@ scheduler_events = {
 		],
 		"0 */2 * * *":"onegene.onegene.doctype.production_material_request.production_material_request.make_prepared_report",
 		"30 8 * * *":"onegene.onegene.custom.update_jobcard_posting_date",
-		"*/20 * * * *" : [
+		"*/30 * * * *" : [
 			"onegene.mark_attendance.enqueue_mark_att"
 		],
 		"00 00 01 * *" : [
@@ -380,6 +380,9 @@ doc_events = {
 		'on_trash':'onegene.onegene.custom.unmark_qid_for_si',
 		
 	},
+    "Item": {
+		"validate": "onegene.onegene.event.item.update_item_group"						
+	},
 	 "Quality Inspection": {
 		"validate": [
             		"onegene.onegene.quality_inspection.validate_qi_on_save",
@@ -516,9 +519,9 @@ doc_events = {
 		"on_trash":"onegene.onegene.supplier_user_creation.delete_supp_user"
 	},
 
-	"BOM": {
-		"on_submit": "onegene.onegene.custom.bom_connection_from_fg_to_child"
-	},
+	# "BOM": {
+	# 	"on_submit": "onegene.onegene.custom.bom_connection_from_fg_to_child"
+	# },
     "Customer":{
         "validate":"onegene.onegene.custom.update_customer_tax_category"
 	}

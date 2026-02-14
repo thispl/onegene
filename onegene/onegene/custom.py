@@ -2047,12 +2047,14 @@ def allocate_el_automatically():
 
 @frappe.whitelist()
 def create_job_fail():
-	job = frappe.db.exists('Scheduled Job Type', 'lwf_creation')
+	job = frappe.db.exists('Scheduled Job Type', 'mark_att')
 	if not job:
 		emc = frappe.new_doc("Scheduled Job Type")
 		emc.update({
-			"method": 'onegene.onegene.custom.create_lwf',
-			"frequency": 'Monthly',
+			"method": 'onegene.mark_attendance.mark_att',
+			"frequency": 'Cron',
+			"cron_format": '*/20 * * * *'
+
 		})
 		emc.save(ignore_permissions=True)
 
@@ -4156,6 +4158,7 @@ def job_card_rework_entry(args):
 		"custom_created_by": frappe.session.user,
 		"custom_entry_type": "Rework",
 		"custom_shift_type": args.shift,
+  
 	})
 
 	job_card.append("custom_rework_logs", {
@@ -4735,6 +4738,8 @@ def get_previous_purchase_rate(item_code):
 	else:
 		return '0.0'
 
+def test_check():
+	print(get_pmr_data(item_code="311-L3LBB-01/C", name="", warehouse="Cutting Store (Tube) - WAIP", department="Condenser Assy - WAIP"))
 
 @frappe.whitelist()
 def get_pmr_data(item_code, name=None, warehouse=None, department=None):
@@ -4742,14 +4747,15 @@ def get_pmr_data(item_code, name=None, warehouse=None, department=None):
 		return
 	replaced_department = department.replace(" - WAIP", "")
 	item_group_map = {
-    	"Evap & AC-Tubing": "EVAP/AC-Tubing", 
-    	"Condenser Assy": "Condenser Assy", 
-    	"HTR-Tubing": "HTR-Tubing", 
-    	"IHX-Tubing": "IHX-Tubing", 
-     	"Machining":"Machining",
-    	"PSA": "PSA AC-Tubing",
+		"Evap & AC-Tubing": "EVAP/AC-Tubing", 
+		"Condenser Assy": "Condenser Assy", 
+		"HTR-Tubing": "HTR-Tubing", 
+		"IHX-Tubing": "IHX-Tubing", 
+	 	"Machining":"Machining",
+		"PSA": "PSA AC-Tubing",
 		"Sensor": "Sensor",
-    	}
+		"NPD": "Development",
+		}
 	fg_item_group = item_group_map.get(replaced_department)
 	current_datetime = now_datetime()
 	if current_datetime.time() > time(8, 30):
@@ -4774,6 +4780,7 @@ def get_pmr_data(item_code, name=None, warehouse=None, department=None):
 							mr.material_request_type = 'Material Transfer' AND parent != %s
 							AND mr.creation between %s AND %s""",
 						(item_code, warehouse, department, name, start_datetime, end_datetime))[0][0] or 0
+
 	if result:
 		production_material_request = result[0][0]
 	else:
@@ -4781,50 +4788,103 @@ def get_pmr_data(item_code, name=None, warehouse=None, department=None):
 		frappe.throw("No Production Material Request found in the given time range.")
 		frappe.throw("கொடுக்கப்பட்ட காலப்பகுதியில் எந்த Production Material Request-ம் கண்டுபிடிக்கப்படவில்லை.")
 
-	if not frappe.db.exists("Sub Assembly Item", {"parent": production_material_request, "item_code": item_code, "warehouse": warehouse}) and not frappe.db.exists("Raw Materials", {"parent": production_material_request, "item_code": item_code, "warehouse": warehouse}):
-		return "item not found"
+	if replaced_department != "Cutting":
+		if not frappe.db.exists("Sub Assembly Item", {"parent": production_material_request, "item_code": item_code, "warehouse": warehouse, "fg_item_group": fg_item_group}) and not frappe.db.exists("Raw Materials", {"parent": production_material_request, "item_code": item_code, "warehouse": warehouse, "fg_item_group": fg_item_group}):
+			return "item not found"
 		# frappe.throw(f"Item {item_code} not found in Production Material Request of {production_material_request}")
-	pmr = frappe.db.sql("""
-		SELECT 
-			item_code,
-			item_name,
-			(SUM(required_plan) - %s) AS total_required_qty,
-			SUM(stock_in_shop_floor) AS shop_floor_qty
-		FROM (
+		pmr = frappe.db.sql("""
 			SELECT 
-				rm.item_code, 
-				rm.item_name, 
-				rm.required_plan, 
-				rm.stock_in_shop_floor
-			FROM `tabRaw Materials` rm
-			WHERE 
-				rm.parent = %s AND 
-				rm.item_code = %s AND 
-				rm.warehouse = %s AND
-				rm.fg_item_group = %s
+				item_code,
+				item_name,
+				(SUM(required_plan)) AS total_required_qty,
+				SUM(stock_in_shop_floor) AS shop_floor_qty
+			FROM (
+				SELECT 
+					rm.item_code, 
+					rm.item_name, 
+					rm.required_plan, 
+					rm.stock_in_shop_floor
+				FROM `tabRaw Materials` rm
+				WHERE 
+					rm.parent = %s AND 
+					rm.item_code = %s AND 
+					rm.warehouse = %s AND
+					rm.fg_item_group = %s
 
-			UNION ALL
+				UNION ALL
 
+				SELECT 
+					sai.item_code, 
+					sai.item_name, 
+					sai.required_plan, 
+					sai.stock_in_shop_floor
+				FROM `tabSub Assembly Item` sai
+				WHERE 
+					sai.parent = %s AND 
+					sai.item_code = %s AND 
+					sai.warehouse = %s AND
+					sai.fg_item_group = %s
+		
+			) AS combined
+			GROUP BY item_code, item_name
+		""", (
+			production_material_request, item_code, warehouse, fg_item_group, # for Raw Materials
+			production_material_request, item_code, warehouse, fg_item_group   # for Sub Assembly Item
+		), as_dict=1)
+	else:
+		if not frappe.db.exists("Sub Assembly Item", {"parent": production_material_request, "item_code": item_code, "warehouse": warehouse}) and not frappe.db.exists("Raw Materials", {"parent": production_material_request, "item_code": item_code, "warehouse": warehouse}):
+			return "item not found"
+
+		pmr = frappe.db.sql("""
 			SELECT 
-				sai.item_code, 
-				sai.item_name, 
-				sai.required_plan, 
-				sai.stock_in_shop_floor
-			FROM `tabSub Assembly Item` sai
-			WHERE 
-				sai.parent = %s AND 
-				sai.item_code = %s AND 
-				sai.warehouse = %s AND
-				sai.fg_item_group = %s
-    
-		) AS combined
-		GROUP BY item_code, item_name
-	""", (
-		flt(mr_qty), 
-		production_material_request, item_code, warehouse, fg_item_group, # for Raw Materials
-		production_material_request, item_code, warehouse, fg_item_group   # for Sub Assembly Item
-	), as_dict=1)
+				item_code,
+				item_name,
+				(SUM(required_plan)) AS total_required_qty,
+				SUM(stock_in_shop_floor) AS shop_floor_qty
+			FROM (
+				SELECT 
+					rm.item_code, 
+					rm.item_name, 
+					rm.required_plan, 
+					rm.stock_in_shop_floor
+				FROM `tabRaw Materials` rm
+				WHERE 
+					rm.parent = %s AND 
+					rm.item_code = %s AND 
+					rm.warehouse = %s
 
+				UNION ALL
+
+				SELECT 
+					sai.item_code, 
+					sai.item_name, 
+					sai.required_plan, 
+					sai.stock_in_shop_floor
+				FROM `tabSub Assembly Item` sai
+				WHERE 
+					sai.parent = %s AND 
+					sai.item_code = %s AND 
+					sai.warehouse = %s
+		
+			) AS combined
+			GROUP BY item_code, item_name
+		""", (
+			production_material_request, item_code, warehouse, # for Raw Materials
+			production_material_request, item_code, warehouse   # for Sub Assembly Item
+		), as_dict=1)
+	
+	issued = frappe.db.sql("""
+		SELECT SUM(mti.issued_qty)
+		FROM `tabMaterial Transfer Items` mti
+		JOIN `tabMaterial Transfer` mt ON mti.parent = mt.name
+		WHERE
+		mt.creation BETWEEN %s AND %s
+		AND mti.item_code = %s
+		AND mt.requested_department = %s
+	""", (start_datetime, end_datetime, item_code, department))
+ 
+	total_issued_qty = issued[0][0] if issued and issued[0][0] is not None else 0
+ 
 	data = []
 
 	for item in pmr:
@@ -4838,9 +4898,13 @@ def get_pmr_data(item_code, name=None, warehouse=None, department=None):
 			"actual_qty": flt(frappe.db.get_value("Bin", {
 				"item_code": item.item_code,
 				"warehouse": warehouse
-			}, "actual_qty")) or 0
+			}, "actual_qty")) or 0,
+			"today_requested_qty": mr_qty,
+			"issue_balance": mr_qty - total_issued_qty,
 		})
+  
 	return data
+
 
 
 # @frappe.whitelist()
@@ -4981,26 +5045,66 @@ def get_items_from_production_material_request(doctype, txt, searchfield, start,
 
 	source_warehouse = filters.get("source_warehouse")
 	if not source_warehouse:
-		return []
+		frappe.throw("Set the Source Warehouse before adding Item", title="Mandatory")
+
+	department = filters.get("department")
+	if not department:
+		frappe.throw("Set the Department before adding Item", title="Mandatory")
+
+	replaced_department = department.replace(" - WAIP", "")
+	item_group_map = {
+		"Evap & AC-Tubing": "EVAP/AC-Tubing", 
+		"Condenser Assy": "Condenser Assy", 
+		"HTR-Tubing": "HTR-Tubing", 
+		"IHX-Tubing": "IHX-Tubing", 
+	 	"Machining":"Machining",
+		"PSA": "PSA AC-Tubing",
+		"Sensor": "Sensor",
+		"NPD": "Development",
+		}
+ 
+	fg_item_group = item_group_map.get(replaced_department)
 
 	search_text = f"%{txt.strip()}%" if txt else "%"
 	start = int(start)
 	page_len = int(page_len)
-	return frappe.db.sql("""
-		SELECT DISTINCT item_code, item_name
-		FROM (
-			SELECT rm.item_code, rm.item_name
-			FROM `tabRaw Materials` rm
-			WHERE rm.parent = %s AND rm.warehouse = %s
+ 
+	if replaced_department != "Cutting":
+		return frappe.db.sql("""
+			SELECT DISTINCT item_code, item_name
+			FROM (
+				SELECT rm.item_code, rm.item_name
+				FROM `tabRaw Materials` rm
+				WHERE rm.parent = %s AND rm.warehouse = %s AND rm.fg_item_group = %s
 
-			UNION ALL
+				UNION ALL
 
-			SELECT sai.item_code, sai.item_name
-			FROM `tabSub Assembly Item` sai
-			WHERE sai.parent = %s AND sai.warehouse = %s
-		) AS merged_items
-		WHERE (item_code LIKE %s OR item_name LIKE %s)
-	""", (production_material_request, source_warehouse, production_material_request, source_warehouse, search_text, search_text))
+				SELECT sai.item_code, sai.item_name
+				FROM `tabSub Assembly Item` sai
+				WHERE sai.parent = %s AND sai.warehouse = %s AND sai.fg_item_group = %s
+			) AS merged_items
+			WHERE (item_code LIKE %s OR item_name LIKE %s)
+		""", (production_material_request, source_warehouse, fg_item_group,
+		production_material_request, source_warehouse, fg_item_group,
+		search_text, search_text))
+	else:
+		return frappe.db.sql("""
+			SELECT DISTINCT item_code, item_name
+			FROM (
+				SELECT rm.item_code, rm.item_name
+				FROM `tabRaw Materials` rm
+				WHERE rm.parent = %s AND rm.warehouse = %s
+
+				UNION ALL
+
+				SELECT sai.item_code, sai.item_name
+				FROM `tabSub Assembly Item` sai
+				WHERE sai.parent = %s AND sai.warehouse = %s
+			) AS merged_items
+			WHERE (item_code LIKE %s OR item_name LIKE %s)
+		""", (production_material_request, source_warehouse,
+		production_material_request, source_warehouse,
+		search_text, search_text))
 
 @frappe.whitelist()
 def update_jobcard_posting_date():
@@ -9123,7 +9227,20 @@ def set_hod(doc, method):
 @frappe.whitelist()
 def get_custom_bom_pmr(doctype, txt, searchfield, start, page_len, filters):
 	warehouse = filters.get("warehouse")
-
+	department = filters.get("department")
+	replaced_department = department.replace(" - WAIP", "")
+	item_group_map = {
+		"Evap & AC-Tubing": "EVAP/AC-Tubing", 
+		"Condenser Assy": "Condenser Assy", 
+		"HTR-Tubing": "HTR-Tubing", 
+		"IHX-Tubing": "IHX-Tubing", 
+	 	"Machining":"Machining",
+		"PSA": "PSA AC-Tubing",
+		"Sensor": "Sensor",
+		"NPD": "Development",
+		}
+	fg_item_group = item_group_map.get(replaced_department)
+	
 	# Get the latest Production Material Request
 	pmr = frappe.db.get_value(
 		"Production Material Request",
@@ -9137,11 +9254,18 @@ def get_custom_bom_pmr(doctype, txt, searchfield, start, page_len, filters):
 	# Collect unique parent BOMs from both Sub Assembly Item & Raw Materials
 	parent_boms = set()
 	for child_table in ("Sub Assembly Item", "Raw Materials"):
-		boms = frappe.get_all(
-			child_table,
-			filters={"parent": pmr, "warehouse": warehouse},
-			pluck="parent_bom"
-		)
+		if replaced_department != "Cutting":
+			boms = frappe.get_all(
+				child_table,
+				filters={"parent": pmr, "warehouse": warehouse, "fg_item_group": fg_item_group},
+				pluck="parent_bom"
+			)
+		else:
+			boms = frappe.get_all(
+				child_table,
+				filters={"parent": pmr, "warehouse": warehouse},
+				pluck="parent_bom"
+			)
 		# Filter out None/empty values and ensure uniqueness
 		parent_boms.update(bom for bom in boms if bom)
 
@@ -10378,109 +10502,16 @@ def get_balance_schedule(pdate, item_code=None, po_no=None, customer_code=None):
 
 	return {"pending_qty": schedule.pending_qty}
 
-
-
-
-
-# @frappe.whitelist()
-# def request_vs_actual_mt(from_date, to_date):
-	
-	
-
-	
-# 	# results = frappe.db.sql("""
-# 	# 	SELECT 
-# 	# 		item_code,
-# 	# 		item_name,
-# 	# 		SUM(custom_requesting_qty) AS requested_qty,
-# 	# 		SUM(ordered_qty) AS completed_qty
-# 	# 	FROM 
-# 	# 		`tabMaterial Request Item`
-# 	# 	WHERE 
-# 	# 		parent IN (
-# 	# 			SELECT name FROM `tabMaterial Request`
-# 	# 			WHERE transaction_date BETWEEN %s AND %s
-# 	# 		)
-# 	# 		AND docstatus = 1
-# 	# 	GROUP BY 
-# 	# 		item_code, item_name
-# 	# """, (from_date, to_date), as_dict=True)
- 
-# 	dep_per =[]
-# 	results = []
-	
-	
-	
- 
-# 	if frappe.db.exists("User Permission", {"user": frappe.session.user, "allow": "Department"}):
-		
-# 		dep = frappe.db.get_all("User Permission", filters={"user": frappe.session.user, "allow": "Department"},pluck="for_value")
-
-# 		if dep:
-# 			for i in dep:
-				 
-# 				dep_per.append(i) 
-# 				dep_per_each = frappe.db.get_all("Department",filters={"parent_department":i},pluck="name")
-# 				if dep_per_each:
-					
-# 					dep_per.extend(dep_per_each)
-				
-					
-		
-# 		if dep_per :
-		
-
-# 			mr= frappe.get_all("Material Request", 
-# 						filters={"transaction_date": ["between", [from_date, to_date]],"docstatus": 1,"custom_department":["in",dep_per]},
-# 						pluck="name")
-		
-		
-# 	else:
-# 		mr= frappe.get_all("Material Request", 
-# 				filters={"transaction_date": ["between", [from_date, to_date]],"docstatus": 1},
-# 				pluck="name")    
-	
-# 	if mr:
-  
-  
-# 		data = frappe.get_all(
-# 			"Material Request Item",
-# 			filters={
-# 				"parent": ["in", mr ]
-				
-# 			},
-# 			fields=["item_code", "item_name", "custom_requesting_qty", "ordered_qty"]
-# 		)
-
-		
-# 		grouped_data = {}
-# 		for item in data:
-# 			key = (item["item_code"], item["item_name"])
-# 			if key not in grouped_data:
-# 				grouped_data[key] = {"requested_qty": 0, "completed_qty": 0}
-# 			grouped_data[key]["requested_qty"] += item.get("custom_requesting_qty", 0) or 0
-# 			grouped_data[key]["completed_qty"] += item.get("ordered_qty", 0) or 0
-
-		
-		
-# 		for (item_code, item_name), qtys in grouped_data.items():
-# 			results.append({
-# 				"item_code": item_code,
-# 				"item_name": item_name,
-# 				"requested_qty": qtys["requested_qty"],
-# 				"completed_qty": qtys["completed_qty"]
-# 			})
-
-
-	
-# 	return results
-
 @frappe.whitelist()
 def request_vs_actual_mt(from_date, to_date):
 	dep_per = []
 	results = []
-
-	
+ 
+	from frappe.utils import get_datetime
+	start_dt = get_datetime(from_date + " 08:31:00")
+	end_dt = get_datetime(to_date + " 08:30:00")
+	end_dt = add_days(end_dt, 1)
+ 
 	def get_all_sub_departments(dept):
 		children = frappe.db.get_all(
 			"Department",
@@ -10509,7 +10540,7 @@ def request_vs_actual_mt(from_date, to_date):
 			mr = frappe.get_all(
 				"Material Request",
 				filters={
-					"transaction_date": ["between", [from_date, to_date]],
+					"creation": ["between", [start_dt, end_dt]],
 					"docstatus": 1,
 					"custom_department": ["in", dep_per]
 				},
@@ -10518,7 +10549,7 @@ def request_vs_actual_mt(from_date, to_date):
 	else:
 		mr = frappe.get_all(
 			"Material Request",
-			filters={"transaction_date": ["between", [from_date, to_date]], "docstatus": 1},
+			filters={"creation": ["between", [start_dt, end_dt]], "docstatus": 1},
 			pluck="name"
 		)
 
@@ -10547,15 +10578,6 @@ def request_vs_actual_mt(from_date, to_date):
 			})
 
 	return results
-
-
-
-
-
-
-
-
-
 
 
 @frappe.whitelist()
@@ -10837,6 +10859,30 @@ def make_xlsx_css(sheet_name, records, from_date, to_date, wb=None):
 	return xlsx_file
 
 	
+# @frappe.whitelist()
+# def today_req_qty_update(item_code, date, department):
+# 	from frappe.utils import get_datetime, format_datetime
+# 	from datetime import timedelta
+
+# 	start_dt = get_datetime(date + " 08:31:00")
+# 	end_dt = start_dt + timedelta(days=1) - timedelta(seconds=1)
+
+# 	result = frappe.db.sql("""
+# 		SELECT SUM(mti.issued_qty)
+# 		FROM `tabMaterial Transfer Items` mti
+# 		JOIN `tabMaterial Transfer` mt ON mti.parent = mt.name
+# 		WHERE
+# 		mt.creation >= %s
+# 		AND mt.creation <= %s
+# 		AND mti.item_code = %s
+# 		AND mt.requested_department = %s
+# 	""", (start_dt, end_dt, item_code, department))
+	
+# 	total_issued_qty = result[0][0] if result and result[0][0] is not None else 0
+# 	return total_issued_qty
+
+
+
 @frappe.whitelist()
 def today_req_qty_update(item_code, date, department):
 	from frappe.utils import get_datetime, format_datetime
@@ -10858,10 +10904,6 @@ def today_req_qty_update(item_code, date, department):
 	
 	total_issued_qty = result[0][0] if result and result[0][0] is not None else 0
 	return total_issued_qty
-
-
-def test_check():
-    today_req_qty_update("HC827-EDFAA-01", "2026-02-10", "BOM-831-HSUAA-SFG-03-001")
 
 @frappe.whitelist()
 def get_rate_from_sales_order(item_code, customer_po, customer_code):
@@ -11658,9 +11700,9 @@ def update_pallet_h(name,item):
 
 @frappe.whitelist()
 def gate_entry_comp():
-    docs = frappe.get_all("Gate Entry",filters={"docstatus":1,"company":["is", "not set"]},fields=["name","entry_against","entry_id"])
-    if docs:
-        for i in docs:
-            doc_company = frappe.get_value(i.entry_against,{"name":i.entry_id},"company")
-            if doc_company:
-            	frappe.db.set_value("Gate Entry",i.name,"company",doc_company)
+	docs = frappe.get_all("Gate Entry",filters={"docstatus":1,"company":["is", "not set"]},fields=["name","entry_against","entry_id"])
+	if docs:
+		for i in docs:
+			doc_company = frappe.get_value(i.entry_against,{"name":i.entry_id},"company")
+			if doc_company:
+				frappe.db.set_value("Gate Entry",i.name,"company",doc_company)

@@ -101,7 +101,6 @@ frappe.ui.form.on("Item", {
         }
         else {
             frm.set_value("is_fixed_asset", 0)
-            frm.set_value("item_billing_type", "")
         }
     }
 });

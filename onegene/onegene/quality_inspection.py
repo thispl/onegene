@@ -14,7 +14,7 @@ def create_qid_data(doc, method):
 
 		doc.append("custom_qid", {
 			"qid_data": utc_no,
-			"quantity": doc.custom_pack_size,
+			"quantity": doc.custom_pack_size if doc.custom_pack_size > 0 else doc.custom_accepted_qty,
 			"store_receipt": 0
 		})
 
@@ -34,7 +34,7 @@ def get_qid_for_quality_inspection(quality_inspection):
 	if len(doc.custom_qid) > 0:
 		for row in doc.custom_qid:
 			template += f"""
-			<table style="margin-bottom: 30px;">
+			<table style="margin-bottom: 20px;">
 				<tr>
 					<td rowspan=5>
 						<img width="100px" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&amp;data={ row.qid_data }" alt="QR Code" />
@@ -58,7 +58,7 @@ def get_qid_for_quality_inspection(quality_inspection):
 			"""
 	if doc.custom_rejected_qty > 0:
 		template += f"""
-			<table style="margin-bottom: 30px;">
+			<table style="margin-bottom: 20px;">
 				<tr>
 					<td rowspan=5>
 						<img width="100px" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&amp;data={ frappe.utils.get_url('/app/quality-inspection/' + doc.name) }" alt="QR Code" />
@@ -81,7 +81,7 @@ def get_qid_for_quality_inspection(quality_inspection):
 			"""
 	if doc.custom_rework_qty > 0:
 		template += f"""
-			<table style="margin-bottom: 30px;">
+			<table style="margin-bottom: 20px;">
 				<tr>
 					<td rowspan=5>
 						<img width="100px" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&amp;data={ frappe.utils.get_url('/app/quality-inspection/' + doc.name) }" alt="QR Code" />
@@ -104,13 +104,8 @@ def get_qid_for_quality_inspection(quality_inspection):
 			"""
 	html = render_template(template, context)
 
-	page_width = "210mm"
-	if doc.custom_rejected_qty > 0 and doc.custom_rework_qty > 0:
-		page_height = "210mm"
-	elif doc.custom_rejected_qty > 0 or doc.custom_rework_qty > 0:
-		page_height = "140mm"
-	else:
-		page_height = "70mm"
+	page_width = "150mm"
+	page_height = "52mm"
 
 	pdf_file = get_pdf(html, options={
 		"page-width": page_width,

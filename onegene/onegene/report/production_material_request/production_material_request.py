@@ -64,7 +64,7 @@ def _get_item_meta(item_code):
 	values = frappe.db.get_value(
 		"Item",
 		item_code,
-		["item_name", "item_group", "item_type", "custom_warehouse", "rejection_allowance", "pack_size", "custom_minimum_production_qty", "default_bom", "custom_fg_kanban"],
+		["item_name", "item_group", "item_type", "stock_uom", "custom_warehouse", "rejection_allowance", "pack_size", "custom_minimum_production_qty", "default_bom", "custom_fg_kanban"],
 		as_dict=True
 	) or {}
 	return values
@@ -494,6 +494,7 @@ def get_data(filters):
 
 		item_name = meta.get("item_name")
 		item_type = meta.get("item_type")
+		stock_uom = meta.get("stock_uom")
 		warehouse = meta.get("custom_warehouse")
 		item_group = meta.get("item_group")
 		bom = meta.get("default_bom")
@@ -520,6 +521,7 @@ def get_data(filters):
 			'reqd_plan': reqd_plan,
 			'date': sch_date,
 			'item_type': item_type,
+			'stock_uom': stock_uom,
 			'stock_in_sw': stock_in_sw,
 			'stock_in_sfg': stock_in_sfg,
 			'stock_in_sfs': stock_in_sfs,
@@ -554,6 +556,7 @@ def get_data(filters):
 			'reqd_plan': d.reqd_plan,
 			'date': d.date,
 			'item_type': d.item_type,
+			'stock_uom': d.stock_uom,
 			'stock_in_sw': d.stock_in_sw,
 			'warehouse': d.warehouse,
 			'stock_in_sfg': d.stock_in_sfg,
@@ -624,6 +627,7 @@ def get_data(filters):
 					'reqd_plan': reqd_plan_child,
 					'sales_order_number': d.sales_order_number,
 					'item_type': meta_child.get("item_type"),
+					'stock_uom': meta_child.get("stock_uom"),
 					'stock_in_sw': stock_in_sw_child,
 					'warehouse': meta_child.get("custom_warehouse"),
 					'stock_in_sfg': stock_in_sfg_child,
@@ -681,6 +685,7 @@ def get_data(filters):
 				'item_group': updated['item_group'],
 				'in_progress': updated['in_progress'],
 				'item_type': updated['item_type'],
+				'stock_uom': updated['stock_uom'],
 				'stock_in_sw': updated.get('stock_in_sw'),
 				'stock_in_sfg': updated.get('stock_in_sfg'),
 				'stock_in_sfs': updated.get('stock_in_sfs'),
@@ -721,6 +726,7 @@ def get_columns(filters):
 			{"label": _("Item Group"), "fieldtype": "Data", "fieldname": "item_group", "width": 150},
 			{"label": _("Item Type"), "fieldtype": "Data", "fieldname": "item_type", "width": 150},
 			{"label": _("Warehouse"), "fieldtype": "Data", "fieldname": "warehouse", "width": 250},
+			{"label": _("Stock UOM"), "fieldtype": "Data", "fieldname": "stock_uom", "width": 100},
 			{"label": _("Plan"), "fieldtype": "Float", "fieldname": "kanban_plan", "width": 150},
 			{"label": _("Stock In SW"), "fieldtype": "Float", "fieldname": "stock_in_sw", "width": 150},
 			{"label": _("Stock In SFG"), "fieldtype": "Float", "fieldname": "stock_in_sfg", "width": 150},
@@ -786,6 +792,7 @@ def format_data(data, filters):
 					ppd.item_group = row.get('item_group')
 					ppd.in_progress = row.get('in_progress')
 					ppd.item_type = row.get('item_type')
+					ppd.stock_uom = row.get('stock_uom')
 					ppd.date = start_date
 					ppd.month = month_upper
 					ppd.rej_allowance = float(row.get('rej_allowance') or 0)
@@ -814,6 +821,7 @@ def format_data(data, filters):
 			'item_group': row.get('item_group'),
 			'in_progress': row.get('in_progress'),
 			'item_type': row.get('item_type'),
+			'stock_uom': row.get('stock_uom'),
 			'warehouse': row.get('warehouse'),
 			'stock_in_sw': row.get('stock_in_sw'),
 			'stock_in_sfg': row.get('stock_in_sfg'),

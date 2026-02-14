@@ -173,25 +173,35 @@ def validate_qty(doc,method):
                     d.qty = actual_qty
 
 @frappe.whitelist()
-def explode_bom(bom):
-    bom_qty = frappe.db.get_value("BOM", bom, "quantity") or 1
+def explode_bom(bom, bom_qty, material_request, warehouse, department):
+    from onegene.onegene.custom import get_pmr_data
+    
     bom_items = frappe.get_all("BOM Item", filters={"parent": bom}, fields=["item_code", "qty", "bom_no"])
     exploded_items = []
 
     for item in bom_items:
-        exploded_items.append({
-            "item_code": item["item_code"],
-            "qty": (item["qty"] * bom_qty) or 0
-        })
-        # if item.get("bom_no"):
-        # 	# Recursively add sub-assembly items
-        # 	child_items = explode_bom(item["bom_no"])
-        # 	exploded_items.extend(child_items)
-
+        required_qty = (item["qty"] * flt(bom_qty))
+        data = get_pmr_data(item_code=item["item_code"], name=material_request, warehouse=warehouse, department=department)
+        if data != "item not found":
+            for row in data:
+                if row.get("total_required_qty") > 0:
+                    exploded_items.append({
+                        "item_code": row.get("item_code"),
+                        "item_name": row.get("item_name"),
+                        "pack_size": row.get("pack_size"),
+                        "uom": row.get("uom"),
+                        "requesting_qty": required_qty,
+                        "total_required_qty": row.get("total_required_qty"),
+                        "shop_floor_qty": row.get("shop_floor_qty"),
+                        "actual_qty": row.get("actual_qty"),
+                        "today_requested_qty": row.get("today_requested_qty"),
+                        "issue_balance": row.get("issue_balance"),
+                    })
+            
     return exploded_items
 
 @frappe.whitelist()
-def explode_and_update_bom_in_mri(bom, source_warehouse):
+def explode_and_update_bom_in_mri(bom, source_warehouse, bom_qty, material_request, warehouse, department):
     from frappe.utils import today, add_days
 
     start_datetime = f"{today()} 08:31:00"
@@ -209,16 +219,48 @@ def explode_and_update_bom_in_mri(bom, source_warehouse):
         frappe.throw("No Production Material Request found in the given time range.")
         frappe.throw("கொடுக்கப்பட்ட காலப்பகுதியில் எந்த Production Material Request -ம் கண்டுபிடிக்கப்படவில்லை.")
 
-
     pmr = result[0][0]
 
     data = []
-    exploded_items = explode_bom(bom)
+    exploded_items = explode_bom(bom, bom_qty, material_request, warehouse, department)
 
     for row in exploded_items:
         item_code = row["item_code"]
         if frappe.db.exists("Sub Assembly Item", {"item_code": item_code, "parent": pmr, "warehouse": source_warehouse}) or frappe.db.exists("Raw Materials", {"item_code": item_code, "parent": pmr, "warehouse": source_warehouse}):
-            data.append({"item_code": item_code})
+            requesting_qty = row.get("requesting_qty")
+            pack_size = row.get("pack_size") or 0
+            if pack_size > 0:
+
+                if 0 < requesting_qty < pack_size:
+                    requesting_qty = pack_size
+
+                elif requesting_qty > pack_size:
+                    rem = requesting_qty % pack_size
+
+                    # if rem > 0:
+                    #     frappe.throw(
+                    #         "Requesting Qty must be multiple of Pack Size\n"
+                    #         "கோரப்பட்ட அளவு, Pack Size-ன் பன்மடிக்காக இருக்க வேண்டும்"
+                    #     )
+
+                    if requesting_qty > row.get("total_required_qty"):
+                        requesting_qty = pack_size
+
+            else:
+                if requesting_qty > row.get("total_required_qty"):
+                    requesting_qty = row.get("total_required_qty")
+            data.append({
+                "item_code": row.get("item_code"),
+                "item_name": row.get("item_name"),
+                "pack_size": pack_size,
+                "uom": row.get("uom"),
+                "total_required_qty": row.get("total_required_qty"),
+                "shop_floor_qty": row.get("shop_floor_qty"),
+                "actual_qty": row.get("actual_qty"),
+                "requesting_qty": row.get("requesting_qty"),
+                "today_requested_qty": row.get("today_requested_qty"),
+                "issue_balance": row.get("issue_balance"),
+            })
     return data
 
 @frappe.whitelist()

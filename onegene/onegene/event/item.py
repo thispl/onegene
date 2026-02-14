@@ -196,3 +196,10 @@ def indian_format(n):
 			s = s[:-2]
 		s2 = s + "," + s2
 	return s2
+
+# Uodate Item Group in BOM when Item Group is changed for Process Item
+def update_item_group(doc, method):
+    item_group_changed = doc.has_value_changed("item_group")
+    if item_group_changed:
+        if doc.item_type == "Process Item":
+            frappe.db.set_value("BOM", {"item": doc.name}, "custom_item_group", doc.item_group)

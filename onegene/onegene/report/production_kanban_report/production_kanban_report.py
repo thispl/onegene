@@ -241,8 +241,8 @@ def get_columns(filters):
 			{"label": _("Bin Qty"), "fieldtype": "Data", "fieldname": "pack_size", "width": 100},
 			{"label": _("Per Day Plan"), "fieldtype": "Data", "fieldname": "total", "width": 150,},
 			{"label": _("FG Kanban Qty"), "fieldtype": "Data", "fieldname": "fg_kanban", "width": 150,},
-			{"label": _("PPC Plan"), "fieldtype": "Data", "fieldname": "ppc_plan", "width": 100},
-			{"label": _("PPC Tentative Plan"), "fieldtype": "Data", "fieldname": "ppc_tentative_plan", "width": 200},
+			{"label": _("PPC D Plan"), "fieldtype": "Data", "fieldname": "ppc_plan", "width": 100},
+			{"label": _("PPC D+1 Plan"), "fieldtype": "Data", "fieldname": "ppc_tentative_plan", "width": 200},
 			{"label": _("FG Stock Qty"), "fieldtype": "Link", "fieldname": "actual_stock_qty", "width": 110,"options":"Material Planning Details"},
 			
 			{"label": _("Delivered Qty"), "fieldtype": "Data", "fieldname": "del_qty", "width": 150},
@@ -260,8 +260,8 @@ def get_columns(filters):
 			{"label": _("Bin Qty"), "fieldtype": "Data", "fieldname": "pack_size", "width": 100},
 			{"label": _("Per Day Plan"), "fieldtype": "Data", "fieldname": "total", "width": 150,},
 			{"label": _("FG Kanban Qty"), "fieldtype": "Data", "fieldname": "fg_kanban", "width": 150,},
-			{"label": _("PPC Plan"), "fieldtype": "Data", "fieldname": "ppc_plan", "width": 100},
-			{"label": _("PPC Tentative Plan"), "fieldtype": "Data", "fieldname": "ppc_tentative_plan", "width": 200},
+			{"label": _("PPC D Plan"), "fieldtype": "Data", "fieldname": "ppc_plan", "width": 100},
+			{"label": _("PPC D+1 Plan"), "fieldtype": "Data", "fieldname": "ppc_tentative_plan", "width": 200},
 			{"label": _("FG Stock Qty"), "fieldtype": "Link", "fieldname": "actual_stock_qty", "width": 110,"options":"Material Planning Details"},
 			
 			{"label": _("Delivered Qty"), "fieldtype": "Data", "fieldname": "del_qty", "width": 150},

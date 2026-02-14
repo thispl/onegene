@@ -79,10 +79,26 @@ def enqueue_mark_att():
     frappe.enqueue(
         "onegene.mark_attendance.mark_att",
         queue="long",
-        timeout=17*60,
+        timeout=6000,
         job_name="mark_att",
     )
     
+
+@frappe.whitelist()
+def mark_att_manual():
+	# method update yesterday and today attendance
+	from_date = '2026-02-11'
+	to_date = '2026-02-12'
+	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "Canteen" order by time ASC """%(from_date,to_date),as_dict=1)
+	for c in checkins:
+		employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
+		if employee:
+			mark_attendance_from_checkin_new(c.employee,c.time,c.log_type)
+	mark_absent(from_date,to_date) 
+	update_regularize(from_date,to_date)
+	mark_wh_ot(from_date,to_date)   
+	submit_present_att(from_date,to_date) 
+	mark_late_early(from_date,to_date)
 @frappe.whitelist()
 def mark_att():
 	# method update yesterday and today attendance
@@ -98,6 +114,7 @@ def mark_att():
 	mark_wh_ot(from_date,to_date)   
 	submit_present_att(from_date,to_date) 
 	mark_late_early(from_date,to_date)
+	frappe.log_error(title='Attendance Alert', message="Attendance Marked for date: {0}".format(from_date))
 
 	
 @frappe.whitelist()
