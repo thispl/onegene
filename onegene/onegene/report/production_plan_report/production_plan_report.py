@@ -387,23 +387,87 @@ def plan_data(data, filters):
 	return planned_data
 
 
+# import openpyxl
+# from openpyxl.styles import Alignment
+# @frappe.whitelist(allow_guest=False)
+# def download_kqty_template():
+# 	import json, re, base64, io, datetime, calendar
+# 	from openpyxl import Workbook
+
+# 	data = frappe.form_dict.get('data')
+# 	month_str = frappe.form_dict.get('month')
+	
+# 	if isinstance(data, str):
+# 		data = json.loads(data)
+
+# 	wb = Workbook()
+# 	ws = wb.active
+# 	ws.title = "Production Kanban Qty"
+# 	ws.freeze_panes = 'C2'
+
+# 	month_map = {
+# 		'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+# 		'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+# 	}
+# 	month = month_map.get(month_str)
+
+# 	today = datetime.date.today()
+# 	last_day = calendar.monthrange(today.year, month)[1]
+	
+# 	if month == today.month:
+# 		start_day = today.day
+# 	else:
+# 		start_day = 1
+# 	if start_day > last_day:
+# 		start_day = last_day
+
+# 	header = ['Item Code', 'Item Name']
+# 	day_headers = [f"{month_str}-{str(day).zfill(2)}" for day in range(start_day, last_day + 1)]
+# 	header.extend(day_headers)
+
+# 	ws.append(header)
+# 	ws.column_dimensions['A'].width = 20  
+# 	ws.column_dimensions['B'].width = 40  
+
+# 	for idx, day_header in enumerate(day_headers, start=3):  
+# 		cell = ws.cell(row=1, column=idx)
+# 		cell.value = str(day_header)
+# 		cell.number_format = '@'
+
+# 	# 🚫 Skip the last row (Total row)
+# 	data_to_export = data[:-1] if data and isinstance(data, list) and len(data) > 1 else data
+
+# 	for row in data_to_export:
+# 		item_code = re.sub(r'<.*?>', '', row.get("item_code", ""))  # remove HTML
+# 		row_data = [item_code, row.get("item_name", "")]
+# 		row_data.extend([""] * len(day_headers))
+# 		ws.append(row_data)
+
+# 	file_data = io.BytesIO()
+# 	wb.save(file_data)
+# 	file_data.seek(0)
+
+# 	encoded = base64.b64encode(file_data.getvalue()).decode()
+# 	filename = "kanban_qty_template.xlsx"
+# 	return {"filename": filename, "data": encoded}
+
+
+
 import openpyxl
 from openpyxl.styles import Alignment
+
 @frappe.whitelist(allow_guest=False)
 def download_kqty_template():
+	import frappe
 	import json, re, base64, io, datetime, calendar
 	from openpyxl import Workbook
+	from collections import defaultdict
 
 	data = frappe.form_dict.get('data')
 	month_str = frappe.form_dict.get('month')
-	
+
 	if isinstance(data, str):
 		data = json.loads(data)
-
-	wb = Workbook()
-	ws = wb.active
-	ws.title = "Production Kanban Qty"
-	ws.freeze_panes = 'C2'
 
 	month_map = {
 		'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
@@ -412,44 +476,97 @@ def download_kqty_template():
 	month = month_map.get(month_str)
 
 	today = datetime.date.today()
-	last_day = calendar.monthrange(today.year, month)[1]
-	
-	if month == today.month:
-		start_day = today.day
-	else:
-		start_day = 1
+	year = today.year
+	last_day = calendar.monthrange(year, month)[1]
+
+	start_day = today.day if month == today.month else 1
 	if start_day > last_day:
 		start_day = last_day
 
+	
+	wb = Workbook()
+	ws = wb.active
+	ws.title = "Production Kanban Qty"
+	ws.freeze_panes = 'C2'
+
+	
 	header = ['Item Code', 'Item Name']
 	day_headers = [f"{month_str}-{str(day).zfill(2)}" for day in range(start_day, last_day + 1)]
 	header.extend(day_headers)
-
 	ws.append(header)
-	ws.column_dimensions['A'].width = 20  
-	ws.column_dimensions['B'].width = 40  
 
-	for idx, day_header in enumerate(day_headers, start=3):  
-		cell = ws.cell(row=1, column=idx)
-		cell.value = str(day_header)
-		cell.number_format = '@'
+	ws.column_dimensions['A'].width = 20
+	ws.column_dimensions['B'].width = 40
 
-	# 🚫 Skip the last row (Total row)
+	
 	data_to_export = data[:-1] if data and isinstance(data, list) and len(data) > 1 else data
 
+	
+	from_date = datetime.date(year, month, 1)
+	to_date = datetime.date(year, month, last_day)
+
+	
+	dpp_list = frappe.get_all(
+		"Daily Production Plan",
+		filters={"date": ["between", [from_date, to_date]]},
+		fields=["name", "date"]
+	)
+
+	
+	item_plan_map = defaultdict(dict)
+
+	for dpp in dpp_list:
+		doc = frappe.get_doc("Daily Production Plan", dpp.name)
+		day = doc.date.day
+
+		if day < start_day:
+			continue
+
+		for row in doc.items:
+			item_plan_map[row.item_code][day] = row.plan
+
+	
+	items_with_values = []
+	items_without_values = []
+
 	for row in data_to_export:
-		item_code = re.sub(r'<.*?>', '', row.get("item_code", ""))  # remove HTML
-		row_data = [item_code, row.get("item_name", "")]
+		item_code = re.sub(r'<.*?>', '', row.get("item_code", ""))
+		item_name = row.get("item_name", "")
+
+		plans = item_plan_map.get(item_code, {})
+
+		if plans:
+			items_with_values.append((item_code, item_name, plans))
+		else:
+			items_without_values.append((item_code, item_name))
+
+	
+	for item_code, item_name, plans in items_with_values:
+		row_data = [item_code, item_name]
+		for day in range(start_day, last_day + 1):
+			row_data.append(plans.get(day, ""))
+		ws.append(row_data)
+
+	
+	for item_code, item_name in items_without_values:
+		row_data = [item_code, item_name]
 		row_data.extend([""] * len(day_headers))
 		ws.append(row_data)
 
+	
 	file_data = io.BytesIO()
 	wb.save(file_data)
 	file_data.seek(0)
 
 	encoded = base64.b64encode(file_data.getvalue()).decode()
 	filename = "kanban_qty_template.xlsx"
+
 	return {"filename": filename, "data": encoded}
+
+
+
+
+
 
 import frappe
 from frappe.utils.file_manager import get_file

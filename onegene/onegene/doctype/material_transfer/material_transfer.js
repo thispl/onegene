@@ -6,7 +6,6 @@ frappe.ui.form.on('Material Transfer', {
    
     material_request :function(frm){
             
-        console.log(frm.doc.material_request);
         // setTimeout(() => {    
         if (frm.doc.material_request) {
             frappe.call({
@@ -229,12 +228,14 @@ frappe.ui.form.on("Material Transfer Items", {
     },
     issued_qty: function(frm, cdt, cdn) {
         let row = frappe.get_doc(cdt,cdn);
-        if (row.issued_qty > row.stock_qty){
-            frappe.msgprint("Issued Quantity is larger than Stock Quantity");
-            frappe.msgprint("Issued Quantity, Stock Quantity-யை விட அதிகமாக உள்ளது");
+        
+        // Temp Hidden
+        // if (row.issued_qty > row.stock_qty){
+        //     frappe.msgprint("Issued Quantity is larger than Stock Quantity");
+        //     frappe.msgprint("Issued Quantity, Stock Quantity-யை விட அதிகமாக உள்ளது");
 
-            frappe.model.set_value(cdt, cdn, "issued_qty", 0);
-        }
+        //     frappe.model.set_value(cdt, cdn, "issued_qty", 0);
+        // }
         if(row.issued_qty>row.requested_qty){
             frappe.msgprint("Issued Quantity is larger than Requested Quantity");
             frappe.msgprint("Issued Quantity, Requested Quantity-யை விட அதிகமாக உள்ளது");

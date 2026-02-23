@@ -29,7 +29,9 @@
   "items",
   "gate_entry_items",
   "end_bit_scrap",
-  "no_of_box"
+  "no_of_box",
+  "section_break_aijx",
+  "remarks"
  ],
  "fields": [
   {
@@ -193,13 +195,22 @@
    "label": "End Bit Scrap & Return",
    "options": "Supplier-DN Scrap",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_aijx",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-13 11:26:44.433296",
- "modified_by": "amar.p@groupteampro.com",
+ "modified": "2026-02-19 10:49:54.322250",
+ "modified_by": "pavithra.s@groupteampro.com",
  "module": "ONEGENE",
  "name": "Gate Entry",
  "naming_rule": "Expression (old style)",

@@ -76,7 +76,7 @@ class MaterialTransfer(Document):
         frappe.db.sql("""
             UPDATE `tabMaterial Request`
             SET workflow_state = CASE
-                WHEN status = 'Partially Ordered' THEN 'Partially Received'
+                WHEN status = 'Partially Received' THEN 'Partially Received'
                 WHEN status = 'Transferred' THEN 'Received'
                 ELSE 'Material Pending'
                 END
@@ -154,7 +154,6 @@ def make_material_transfer(material_request):
             frappe.throw(_(
                 f"Item {row.item_code}: கோரப்பட்ட அளவிற்கு மேல் ஏற்கனவே வழங்கப்பட்டுள்ளது."
             ))
-
 
 
         stock_qty = frappe.db.get_value("Bin", {"warehouse": material_request.set_from_warehouse, "item_code": row.item_code}, "actual_qty")

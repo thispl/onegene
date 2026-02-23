@@ -94,8 +94,28 @@ def get_data(filters):
 		values.append("Direct")
 
 	if filters.get("item_group"):
-		conditions += " AND jc.custom_item_group = %s"
-		values.append(filters.get("item_group"))
+		item_group = filters.get("item_group")
+		is_group = frappe.db.get_value('Item Group', item_group, 'is_group')
+
+		if is_group == 0:
+			conditions += " AND jc.custom_item_group = %s"
+			values.append(item_group)
+		else:
+			item_group_list = []
+
+			sub_groups = frappe.db.get_all(
+				'Item Group',
+				{'parent_item_group': item_group},
+				['name']
+			)
+
+			for s in sub_groups:
+				item_group_list.append(s.name)
+
+			item_group_list.append(item_group)
+
+			conditions += " AND jc.custom_item_group IN %s"
+			values.append(tuple(item_group_list))  
 
 	if filters.get("item_code"):
 		conditions += " AND jc.production_item = %s"

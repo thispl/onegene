@@ -40,9 +40,9 @@ def mark_att_month():
 	# to_date = datetime.strptime(to_date, "%d-%m-%Y").date()
 	# from_date = get_first_day(from_date)
 	# to_date = get_last_day(to_date)
-	# checkins = frappe.db.sql("""select count(*) as count from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "Canteen" order by time ASC  """%(from_date,to_date),as_dict=1)
+	# checkins = frappe.db.sql("""select count(*) as count from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "P1 CANTEEN" order by time ASC  """%(from_date,to_date),as_dict=1)
 	# print(checkins)
-	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "Canteen"  order by time ASC """%(from_date,to_date),as_dict=1)
+	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "P1 CANTEEN"  order by time ASC """%(from_date,to_date),as_dict=1)
 	for c in checkins:
 		print(c.name)
 		employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
@@ -62,8 +62,8 @@ def mark_att_multidate():
 	# to_date = today()
 	from_date="2025-10-10"
 	to_date="2025-10-11"
-	checkins = frappe.db.sql("""select count(*) as count from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "Canteen" order by time ASC  """%(from_date,to_date),as_dict=1)
-	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "Canteen"  order by time ASC """%(from_date,to_date),as_dict=1)
+	checkins = frappe.db.sql("""select count(*) as count from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "P1 CANTEEN" order by time ASC  """%(from_date,to_date),as_dict=1)
+	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "P1 CANTEEN"  order by time ASC """%(from_date,to_date),as_dict=1)
 	for c in checkins:
 		employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
 		if employee:  
@@ -89,7 +89,7 @@ def mark_att_manual():
 	# method update yesterday and today attendance
 	from_date = '2026-02-11'
 	to_date = '2026-02-12'
-	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "Canteen" order by time ASC """%(from_date,to_date),as_dict=1)
+	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "P1 CANTEEN" order by time ASC """%(from_date,to_date),as_dict=1)
 	for c in checkins:
 		employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
 		if employee:
@@ -104,7 +104,7 @@ def mark_att():
 	# method update yesterday and today attendance
 	from_date = add_days(today(),-1)
 	to_date = add_days(today(),0)
-	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "Canteen" order by time ASC """%(from_date,to_date),as_dict=1)
+	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "P1 CANTEEN" order by time ASC """%(from_date,to_date),as_dict=1)
 	for c in checkins:
 		employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
 		if employee:
@@ -114,7 +114,7 @@ def mark_att():
 	mark_wh_ot(from_date,to_date)   
 	submit_present_att(from_date,to_date) 
 	mark_late_early(from_date,to_date)
-	frappe.log_error(title='Attendance Alert', message="Attendance Marked for date: {0}".format(from_date))
+	frappe.log_error(title='Attendance Alert', message="Attendance Marked for date: {0}".format(to_date))
 
 	
 @frappe.whitelist()
@@ -151,7 +151,7 @@ def update_regularize_employee(employee,from_date,to_date):
 def mark_att_without_employee(date):
 	# method to update the attendance based on the given date in attendance settings without passing employee ID
 	from_date = to_date = date
-	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "Canteen" order by time ASC """%(from_date,to_date),as_dict=1)
+	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "P1 CANTEEN" order by time ASC """%(from_date,to_date),as_dict=1)
 	for c in checkins:
 		print(c.name)
 		employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
@@ -174,7 +174,7 @@ def mark_att_from_frontend_with_employee(date,employee):
 	# method to update the attendance based on the given date and employee in attendance settings
 	from_date = to_date = date
 	
-	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time)= '%s' and employee = '%s' and device_id != "Canteen" order by time ASC """%(from_date,employee),as_dict=1)
+	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time)= '%s' and employee = '%s' and device_id != "P1 CANTEEN" order by time ASC """%(from_date,employee),as_dict=1)
 	for c in checkins:
 		employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
 		if employee:  
@@ -193,7 +193,7 @@ def mark_attendance_from_checkin(employee,time,log_type):
 	if log_type == 'IN':
 		
 		att = frappe.db.exists('Attendance',{"employee":employee,'attendance_date':att_date,'docstatus':['!=','2']})   
-		checkins = frappe.db.sql(""" select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'IN' and date(time) = '%s' and device_id != "Canteen" order by time ASC"""%(employee,att_date),as_dict=True)
+		checkins = frappe.db.sql(""" select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'IN' and date(time) = '%s' and device_id != "P1 CANTEEN" order by time ASC"""%(employee,att_date),as_dict=True)
 		if not att:
 			print(employee)
 			att = frappe.new_doc("Attendance")
@@ -248,17 +248,17 @@ def mark_attendance_from_checkin(employee,time,log_type):
 			today_att = frappe.get_doc("Attendance",today_att)
 			if today_att.in_time:
 				in_time = today_att.in_time.time()
-				checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,in_time),as_dict=True)
-				today_out = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,in_time),as_dict=True)
+				checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,in_time),as_dict=True)
+				today_out = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,in_time),as_dict=True)
 			else:
 				max_out_checkin = datetime.strptime('12:30:00','%H:%M:%S').time()
-				checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
-				today_out = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
+				checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
+				today_out = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
 		else:
 			max_out_checkin = datetime.strptime('12:30:00','%H:%M:%S').time()
 			today_out=''
-			# today_out = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,in_time),as_dict=True)
-			checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
+			# today_out = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,in_time),as_dict=True)
+			checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
 		if checkins and not today_out:
 			# if log type out present before 12.30 and not after 12.30 previous day attendance only updated
 			yesterday = add_days(att_date,-1)
@@ -323,7 +323,7 @@ def mark_attendance_from_checkin(employee,time,log_type):
 				return att	
 		# if log type out present after 12.30 and not before 12.30 current day attendance only updated
 		if today_out and not checkins:
-			checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee ='%s' and log_type = 'OUT' and date(time) = '%s' and device_id != "Canteen" order by time ASC"""%(employee,att_date),as_dict=True)
+			checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee ='%s' and log_type = 'OUT' and date(time) = '%s' and device_id != "P1 CANTEEN" order by time ASC"""%(employee,att_date),as_dict=True)
 			att = frappe.db.exists("Attendance",{'employee':employee,'attendance_date':att_date,'docstatus':('!=',2)})
 			if att:
 				att = frappe.get_doc("Attendance",att)
@@ -481,7 +481,7 @@ def mark_attendance_from_checkin(employee,time,log_type):
 		else:
 			yesterday = add_days(att_date,1)
 			next_att = frappe.db.get_value("Attendance",{'employee':employee,'attendance_date':yesterday,'docstatus':('!=',2)},['in_time'])
-			next_checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "Canteen" order by time ASC """%(employee,yesterday,next_att),as_dict=True)
+			next_checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,yesterday,next_att),as_dict=True)
 			att = frappe.db.exists("Attendance", {'employee': employee, 'attendance_date': att_date, 'docstatus': ('!=', 2)})
 			if att:
 				att = frappe.get_doc("Attendance",att)
@@ -1734,7 +1734,7 @@ def mark_attendance_from_checkin_new(employee,time,log_type):
 	att_time = time.time()
 	if log_type == 'IN':
 		att = frappe.db.exists('Attendance',{"employee":employee,'attendance_date':att_date,'docstatus':['!=','2']})   
-		checkins = frappe.db.sql(""" select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'IN' and date(time) = '%s' and device_id != "Canteen" order by time ASC"""%(employee,att_date),as_dict=True)
+		checkins = frappe.db.sql(""" select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'IN' and date(time) = '%s' and device_id != "P1 CANTEEN" order by time ASC"""%(employee,att_date),as_dict=True)
 		if not att:
 			print(employee)
 			att = frappe.new_doc("Attendance")
@@ -1802,16 +1802,16 @@ def mark_attendance_from_checkin_new(employee,time,log_type):
 		if today_att:
 			today_att = frappe.get_doc("Attendance",today_att)
 			if today_att.in_time:
-				checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,today_att.in_time),as_dict=True)
-				today_out=frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,today_att.in_time),as_dict=True)
+				checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,today_att.in_time),as_dict=True)
+				today_out=frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,today_att.in_time),as_dict=True)
 			else:
 				max_out_checkin = datetime.strptime('12:30:00','%H:%M:%S').time()
-				today_out = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
-				checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
+				today_out = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) > '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
+				checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
 		else:
 			today_out=''
 			max_out_checkin = datetime.strptime('12:30:00','%H:%M:%S').time()
-			checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "Canteen" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
+			checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,att_date,max_out_checkin),as_dict=True)
 		if checkins and not today_out:
 			yesterday = add_days(att_date,-1)
 			att = frappe.db.exists("Attendance",{'employee':employee,'attendance_date':yesterday,'docstatus':('!=',2)})
@@ -1880,7 +1880,7 @@ def mark_attendance_from_checkin_new(employee,time,log_type):
 					frappe.db.commit()
 					return att	
 		if today_out and not checkins:			
-			checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee ='%s' and log_type = 'OUT' and date(time) = '%s' and device_id != "Canteen" order by time ASC"""%(employee,att_date),as_dict=True)
+			checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee ='%s' and log_type = 'OUT' and date(time) = '%s' and device_id != "P1 CANTEEN" order by time ASC"""%(employee,att_date),as_dict=True)
 			att = frappe.db.exists("Attendance",{'employee':employee,'attendance_date':att_date,'docstatus':('!=',2)})
 			if att:
 				att = frappe.get_doc("Attendance",att)
@@ -2072,7 +2072,7 @@ def mark_attendance_from_checkin_new(employee,time,log_type):
 		else:
 			yesterday = add_days(att_date,1)
 			next_att = frappe.db.get_value("Attendance",{'employee':employee,'attendance_date':yesterday,'docstatus':('!=',2)},['in_time'])
-			next_checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "Canteen" order by time ASC """%(employee,yesterday,next_att),as_dict=True)
+			next_checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where employee = '%s' and log_type = 'OUT' and date(time) = '%s' and TIME(time) < '%s' and device_id != "P1 CANTEEN" order by time ASC """%(employee,yesterday,next_att),as_dict=True)
 			att = frappe.db.exists("Attendance", {'employee': employee, 'attendance_date': att_date, 'docstatus': ('!=', 2)})
 			if att:
 				att = frappe.get_doc("Attendance",att)
@@ -2534,7 +2534,7 @@ def mark_att_without_employee_test():
 	# method to update the attendance based on the given date in attendance settings without passing employee ID
 	from_date = '2025-07-11'
 	to_date = '2025-07-12'
-	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "Canteen" order by time ASC """%(from_date,to_date),as_dict=1)
+	checkins = frappe.db.sql("""select * from `tabEmployee Checkin` where date(time) between '%s' and '%s' and device_id != "P1 CANTEEN" order by time ASC """%(from_date,to_date),as_dict=1)
 	for c in checkins:
 		employee = frappe.db.exists('Employee',{'status':'Active','date_of_joining':['<=',from_date],'name':c.employee})
 		if employee and c.employee == 'RA0326':

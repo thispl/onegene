@@ -750,17 +750,27 @@ def get_bom_details(bo, child):
 
 @frappe.whitelist()
 # method to create operation item list on button click from BOM
-def table_multiselect(docs,item,item_code,child,uom,req_tot_qty):
+def table_multiselect(operation,docs,item,item_code,child,uom,req_tot_qty,bom_item,avail_qty):
 	op = frappe.db.get_value("Operation Item List",{"document_name":docs,"item":item_code,"operation_name":child},["name"])
 	if not op:
 		bom_child = frappe.new_doc("Operation Item List")
 		bom_child.document_name = docs
 		bom_child.item = item_code
+		bom_child.bom_item = bom_item
+		bom_child.operation = operation
 		bom_child.operation_name = child
 		bom_child.selected_field = item
 		bom_child.req_tot_qty = req_tot_qty
 		bom_child.uom = uom
+		bom_child.qty = avail_qty
 		bom_child.save()
+
+@frappe.whitelist()
+# method to create operation item list on button click from BOM
+def operation_item_del(operation,docs,item,item_code,child,uom,req_tot_qty,bom_item,avail_qty):
+	op = frappe.db.get_value("Operation Item List",{"document_name":docs,"item":item_code,"operation_name":child},["name"])
+	if op:
+		frappe.delete_doc("Operation Item List",op)
 
 @frappe.whitelist()
 def bday_allocate():
@@ -1878,7 +1888,12 @@ def return_options():
 @frappe.whitelist()
 #return the last execution time of attendance cron
 def update_last_execution():
-	doc=frappe.db.get_value("Scheduled Job Log",{"scheduled_job_type":"mark_attendance.enqueue_mark_att","status":"Complete"},["creation"])
+	# doc=frappe.db.get_value("Scheduled Job Log",{"scheduled_job_type":"mark_attendance.enqueue_mark_att","status":"Complete"},["creation"])
+	# if doc:
+	# 	return doc
+	to_date = add_days(today(),0)
+	error="Attendance Marked for date: {0}".format(to_date)
+	doc=frappe.db.get_value("Error Log",{"method":"Attendance Alert","error":error},["creation"])
 	if doc:
 		return doc
 	
@@ -3889,6 +3904,7 @@ def update_quantity_in_job_card(doc, method):
 		for row in doc.items:
 			required_qty = (flt(row.required_qty) / flt(doc.for_quantity))
 			row.custom_consumption_qty = flt(required_qty) * flt(doc.custom_processed_qty)
+			row.custom_balance_required_qty = flt(row.required_qty) - row.custom_consumption_qty
 			
 		for row in doc.custom_required_material_for_operation:
 			total_required_qty = flt(row.required_qty) * flt(doc.custom_waiting_qty)
@@ -11685,6 +11701,7 @@ def update_pallet_h(name,item):
 					# divide L*B of pallet by box
 					p_b_l_b=pallet_l_b/box_l_b
 					# p_b_l_b=p_b_l_b/bcount
+					frappe.errprint(p_b_l_b)
 					p_b_l_b=pox_per_pallet/int(p_b_l_b)
 
 					# multiply p_b_l_b with box height
@@ -11706,3 +11723,12 @@ def gate_entry_comp():
 			doc_company = frappe.get_value(i.entry_against,{"name":i.entry_id},"company")
 			if doc_company:
 				frappe.db.set_value("Gate Entry",i.name,"company",doc_company)
+
+@frappe.whitelist()
+#return the last execution time of attendance cron
+def get_error_log():
+	to_date=add_days(today(),-1)
+	error="Attendance Marked for date: {0}".format(to_date)
+	doc=frappe.db.get_value("Error Log",{"method":"Attendance Alert","error":error},["creation"])
+	if doc:
+		return doc

@@ -27,7 +27,9 @@
   "items",
   "gate_entry_item",
   "end_bit_scrap",
-  "no_of_box"
+  "no_of_box",
+  "section_break_xbm5",
+  "remarks"
  ],
  "fields": [
   {
@@ -163,14 +165,23 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company"
+  },
+  {
+   "fieldname": "section_break_xbm5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
   }
  ],
  "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-02-10 20:37:25.904478",
- "modified_by": "riyaz.a@groupteampro.com",
+ "modified": "2026-02-19 10:50:19.214853",
+ "modified_by": "pavithra.s@groupteampro.com",
  "module": "ONEGENE",
  "name": "Gate Entry Update",
  "owner": "Administrator",

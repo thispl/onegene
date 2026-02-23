@@ -222,6 +222,7 @@ frappe.ui.form.on("Gate Entry Update", {
                                 company: frm.doc.company,
                                 entry_time: frm.doc.entry_time,
                                 ref_no: frm.doc.ref_no,
+                                remarks:frm.doc.remarks,
                                 dc_no: frm.doc.supplier_dc_number,
                                 security_name: frm.doc.security_name,
                                 items: frm.doc.gate_entry_item,

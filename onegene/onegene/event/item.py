@@ -203,3 +203,13 @@ def update_item_group(doc, method):
     if item_group_changed:
         if doc.item_type == "Process Item":
             frappe.db.set_value("BOM", {"item": doc.name}, "custom_item_group", doc.item_group)
+            
+# Get Item Code Series for Innovation Items  
+@frappe.whitelist()    
+def get_innovation_item_series(item_group):
+	item_code = frappe.db.get_value("Item", {"item_group": item_group}, "name", order_by="creation desc") or "INVTN0000"
+	if item_code.startswith("INVTN"):
+		last_number = int(item_code.replace("INVTN", ""))
+		new_number = last_number + 1
+		item_code = f"INVTN{new_number:04d}"
+	return item_code

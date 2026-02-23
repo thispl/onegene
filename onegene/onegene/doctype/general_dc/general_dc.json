@@ -7,7 +7,6 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "amended_from",
   "dc_type",
   "party_type",
   "supplier",
@@ -49,9 +48,11 @@
   "total",
   "section_break_xokz",
   "scan_barcode",
+  "remarks",
   "terms_and_conditions_tab",
   "terms",
-  "terms_and_conditions"
+  "terms_and_conditions",
+  "amended_from"
  ],
  "fields": [
   {
@@ -377,6 +378,11 @@
   {
    "fieldname": "column_break_vukw",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -387,8 +393,8 @@
    "link_fieldname": "general_dc"
   }
  ],
- "modified": "2026-01-20 12:48:18.340584",
- "modified_by": "Administrator",
+ "modified": "2026-02-19 10:53:25.380129",
+ "modified_by": "pavithra.s@groupteampro.com",
  "module": "ONEGENE",
  "name": "General DC",
  "naming_rule": "Expression (old style)",
@@ -408,6 +414,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

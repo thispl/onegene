@@ -4,7 +4,7 @@ def update_op_item_list_manual():
     
     op_docs = frappe.db.get_all(
         "Operation Item List",
-        filters={"owner": "riyaz.a@groupteampro.com"},
+        filters={},
         fields=["name"]
     )
 

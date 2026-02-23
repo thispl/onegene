@@ -19,22 +19,22 @@ class DailyProductionPlan(Document):
 
 @frappe.whitelist()
 def get_items_by_month(doctype, txt, searchfield, start, page_len, filters):
-    month = filters.get("month")
+    schedule_date = filters.get("schedule_date")
 
     items = frappe.db.sql("""
         SELECT DISTINCT sos.item_code, sos.item_name
         FROM `tabSales Order Schedule` sos
-        WHERE sos.schedule_month = %s
+        WHERE sos.schedule_date = %s
         AND (sos.item_code LIKE %s OR sos.item_name LIKE %s)
-    """, (month, f"%{txt}%", f"%{txt}%"))
+    """, (schedule_date, f"%{txt}%", f"%{txt}%"))
 
     return items
 
 
 @frappe.whitelist()
-def validate_item_for_month(item_code, month):
+def validate_item_for_month(item_code, schedule_date):
     exists = frappe.db.exists(
         "Sales Order Schedule",
-        {"item_code": item_code, "schedule_month": month}
+        {"item_code": item_code, "schedule_date": schedule_date}
     )
     return bool(exists)

@@ -95,12 +95,19 @@ frappe.ui.form.on("Item", {
     },
 
     item_group(frm) {
-        if (frm.doc.item_group == "Maintainence") {
-            frm.set_value("is_fixed_asset", 1)
+        if (frm.doc.item_group == "Innovation") {
             frm.set_value("item_billing_type", "Non Billing")
-        }
-        else {
-            frm.set_value("is_fixed_asset", 0)
+            frappe.call({
+                "method": "onegene.onegene.event.item.get_innovation_item_series",
+                args: {
+                    "item_group": frm.doc.item_group,
+                },
+                callback(r) {
+                    if (r.message) {
+                        frm.set_value("item_code", r.message);
+                    }
+                }
+            })
         }
     }
 });

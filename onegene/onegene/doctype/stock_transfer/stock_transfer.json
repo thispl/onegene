@@ -46,6 +46,7 @@
   "section_break_xokz",
   "scan_barcode",
   "terms_and_conditions_tab",
+  "remarks",
   "terms",
   "terms_and_conditions",
   "amended_from"
@@ -225,10 +226,9 @@
   {
    "allow_on_submit": 1,
    "fieldname": "security_name",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Security Name",
    "no_copy": 1,
-   "options": "User",
    "read_only": 1
   },
   {
@@ -352,11 +352,16 @@
    "label": "Terms and Conditions"
   },
   {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "General DC",
+   "options": "Stock Transfer",
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
@@ -371,8 +376,8 @@
    "link_fieldname": "stock_transfer"
   }
  ],
- "modified": "2026-02-06 11:09:35.870946",
- "modified_by": "Administrator",
+ "modified": "2026-02-20 11:58:00.061808",
+ "modified_by": "senthilkumar.r@onegeneindia.in",
  "module": "ONEGENE",
  "name": "Stock Transfer",
  "naming_rule": "By \"Naming Series\" field",
@@ -392,6 +397,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

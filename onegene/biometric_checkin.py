@@ -25,7 +25,7 @@ def mark_checkin(**args):
 				ec.save(ignore_permissions=True)
 				frappe.db.commit()
 				return "Checkin Marked"
-			if 'Canteen' in args['device_id']:
+			if 'CANTEEN' in args['device_id']:
 				ec = frappe.new_doc('Employee Checkin')
 				ec.employee = args['employee'].upper()
 				ec.time = args['time']

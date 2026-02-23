@@ -65,7 +65,7 @@ frappe.ui.form.on('Stock Transfer', {
         
         
         
-        frm.add_custom_button(__("Stock Transfer"), function () {
+        frm.add_custom_button(__("Print"), function () {
             var f_name = frm.doc.name;
             var print_format = "Stock Transfer Combined";
 
@@ -79,22 +79,7 @@ frappe.ui.form.on('Stock Transfer', {
                     "&no_letterhead=0"
                 )
             );
-        }, __("Print"));
-        frm.add_custom_button(__("Gate Copy"), function () {
-            var f_name = frm.doc.name;
-            var print_format = "Stock Transfer Combined Gate Copy";
-
-            window.open(
-                frappe.urllib.get_full_url(
-                    "/api/method/frappe.utils.print_format.download_pdf?" +
-                    "doctype=" + encodeURIComponent("Stock Transfer") +
-                    "&name=" + encodeURIComponent(f_name) +
-                    "&trigger_print=1" +
-                    "&format=" + encodeURIComponent(print_format) +
-                    "&no_letterhead=0"
-                )
-            );
-        }, __("Print"));
+        });
         }
         
         

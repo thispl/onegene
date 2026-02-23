@@ -2,17 +2,17 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Daily Production Plan", {
-	onload: function(frm) {
+    onload: function (frm) {
         set_item_code_query(frm);
     },
 
-    date: function(frm) {
+    date: function (frm) {
         set_item_code_query(frm);
     }
 });
 
 frappe.ui.form.on("Daily Production Plan Item", {
-	item_code(frm, cdt, cdn) {
+    item_code(frm, cdt, cdn) {
         let current_row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -41,13 +41,18 @@ frappe.ui.form.on("Daily Production Plan Item", {
         const date_obj = frappe.datetime.str_to_obj(frm.doc.date);
         const month_name = date_obj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
 
+        const year = date_obj.getFullYear();
+        const month = date_obj.getMonth();
+        const first_date = new Date(year, month, 1);
+        const first_date_format = frappe.datetime.obj_to_str(first_date);
+
         frappe.call({
             method: "onegene.onegene.doctype.daily_production_plan.daily_production_plan.validate_item_for_month",
             args: {
                 item_code: row.item_code,
-                month: month_name
+                schedule_date: first_date_format
             },
-            callback: function(r) {
+            callback: function (r) {
                 if (!r.message) {
                     frappe.msgprint(__('This Item Code is not valid for the selected month.'));
                     frm.fields_dict.items.grid.grid_rows_by_docname[cdn].remove();
@@ -63,16 +68,22 @@ function set_item_code_query(frm) {
     if (!frm.doc.date) return;
 
     const date_obj = frappe.datetime.str_to_obj(frm.doc.date);
-    const month_name = date_obj.toLocaleString('en-US', { month: 'short' }).toUpperCase(); 
+    const month_name = date_obj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
 
-    frm.fields_dict.items.grid.get_field("item_code").get_query = function(doc, cdt, cdn) {
+    const year = date_obj.getFullYear();
+    const month = date_obj.getMonth();
+    const first_date = new Date(year, month, 1);
+    const first_date_format = frappe.datetime.obj_to_str(first_date);
+
+
+
+    frm.fields_dict.items.grid.get_field("item_code").get_query = function (doc, cdt, cdn) {
         return {
             query: "onegene.onegene.doctype.daily_production_plan.daily_production_plan.get_items_by_month",
             filters: {
-                month: month_name
+
+                schedule_date: first_date_format
             }
         };
     };
 }
-
-        

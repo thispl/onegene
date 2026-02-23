@@ -4,36 +4,36 @@ const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[C]{1}[0-9A-Z]{1}
 const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
 frappe.ui.form.on("Inter Office Memo", {
-     supplier_accept_debit_value(frm) {
-        frm.set_df_property("remarks","reqd",1)
+    supplier_accept_debit_value(frm) {
+        frm.set_df_property("remarks", "reqd", 1)
         frm.set_value("supplier_not_accept_debit_value", frm.doc.tot_short_value - frm.doc.supplier_accept_debit_value)
     }
     ,
 
-  new_supplier_group(frm){
-        if((frm.doc.iom_type=="Approval for New Supplier Registration")){
-            if(frm.doc.new_supplier_group=="Import- Bought-Out" || frm.doc.new_supplier_group=="Import- Raw Material"){
+    new_supplier_group(frm) {
+        if ((frm.doc.iom_type == "Approval for New Supplier Registration")) {
+            if (frm.doc.new_supplier_group == "Import- Bought-Out" || frm.doc.new_supplier_group == "Import- Raw Material") {
                 const rows = [
                     "CEPA Certificate of Origin",
                     "BIS Certificate / CRS Registration",
                     "Cancelled Cheque / Bank Letter",
                     "Company Profile / Product Catalogue"
                 ];
-                $.each(rows, function(i, d) {
+                $.each(rows, function (i, d) {
                     frm.add_child("attachments", {
                         title_of_attachment: d
                     });
                 });
                 frm.refresh_field("attachments");
             }
-            else{
+            else {
                 const rows = [
                     "GST Certificate",
                     "PAN Card",
                     "Cancelled Cheque / Bank Letter",
                     "Company Profile / Product Catalogue"
                 ];
-                $.each(rows, function(i, d) {
+                $.each(rows, function (i, d) {
                     frm.add_child("attachments", {
                         title_of_attachment: d
                     });
@@ -70,7 +70,7 @@ frappe.ui.form.on("Inter Office Memo", {
                 gstin: gstin,
                 throw_error: true
             },
-            callback: function(r) {
+            callback: function (r) {
                 if (!r.message) return;
 
                 const gst = r.message;
@@ -124,7 +124,7 @@ frappe.ui.form.on("Inter Office Memo", {
                 gstin: gstin,
                 throw_error: true
             },
-            callback: function(r) {
+            callback: function (r) {
                 if (!r.message) return;
 
                 const gst = r.message;
@@ -173,28 +173,28 @@ frappe.ui.form.on("Inter Office Memo", {
         frm.set_value("pan_no", pan);
     },
 
-    advance_amount_new(frm){
-        if(frm.doc.advance_amount_new && frm.doc.estimated_travel_expenses_new && frm.doc.advance_amount_new > frm.doc.estimated_travel_expenses_new){
+    advance_amount_new(frm) {
+        if (frm.doc.advance_amount_new && frm.doc.estimated_travel_expenses_new && frm.doc.advance_amount_new > frm.doc.estimated_travel_expenses_new) {
 
-            frm.set_value("advance_amount_new","")
+            frm.set_value("advance_amount_new", "")
             frappe.throw("Advance Amount must be lesser or equal to Estimated Travel Expenses")
-            
+
 
         }
     },
 
-    estimated_travel_expenses_new(frm){
-        if(frm.doc.advance_amount_new && frm.doc.estimated_travel_expenses_new && frm.doc.advance_amount_new > frm.doc.estimated_travel_expenses_new){
+    estimated_travel_expenses_new(frm) {
+        if (frm.doc.advance_amount_new && frm.doc.estimated_travel_expenses_new && frm.doc.advance_amount_new > frm.doc.estimated_travel_expenses_new) {
 
-            frm.set_value("estimated_travel_expenses_new","")
+            frm.set_value("estimated_travel_expenses_new", "")
             frappe.throw("Advance Amount must be lesser or equal to Estimated Travel Expenses")
-            
+
 
         }
     },
 
 
-     travel_costing_details_add(frm) {
+    travel_costing_details_add(frm) {
         calculate_totals(frm);
     },
 
@@ -205,8 +205,8 @@ frappe.ui.form.on("Inter Office Memo", {
 
 
 
-    
-    exchange_rate: function(frm) {
+
+    exchange_rate: function (frm) {
         if (!frm.doc.exchange_rate) return;
         if (frm.doc.iom_type == "Approval for Credit Note") {
             (frm.doc.approval_credit_note || []).forEach(row => {
@@ -339,7 +339,7 @@ frappe.ui.form.on("Inter Office Memo", {
     },
     order_type(frm) {
         if (frm.doc.iom_type == "Approval for New Business PO" || frm.doc.iom_type == "Approval for New Business SO") {
-           
+
             // frm.fields_dict['approval_business_po'].grid.update_docfield_property('qty', 'read_only', frm.doc.order_type === 'Open Order');
             // frm.fields_dict['custom_approval_for_new_business_po'].grid.update_docfield_property('qty', 'read_only', frm.doc.order_type === 'Open Order');
 
@@ -359,399 +359,407 @@ frappe.ui.form.on("Inter Office Memo", {
     to_date(frm) {
         calculate_days(frm);
     },
-    toggle_customer_visibility: function(frm) {
+    toggle_customer_visibility: function (frm) {
         if ((frm.doc.department_from === "Delivery - WAIP" && frm.doc.iom_type === "Approval for Schedule Revised") || (frm.doc.department_from === "M P L & Purchase - WAIP" && frm.doc.iom_type === "Approval for Schedule Revised")) {
             frm.set_df_property('customer', 'hidden', 1);
         }
     },
     iom_type(frm) {
-         if (frm.doc.iom_type === "Approval for Schedule Revised"|| frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
-                let month_abbr = frappe.datetime.str_to_obj(frappe.datetime.get_today())
-                    .toLocaleString("en-US", { month: "short" })
-                    .toUpperCase();
+        if (frm.doc.iom_type === "Approval for Schedule Revised" || frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
+            let month_abbr = frappe.datetime.str_to_obj(frappe.datetime.get_today())
+                .toLocaleString("en-US", { month: "short" })
+                .toUpperCase();
 
-                frm.set_value("schedule_month",month_abbr);
-                frm.set_value("new_month", month_abbr);
-                frm.refresh_field("schedule_month")
-                 frm.refresh_field("new_month")
+            let today = frappe.datetime.str_to_obj(frappe.datetime.get_today());
+
+            frm.set_value("schedule_month", month_abbr);
+            frm.set_value("new_month", month_abbr);
+            frm.refresh_field("schedule_month")
+            frm.refresh_field("new_month")
+
+            setTimeout(() => {
+                frm.set_value("schedule_year", today.getFullYear());
+                frm.refresh_field("schedule_year")
+
+            }, 100)
         }
         if (frm.doc.iom_type === "Approval for New Supplier Registration") {
-const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+            const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
-const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+            const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
-        let d = new frappe.ui.Dialog({
-            title: "Supplier Details",
-            size: "medium",
-            fields: [
-                { fieldtype: "Section Break" },
+            let d = new frappe.ui.Dialog({
+                title: "Supplier Details",
+                size: "medium",
+                fields: [
+                    { fieldtype: "Section Break" },
 
-                {
-                    label: "Supplier Group",
-                    fieldname: "supplier_group",
-                    fieldtype: "Link",
-                    options: "Supplier Group",
-                    reqd: 1,
-                    onchange: function() {
-                        let group = d.get_value("supplier_group");
-                        let hide_list = ["Import- Bought-Out", "Import- Raw Material"];
-                        let show_gstin = !hide_list.includes(group);
+                    {
+                        label: "Supplier Group",
+                        fieldname: "supplier_group",
+                        fieldtype: "Link",
+                        options: "Supplier Group",
+                        reqd: 1,
+                        onchange: function () {
+                            let group = d.get_value("supplier_group");
+                            let hide_list = ["Import- Bought-Out", "Import- Raw Material"];
+                            let show_gstin = !hide_list.includes(group);
 
-                        let gst_field = d.get_field("gstin");
-                        let gst_cat_field  = d.get_field("gst_category");
-                        // Show / Hide GSTIN field
-                        gst_field.toggle(show_gstin);
-                        // Set mandatory
-                        gst_field.df.reqd = show_gstin;
-                        gst_cat_field.toggle(show_gstin);
-                        gst_cat_field.df.reqd = show_gstin;
-                        d.refresh();
+                            let gst_field = d.get_field("gstin");
+                            let gst_cat_field = d.get_field("gst_category");
+                            // Show / Hide GSTIN field
+                            gst_field.toggle(show_gstin);
+                            // Set mandatory
+                            gst_field.df.reqd = show_gstin;
+                            gst_cat_field.toggle(show_gstin);
+                            gst_cat_field.df.reqd = show_gstin;
+                            d.refresh();
+                        }
+                    },
+                    //   {
+                    //     label: "GST Category",
+                    //     fieldname: "gst_category",
+                    //     fieldtype: "Select",
+                    //     options: ["Registered Regular", "Registered Composition", "Unregistered", "SEZ","Overseas","Deemed Export","UIN Holders","Tax Deductor"],
+                    //     default: "Unregistered",
+                    //     reqd: 1
+                    // },
+                    {
+                        label: "GST Category",
+                        fieldname: "gst_category",
+                        fieldtype: "Select",
+                        options: [
+                            "Registered Regular",
+                            "Registered Composition",
+                            "Unregistered",
+                            "SEZ",
+                            "Overseas",
+                            "Deemed Export",
+                            "UIN Holders",
+                            "Tax Deductor"
+                        ],
+                        default: "Unregistered",
+                        reqd: 1,
+                        onchange: function () {
+                            let gst_cat = d.get_value("gst_category");
+                            let supplier_group = d.get_value("supplier_group");
+
+                            let gst_field = d.get_field("gstin");
+                            let gst_cat_field = d.get_field("gst_category");
+
+                            // List for supplier groups where GSTIN is normally hidden
+                            let hide_list = ["Import- Bought-Out", "Import- Raw Material"];
+                            let group_requires_gstin = !hide_list.includes(supplier_group);
+
+                            let show_gstin = group_requires_gstin && gst_cat !== "Unregistered";
+
+                            gst_field.toggle(show_gstin);
+                            gst_field.df.reqd = show_gstin;
+                            d.refresh();
+                        }
+                    },
+
+
+                    {
+                        label: "GSTIN / UIN",
+                        fieldname: "gstin",
+                        fieldtype: "Data",
+                        reqd: 0,
+                        onchange: function () {
+                            let gstin = d.get_value("gstin");
+
+                            if (!gstin || gstin.length !== 15) {
+                                return; // DO NOT validate early
+                            }
+
+                            if (!TCS_REGEX.test(gstin)) {
+                                frappe.throw("Invalid GSTIN format.");
+                            }
+
+                            const pan_from_gstin = gstin.slice(2, 12);
+                            if (PAN_REGEX.test(pan_from_gstin)) {
+                                d.set_value("pan_no", pan_from_gstin);
+                            }
+                            if (india_compliance && india_compliance.set_gstin_status) {
+                                india_compliance.set_gstin_status(d.get_field("gstin"));
+                            }
+                            frappe.call({
+                                method: "india_compliance.gst_india.utils.gstin_info.get_gstin_info",
+                                args: { gstin: gstin, throw_error: true },
+                                callback: function (r) {
+                                    if (!r.message) return;
+
+                                    const gst = r.message;
+
+                                    d.set_value("supplier_name", gst.business_name || "");
+                                    if (gst.permanent_address) {
+                                        let a = gst.permanent_address;
+                                        d.set_value("address_1", a.address_line1);
+                                        d.set_value("address_2", a.address_line2);
+                                        d.set_value("city", a.city);
+                                        d.set_value("state", a.state);
+                                        d.set_value("postal_code", a.pincode);
+                                    }
+                                }
+                            });
+                        }
+                    },
+
+
+
+
+
+                    { label: "Supplier Code", fieldname: "supplier_code", fieldtype: "Data", reqd: 1 },
+                    { label: "Supplier Name", fieldname: "supplier_name", fieldtype: "Data", reqd: 1 },
+
+                    { fieldtype: "Section Break" },
+                    {
+                        label: "Supplier Type",
+                        fieldname: "supplier_type",
+                        fieldtype: "Select",
+                        options: ["Company", "Individual", "Proprietorship", "Partnership"],
+                        default: "Company",
+                        reqd: 1
+                    },
+
+
+
+                    { fieldtype: "Section Break", label: "Primary Contact Details" },
+                    { label: "Email ID", fieldname: "email_id", fieldtype: "Data" },
+                    { fieldtype: "Column Break" },
+                    { label: "Mobile Number", fieldname: "mobile", fieldtype: "Data" },
+
+                    { fieldtype: "Section Break", label: "Primary Address Details" },
+                    { label: "Postal Code", fieldname: "postal_code", fieldtype: "Data" },
+
+                    { label: "Address Line 1", fieldname: "address_1", fieldtype: "Data" },
+                    { label: "Address Line 2", fieldname: "address_2", fieldtype: "Data" },
+                    { fieldtype: "Column Break" },
+                    { label: "City/Town", fieldname: "city", fieldtype: "Data" },
+                    { label: "State/Province", fieldname: "state", fieldtype: "Data" },
+
+                    { label: "Country", fieldname: "country", fieldtype: "Link", default: "India", options: "Country" },
+                ],
+
+                primary_action_label: "Set Details",
+                primary_action(values) {
+
+                    frm.set_value("new_supplier_group", values.supplier_group);
+
+                    let hide_list = ["Import- Bought-Out", "Import- Raw Material"];
+                    if (!hide_list.includes(values.supplier_group)) {
+                        frm.set_value("gstin_no", values.gstin);
+                    } else {
+                        frm.set_value("gstin_no", "");
                     }
-                },
-                //   {
-                //     label: "GST Category",
-                //     fieldname: "gst_category",
-                //     fieldtype: "Select",
-                //     options: ["Registered Regular", "Registered Composition", "Unregistered", "SEZ","Overseas","Deemed Export","UIN Holders","Tax Deductor"],
-                //     default: "Unregistered",
-                //     reqd: 1
-                // },
-                {
-    label: "GST Category",
-    fieldname: "gst_category",
-    fieldtype: "Select",
-    options: [
-        "Registered Regular",
-        "Registered Composition",
-        "Unregistered",
-        "SEZ",
-        "Overseas",
-        "Deemed Export",
-        "UIN Holders",
-        "Tax Deductor"
-    ],
-    default: "Unregistered",
-    reqd: 1,
-    onchange: function () {
-        let gst_cat = d.get_value("gst_category");
-        let supplier_group = d.get_value("supplier_group");
-
-        let gst_field = d.get_field("gstin");
-        let gst_cat_field = d.get_field("gst_category");
-
-        // List for supplier groups where GSTIN is normally hidden
-        let hide_list = ["Import- Bought-Out", "Import- Raw Material"];
-        let group_requires_gstin = !hide_list.includes(supplier_group);
-
-        let show_gstin = group_requires_gstin && gst_cat !== "Unregistered";
-
-        gst_field.toggle(show_gstin);
-        gst_field.df.reqd = show_gstin;
-        d.refresh();
-    }
-},
-
-
-          {
-    label: "GSTIN / UIN",
-    fieldname: "gstin",
-    fieldtype: "Data",
-    reqd: 0,
-    onchange: function () {
-        let gstin = d.get_value("gstin");
-
-        if (!gstin || gstin.length !== 15) {
-            return; // DO NOT validate early
-        }
-
-        if (!TCS_REGEX.test(gstin)) {
-            frappe.throw("Invalid GSTIN format.");
-        }
-
-        const pan_from_gstin = gstin.slice(2, 12);
-        if (PAN_REGEX.test(pan_from_gstin)) {
-            d.set_value("pan_no", pan_from_gstin);
-        }
-         if (india_compliance && india_compliance.set_gstin_status) {
-        india_compliance.set_gstin_status(d.get_field("gstin"));
-    }
-        frappe.call({
-            method: "india_compliance.gst_india.utils.gstin_info.get_gstin_info",
-            args: { gstin: gstin, throw_error: true },
-            callback: function (r) {
-                if (!r.message) return;
-
-                const gst = r.message;
-
-                d.set_value("supplier_name", gst.business_name || "");
-                if (gst.permanent_address) {
-                    let a = gst.permanent_address;
-                    d.set_value("address_1", a.address_line1);
-                    d.set_value("address_2", a.address_line2);
-                    d.set_value("city", a.city);
-                    d.set_value("state", a.state);
-                    d.set_value("postal_code", a.pincode);
-                }
-            }
-        });
-    }
-},
-
-
-
-                
-
-                { label: "Supplier Code", fieldname: "supplier_code", fieldtype: "Data", reqd: 1 },
-                { label: "Supplier Name", fieldname: "supplier_name", fieldtype: "Data", reqd: 1 },
-
-                { fieldtype: "Section Break" },
-                {
-                    label: "Supplier Type",
-                    fieldname: "supplier_type",
-                    fieldtype: "Select",
-                    options: ["Company", "Individual","Proprietorship","Partnership"],
-                    default: "Company",
-                    reqd: 1
-                },
-
-              
-
-                { fieldtype: "Section Break", label: "Primary Contact Details" },
-                { label: "Email ID", fieldname: "email_id", fieldtype: "Data" },
-                { fieldtype: "Column Break" },
-                { label: "Mobile Number", fieldname: "mobile", fieldtype: "Data" },
-
-                { fieldtype: "Section Break", label: "Primary Address Details" },
-                { label: "Postal Code", fieldname: "postal_code", fieldtype: "Data" },
-                
-                { label: "Address Line 1", fieldname: "address_1", fieldtype: "Data" },
-                 { label: "Address Line 2", fieldname: "address_2", fieldtype: "Data" },
-                { fieldtype: "Column Break" },
-                { label: "City/Town", fieldname: "city", fieldtype: "Data" },
-                { label: "State/Province", fieldname: "state", fieldtype: "Data" },
-               
-                { label: "Country", fieldname: "country", fieldtype: "Link", default: "India",options:"Country" },
-            ],
-
-            primary_action_label: "Set Details",
-            primary_action(values) {
-
-                frm.set_value("new_supplier_group", values.supplier_group);
-
-                let hide_list = ["Import- Bought-Out", "Import- Raw Material"];
-                if (!hide_list.includes(values.supplier_group)) {
-                    frm.set_value("gstin_no", values.gstin);
-                } else {
-                    frm.set_value("gstin_no", "");
-                }
-                if (frm.get_field("gstin_no") && india_compliance.set_gstin_status) {
-        india_compliance.set_gstin_status(frm.get_field("gstin_no"));
-    }
-       frm.refresh_field("gstin_no");
-
-
-                frm.set_value("new_supplier_code", values.supplier_code);
-                frm.set_value("new_supplier_name", values.supplier_name);
-                frm.set_value("supplier_type", values.supplier_type);
-                frm.set_value("gst_category", values.gst_category);
-
-                frm.set_value("email", values.email_id);
-                frm.set_value("phone_no", values.mobile);
-
-                frm.set_value("postal_code", values.postal_code);
-                frm.set_value("city", values.city);
-                frm.set_value("address_line_1", values.address_1);
-                frm.set_value("address_line_2", values.address_2);
-                frm.set_value("stateprovince", values.state);
-                frm.set_value("country", values.country);
-
-                frm.refresh_fields();
-                d.hide();
-            }
-        });
-
-        d.show();
-
-        // Hide GSTIN initially
-        let gst_field = d.get_field("gstin");
-        gst_field.toggle(false);
-        gst_field.df.reqd = 0;
-        d.refresh();
-    }
-      if (frm.doc.iom_type === "Approval for New Customer Registration") {
-        const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-
-        const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-
-        let d = new frappe.ui.Dialog({
-            title: "Customer Details",
-            size: "medium",
-            fields: [
-                { fieldtype: "Section Break" },
-
-                {
-                    label: "Customer Group",
-                    fieldname: "customer_group",
-                    fieldtype: "Link",
-                    options: "Customer Group",
-                    reqd: 1,
-                    onchange: function() {
-                        let group = d.get_value("customer_group");
-                        let hide_list = ["Export","All Customer Groups"];
-                        let show_gstin = !hide_list.includes(group);
-
-                        let gst_field = d.get_field("gstin");
-
-                        // Show / Hide GSTIN field
-                        gst_field.toggle(show_gstin);
-
-                        // Set mandatory
-                        gst_field.df.reqd = show_gstin;
-                        let gst_cat_field  = d.get_field("gst_category");
-                        // Set mandatory
-                        gst_cat_field.toggle(show_gstin);
-                        gst_cat_field.df.reqd = show_gstin;
-                        d.refresh();
+                    if (frm.get_field("gstin_no") && india_compliance.set_gstin_status) {
+                        india_compliance.set_gstin_status(frm.get_field("gstin_no"));
                     }
-                },
-                {
-                    label: "GST Category",
-                    fieldname: "gst_category",
-                    fieldtype: "Select",
-                    options: ["Registered Regular", "Registered Composition", "Unregistered", "SEZ","Overseas","Deemed Export","UIN Holders","Tax Deductor"],
-                    default: "Unregistered",
-                    reqd: 1
-                },
-                
+                    frm.refresh_field("gstin_no");
 
-          {
-    label: "GSTIN / UIN",
-    fieldname: "gstin",
-    fieldtype: "Data",
-    reqd: 0,
-    onchange: function () {
-        let gstin = d.get_value("gstin");
 
-        if (!gstin || gstin.length !== 15) {
-            return; // DO NOT validate early
-        }
+                    frm.set_value("new_supplier_code", values.supplier_code);
+                    frm.set_value("new_supplier_name", values.supplier_name);
+                    frm.set_value("supplier_type", values.supplier_type);
+                    frm.set_value("gst_category", values.gst_category);
 
-        if (!TCS_REGEX.test(gstin)) {
-            frappe.throw("Invalid GSTIN format.");
-        }
+                    frm.set_value("email", values.email_id);
+                    frm.set_value("phone_no", values.mobile);
 
-        const pan_from_gstin = gstin.slice(2, 12);
-        if (PAN_REGEX.test(pan_from_gstin)) {
-            d.set_value("pan_no", pan_from_gstin);
-        }
-         if (india_compliance && india_compliance.set_gstin_status) {
-        india_compliance.set_gstin_status(d.get_field("gstin"));
-    }
-        frappe.call({
-            method: "india_compliance.gst_india.utils.gstin_info.get_gstin_info",
-            args: { gstin: gstin, throw_error: true },
-            callback: function (r) {
-                if (!r.message) return;
+                    frm.set_value("postal_code", values.postal_code);
+                    frm.set_value("city", values.city);
+                    frm.set_value("address_line_1", values.address_1);
+                    frm.set_value("address_line_2", values.address_2);
+                    frm.set_value("stateprovince", values.state);
+                    frm.set_value("country", values.country);
 
-                const gst = r.message;
-
-                d.set_value("customer_name", gst.business_name || "");
-                if (gst.permanent_address) {
-                    let a = gst.permanent_address;
-                    d.set_value("address_1", a.address_line1);
-                    d.set_value("address_2", a.address_line2);
-                    d.set_value("city", a.city);
-                    d.set_value("state", a.state);
-                    d.set_value("postal_code", a.pincode);
+                    frm.refresh_fields();
+                    d.hide();
                 }
-            }
-        });
-    }
-},
+            });
+
+            d.show();
+
+            // Hide GSTIN initially
+            let gst_field = d.get_field("gstin");
+            gst_field.toggle(false);
+            gst_field.df.reqd = 0;
+            d.refresh();
+        }
+        if (frm.doc.iom_type === "Approval for New Customer Registration") {
+            const TCS_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+            const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+            let d = new frappe.ui.Dialog({
+                title: "Customer Details",
+                size: "medium",
+                fields: [
+                    { fieldtype: "Section Break" },
+
+                    {
+                        label: "Customer Group",
+                        fieldname: "customer_group",
+                        fieldtype: "Link",
+                        options: "Customer Group",
+                        reqd: 1,
+                        onchange: function () {
+                            let group = d.get_value("customer_group");
+                            let hide_list = ["Export", "All Customer Groups"];
+                            let show_gstin = !hide_list.includes(group);
+
+                            let gst_field = d.get_field("gstin");
+
+                            // Show / Hide GSTIN field
+                            gst_field.toggle(show_gstin);
+
+                            // Set mandatory
+                            gst_field.df.reqd = show_gstin;
+                            let gst_cat_field = d.get_field("gst_category");
+                            // Set mandatory
+                            gst_cat_field.toggle(show_gstin);
+                            gst_cat_field.df.reqd = show_gstin;
+                            d.refresh();
+                        }
+                    },
+                    {
+                        label: "GST Category",
+                        fieldname: "gst_category",
+                        fieldtype: "Select",
+                        options: ["Registered Regular", "Registered Composition", "Unregistered", "SEZ", "Overseas", "Deemed Export", "UIN Holders", "Tax Deductor"],
+                        default: "Unregistered",
+                        reqd: 1
+                    },
+
+
+                    {
+                        label: "GSTIN / UIN",
+                        fieldname: "gstin",
+                        fieldtype: "Data",
+                        reqd: 0,
+                        onchange: function () {
+                            let gstin = d.get_value("gstin");
+
+                            if (!gstin || gstin.length !== 15) {
+                                return; // DO NOT validate early
+                            }
+
+                            if (!TCS_REGEX.test(gstin)) {
+                                frappe.throw("Invalid GSTIN format.");
+                            }
+
+                            const pan_from_gstin = gstin.slice(2, 12);
+                            if (PAN_REGEX.test(pan_from_gstin)) {
+                                d.set_value("pan_no", pan_from_gstin);
+                            }
+                            if (india_compliance && india_compliance.set_gstin_status) {
+                                india_compliance.set_gstin_status(d.get_field("gstin"));
+                            }
+                            frappe.call({
+                                method: "india_compliance.gst_india.utils.gstin_info.get_gstin_info",
+                                args: { gstin: gstin, throw_error: true },
+                                callback: function (r) {
+                                    if (!r.message) return;
+
+                                    const gst = r.message;
+
+                                    d.set_value("customer_name", gst.business_name || "");
+                                    if (gst.permanent_address) {
+                                        let a = gst.permanent_address;
+                                        d.set_value("address_1", a.address_line1);
+                                        d.set_value("address_2", a.address_line2);
+                                        d.set_value("city", a.city);
+                                        d.set_value("state", a.state);
+                                        d.set_value("postal_code", a.pincode);
+                                    }
+                                }
+                            });
+                        }
+                    },
 
 
 
-                
 
-                { label: "Customer Code", fieldname: "customer_code", fieldtype: "Data", reqd: 1 },
-                { label: "Customer Name", fieldname: "customer_name", fieldtype: "Data", reqd: 1 },
 
-                { fieldtype: "Section Break" },
-                {
-                    label: "Customer Type",
-                    fieldname: "customer_type",
-                    fieldtype: "Select",
-                    options: ["Company", "Individual","Proprietorship","Partnership"],
-                    default: "Company",
-                    reqd: 1
-                },
+                    { label: "Customer Code", fieldname: "customer_code", fieldtype: "Data", reqd: 1 },
+                    { label: "Customer Name", fieldname: "customer_name", fieldtype: "Data", reqd: 1 },
 
-                
+                    { fieldtype: "Section Break" },
+                    {
+                        label: "Customer Type",
+                        fieldname: "customer_type",
+                        fieldtype: "Select",
+                        options: ["Company", "Individual", "Proprietorship", "Partnership"],
+                        default: "Company",
+                        reqd: 1
+                    },
 
-                { fieldtype: "Section Break", label: "Primary Contact Details" },
-                { label: "Email ID", fieldname: "email_id", fieldtype: "Data" },
-                { fieldtype: "Column Break" },
-                { label: "Mobile Number", fieldname: "mobile", fieldtype: "Data" },
 
-                { fieldtype: "Section Break", label: "Primary Address Details" },
-                { label: "Postal Code", fieldname: "postal_code", fieldtype: "Data" },
-                
-                { label: "Address Line 1", fieldname: "address_1", fieldtype: "Data" },
-                 { label: "Address Line 2", fieldname: "address_2", fieldtype: "Data" },
-                { fieldtype: "Column Break" },
-                { label: "City/Town", fieldname: "city", fieldtype: "Data" },
-                { label: "State/Province", fieldname: "state", fieldtype: "Data" },
-               
-                { label: "Country", fieldname: "country", fieldtype: "Link", default: "India",options:"Country" },
-            ],
 
-            primary_action_label: "Set Details",
-            primary_action(values) {
+                    { fieldtype: "Section Break", label: "Primary Contact Details" },
+                    { label: "Email ID", fieldname: "email_id", fieldtype: "Data" },
+                    { fieldtype: "Column Break" },
+                    { label: "Mobile Number", fieldname: "mobile", fieldtype: "Data" },
 
-                frm.set_value("customer_group_new", values.customer_group);
+                    { fieldtype: "Section Break", label: "Primary Address Details" },
+                    { label: "Postal Code", fieldname: "postal_code", fieldtype: "Data" },
 
-                let hide_list = ["Export","All Customer Groups"];
-                if (!hide_list.includes(values.supplier_group)) {
-                    frm.set_value("customer_gstin", values.gstin);
-                } else {
-                    frm.set_value("customer_gstin", "");
+                    { label: "Address Line 1", fieldname: "address_1", fieldtype: "Data" },
+                    { label: "Address Line 2", fieldname: "address_2", fieldtype: "Data" },
+                    { fieldtype: "Column Break" },
+                    { label: "City/Town", fieldname: "city", fieldtype: "Data" },
+                    { label: "State/Province", fieldname: "state", fieldtype: "Data" },
+
+                    { label: "Country", fieldname: "country", fieldtype: "Link", default: "India", options: "Country" },
+                ],
+
+                primary_action_label: "Set Details",
+                primary_action(values) {
+
+                    frm.set_value("customer_group_new", values.customer_group);
+
+                    let hide_list = ["Export", "All Customer Groups"];
+                    if (!hide_list.includes(values.supplier_group)) {
+                        frm.set_value("customer_gstin", values.gstin);
+                    } else {
+                        frm.set_value("customer_gstin", "");
+                    }
+                    if (frm.get_field("customer_gstin") && india_compliance.set_gstin_status) {
+                        india_compliance.set_gstin_status(frm.get_field("customer_gstin"));
+                    }
+                    frm.refresh_field("customer_gstin");
+
+
+                    frm.set_value("customer_code", values.customer_code);
+                    frm.set_value("new_customer_name", values.customer_name);
+                    frm.set_value("customer_type", values.customer_type);
+                    frm.set_value("gst_category", values.gst_category);
+
+                    frm.set_value("email", values.email_id);
+                    frm.set_value("phone_no", values.mobile);
+
+                    frm.set_value("postal_code", values.postal_code);
+                    frm.set_value("city", values.city);
+                    frm.set_value("address_line_1", values.address_1);
+                    frm.set_value("address_line_2", values.address_2);
+                    frm.set_value("stateprovince", values.state);
+                    frm.set_value("country", values.country);
+
+                    frm.refresh_fields();
+                    d.hide();
                 }
-                if (frm.get_field("customer_gstin") && india_compliance.set_gstin_status) {
-        india_compliance.set_gstin_status(frm.get_field("customer_gstin"));
-    }
-       frm.refresh_field("customer_gstin");
+            });
 
+            d.show();
 
-                frm.set_value("customer_code", values.customer_code);
-                frm.set_value("new_customer_name", values.customer_name);
-                frm.set_value("customer_type", values.customer_type);
-                frm.set_value("gst_category", values.gst_category);
-
-                frm.set_value("email", values.email_id);
-                frm.set_value("phone_no", values.mobile);
-
-                frm.set_value("postal_code", values.postal_code);
-                frm.set_value("city", values.city);
-                frm.set_value("address_line_1", values.address_1);
-                frm.set_value("address_line_2", values.address_2);
-                frm.set_value("stateprovince", values.state);
-                frm.set_value("country", values.country);
-
-                frm.refresh_fields();
-                d.hide();
-            }
-        });
-
-        d.show();
-
-        // Hide GSTIN initially
-        let gst_field = d.get_field("customer_gstin");
-        gst_field.toggle(false);
-        gst_field.df.reqd = 0;
-        d.refresh();
-    }
-        $.each(frm.fields_dict, function(fieldname, field) {
-            if (fieldname != "new_month" && fieldname!="schedule_month" && fieldname !== 'department_from' &&fieldname!= 'currency' &&fieldname!='company' && fieldname !== 'iom_type' && fieldname!="department_to" && fieldname!="reports_to") {
+            // Hide GSTIN initially
+            let gst_field = d.get_field("customer_gstin");
+            gst_field.toggle(false);
+            gst_field.df.reqd = 0;
+            d.refresh();
+        }
+        $.each(frm.fields_dict, function (fieldname, field) {
+            if (fieldname != "new_month" && fieldname != "schedule_month" && fieldname !== 'department_from' && fieldname != 'currency' && fieldname != 'company' && fieldname !== 'iom_type' && fieldname != "department_to" && fieldname != "reports_to") {
                 if (frm.doc[fieldname]) {
                     frm.set_value(fieldname, null);
                 }
@@ -759,82 +767,82 @@ const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
         });
         frm.set_value("date_time", frappe.datetime.now_datetime());
         frm.trigger('toggle_customer_visibility');
-    if (frm.doc.iom_type === "Approval for New Customer Registration") {
+        if (frm.doc.iom_type === "Approval for New Customer Registration") {
 
 
-        const rows = [
-            "GST Certificate",
-            "PAN Card",
-            "Cancelled Cheque / Bank Letter",
-            "Company Profile / Product Catalogue"
-        ];
-        $.each(rows, function(i, d) {
-            frm.add_child("attachments", {
-                title_of_attachment: d
+            const rows = [
+                "GST Certificate",
+                "PAN Card",
+                "Cancelled Cheque / Bank Letter",
+                "Company Profile / Product Catalogue"
+            ];
+            $.each(rows, function (i, d) {
+                frm.add_child("attachments", {
+                    title_of_attachment: d
+                });
             });
-        });
-        frm.refresh_field("attachments");
+            frm.refresh_field("attachments");
 
-    }
-if (frm.doc.department_from == "Delivery - WAIP" 
-    && frm.doc.iom_type == "Approval for Air Shipment") {
+        }
+        if (frm.doc.department_from == "Delivery - WAIP"
+            && frm.doc.iom_type == "Approval for Air Shipment") {
 
-    frm.set_value("department_to", "Management - WAIP");
+            frm.set_value("department_to", "Management - WAIP");
 
-} else if (frm.doc.department_from == "Delivery - WAIP" 
-           && frm.doc.iom_type != "Approval for Air Shipment") {
+        } else if (frm.doc.department_from == "Delivery - WAIP"
+            && frm.doc.iom_type != "Approval for Air Shipment") {
 
-    frm.set_value("department_to", "");
-}
+            frm.set_value("department_to", "");
+        }
 
-if(frm.doc.iom_type ==="Approval for New Customer Registration"){
+        if (frm.doc.iom_type === "Approval for New Customer Registration") {
 
-    frm.set_value("department_to", "Finance - WAIP");
-}
-
-
-if (frm.doc.iom_type == "Approval for Business Visit") {
-
-    if (!frappe.user.has_role("HOD")) {
-        frm.set_value("iom_type", "");
-        frappe.throw("Only HOD is allowed to create Approval for Business Visit");
-    }
-
-    frm.set_value("department_to", "Management - WAIP");
-    return;  
-}
+            frm.set_value("department_to", "Finance - WAIP");
+        }
 
 
-let finance_types = [
-    "Approval for Credit Note",
-    "Approval for Debit Note / Supplementary Invoice",
-    "Approval for New Business SO",
-    "Approval for Price Revision PO",
-    "Approval for Proto Sample PO",
-    "Approval for New Business PO",
-    "Approval for Proto Sample SO",
-    "Approval for Price Revision SO",
-    "Approval for Debit Note",
-    "Approval for Price Revision JO",
-    "Approval for New Business JO",
-    "Approval for Invoice Cancel",
-    "Approval for New Supplier Registration"
-];
+        if (frm.doc.iom_type == "Approval for Business Visit") {
 
-if (finance_types.includes(frm.doc.iom_type)) {
+            if (!frappe.user.has_role("HOD")) {
+                frm.set_value("iom_type", "");
+                frappe.throw("Only HOD is allowed to create Approval for Business Visit");
+            }
 
-    frm.set_value("department_to", "Finance - WAIP");
+            frm.set_value("department_to", "Management - WAIP");
+            return;
+        }
 
-} else if (
-    frm.doc.iom_type != "Approval for Air Shipment" &&
-    frm.doc.iom_type != "Approval for Business Visit"&&
-    frm.doc.iom_type != "Approval for Travel Request" &&
-    frm.doc.iom_type != "Approval for New Customer Registration"
-) {
-    frm.set_value("department_to", "");
-}
 
-if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
+        let finance_types = [
+            "Approval for Credit Note",
+            "Approval for Debit Note / Supplementary Invoice",
+            "Approval for New Business SO",
+            "Approval for Price Revision PO",
+            "Approval for Proto Sample PO",
+            "Approval for New Business PO",
+            "Approval for Proto Sample SO",
+            "Approval for Price Revision SO",
+            "Approval for Debit Note",
+            "Approval for Price Revision JO",
+            "Approval for New Business JO",
+            "Approval for Invoice Cancel",
+            "Approval for New Supplier Registration"
+        ];
+
+        if (finance_types.includes(frm.doc.iom_type)) {
+
+            frm.set_value("department_to", "Finance - WAIP");
+
+        } else if (
+            frm.doc.iom_type != "Approval for Air Shipment" &&
+            frm.doc.iom_type != "Approval for Business Visit" &&
+            frm.doc.iom_type != "Approval for Travel Request" &&
+            frm.doc.iom_type != "Approval for New Customer Registration"
+        ) {
+            frm.set_value("department_to", "");
+        }
+
+        if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             frm.set_value("department_to", "M P L & Purchase - WAIP");
             toggle_phy_stock(frm);
 
@@ -845,20 +853,20 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         }
         frm.clear_table("taxes")
         frm.refresh_field("taxes")
-        if (frm.doc.iom_type == "Approval for Stock Change Request - Stock Reconciliation" || frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Business Visit" || frm.doc.iom_type=="Approval for New Supplier Registration") {
+        if (frm.doc.iom_type == "Approval for Stock Change Request - Stock Reconciliation" || frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Business Visit" || frm.doc.iom_type == "Approval for New Supplier Registration") {
             frm.set_df_property("customer", "hidden", 1)
             frm.set_df_property("subject", "reqd", 1)
             frm.set_df_property("customer", "reqd", 0)
         } else {
-            if ((frm.doc.department_from == "NPD - WAIP" || (frm.doc.department_from == "Marketing - WAIP") || (frm.doc.department_from == "Delivery - WAIP") && frm.doc.iom_type != "Approval for Stock Change Request - Stock Reconciliation" && frm.doc.iom_type != "Approval for Manpower Request" && frm.doc.iom_type != "Approval for Business Visit" && frm.doc.iom_type!="Approval for New Supplier Registration"))
+            if ((frm.doc.department_from == "NPD - WAIP" || (frm.doc.department_from == "Marketing - WAIP") || (frm.doc.department_from == "Delivery - WAIP") && frm.doc.iom_type != "Approval for Stock Change Request - Stock Reconciliation" && frm.doc.iom_type != "Approval for Manpower Request" && frm.doc.iom_type != "Approval for Business Visit" && frm.doc.iom_type != "Approval for New Supplier Registration"))
                 frm.set_df_property("customer", "hidden", 0)
             frm.set_df_property("customer", "reqd", 1)
         }
-        if (frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type =="Approval for Travel Request") {
+        if (frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Travel Request") {
             frm.set_value("department_to", "HR - WAIP")
         }
         if (frm.doc.iom_type == 'Approval for Air Shipment' && frm.doc.department_from == "M P L & Purchase - WAIP") {
-            frm.set_query("supplier", function() {
+            frm.set_query("supplier", function () {
                 return {
                     filters: {
                         "supplier_group": "Importer"
@@ -866,13 +874,36 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 };
             });
         } else {
-            frm.set_query("supplier", function() {
+            frm.set_query("supplier", function () {
                 return {
                     filters: {}
                 };
             });
         }
     },
+
+    validate(frm) {
+
+        if (frm.doc.iom_type === "Approval for Schedule Revised" || frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
+
+            if (!frm.doc.schedule_year) {
+
+                let today = frappe.datetime.str_to_obj(frappe.datetime.get_today());
+
+
+                frm.set_value("schedule_year", today.getFullYear());
+                frm.refresh_field("schedule_year")
+
+
+            }
+
+
+        }
+
+
+    },
+
+
     fright_cost_if_sea_inr(frm) {
         if (frm.doc.currency == "INR") {
             frm.set_value("total_loss_value", (frm.doc.fright_cost_if_air_inr - frm.doc.fright_cost_if_sea_inr) * 1)
@@ -889,7 +920,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frm.set_value("total_loss_value", (frm.doc.fright_cost_if_air_inr - frm.doc.fright_cost_if_sea_inr) * rate)
@@ -917,7 +948,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frm.set_value("total_loss_value", (frm.doc.fright_cost_if_air_inr - frm.doc.fright_cost_if_sea_inr) * rate)
@@ -929,7 +960,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
 
         }
     },
-    customer_primary_address: function(frm) {
+    customer_primary_address: function (frm) {
         if (frm.doc.customer) {
             // show freeze message
 
@@ -939,7 +970,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                     doctype: "Customer",
                     name: frm.doc.customer
                 },
-                callback: function(r) {
+                callback: function (r) {
                     frappe.dom.unfreeze(); // remove freeze
 
                     if (r.message && r.message.length > 0) {
@@ -952,23 +983,23 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
 
                         frm.set_value("primary_address", address_with_gstin);
                         frm.refresh_field("primary_address");
-                        
+
 
 
                     } else {
                         frm.set_value("primary_address", "");
-                        
+
                         frm.refresh_field("primary_address");
-                        
+
 
                     }
                 }
             });
         } else {
             frm.set_value("primary_address", "");
-            
+
             frm.refresh_field("primary_address");
-            
+
         }
     },
 
@@ -981,7 +1012,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         //         callback: function(r) {
         //             frappe.msgprint("Notification email sent to HOD.");
         //         }
-           //     });
+        //     });
         // }
         if (frm.selected_workflow_action === "Reject") {
             frappe.validated = false; // stop workflow temporarily
@@ -1025,10 +1056,10 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             });
 
             d.show();
-             
+
 
             // Handle user closing dialog without entering remarks
-            d.$wrapper.on('hidden.bs.modal', function() {
+            d.$wrapper.on('hidden.bs.modal', function () {
                 let remarks = d.get_value('rejection_remarks')?.trim();
                 if (!remarks) {
                     frappe.msgprint(__('Rejection remarks are required. Workflow will be reverted.'));
@@ -1079,7 +1110,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                                 docname: frm.doc.name,
                                 remarks: remarks
                             },
-                            callback: function(response) {
+                            callback: function (response) {
                                 if (!response.exc) {
                                     frappe.validated = true; // Allow cancellation after remarks are set
                                     frm.reload_doc();
@@ -1091,7 +1122,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
 
                 d.show();
 
-                d.$wrapper.on('hidden.bs.modal', function() {
+                d.$wrapper.on('hidden.bs.modal', function () {
                     let remarks = d.get_value('cancellation_remarks')?.trim();
                     if (!remarks) {
                         frappe.msgprint(__('Cancellation remarks are required before cancelling. The document will remain in Approved state.'));
@@ -1101,7 +1132,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                                 doctype: frm.doc.doctype,
                                 docname: frm.doc.name,
                             },
-                            callback: function(response) {
+                            callback: function (response) {
                                 if (!response.exc) {
                                     frappe.validated = true; // Allow cancellation after remarks are set
                                     frm.reload_doc();
@@ -1113,7 +1144,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             }
         }
     }
-    
+
     ,
 
     supplier(frm) {
@@ -1158,7 +1189,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                     doctype: "Customer",
                     name: frm.doc.customer
                 },
-                callback: function(r) {
+                callback: function (r) {
                     frappe.dom.unfreeze(); // remove freeze
 
                     if (r.message && r.message.length > 0) {
@@ -1170,26 +1201,26 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                         }
 
                         frm.set_value("primary_address", address_with_gstin);
-                        
+
                         frm.refresh_field("primary_address");
-                        
+
 
                     } else {
-                        
+
                         frm.set_value("primary_address", "");
                         frm.refresh_field("primary_address");
-                         
+
 
                     }
                 }
             });
         } else {
-            
+
             frm.set_value("primary_address", "");
             frm.refresh_field("primary_address");
-            
+
         }
-        frappe.db.get_value("Customer", frm.doc.customer, "tax_category", function(r) {
+        frappe.db.get_value("Customer", frm.doc.customer, "tax_category", function (r) {
             if (r && r.tax_category) {
                 if (!frm.doc.taxes || frm.doc.taxes.length === 0) {
                     frappe.call({
@@ -1197,7 +1228,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                         args: {
                             doc: frm.doc
                         },
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 (r.message.taxes || []).forEach(tax => {
                                     let row = frm.add_child("taxes");
@@ -1229,104 +1260,104 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
     onload(frm) {
 
 
-           
-            // setTimeout(function() {
 
-                
-            //     $('.dropdown-menu a').each(function() {
-            //         if ($(this).text().trim() === 'Reject') {
-            //             $(this).hide();
-            //         }
-            //     });
-
-                
-            //     let approveExists = $('.dropdown-menu a').filter(function() {
-            //         return $(this).text().trim() === 'Approve';
-            //     }).length > 0;
-
-                
-            //     let reopenExists = $('.dropdown-menu a').filter(function() {
-            //         return $(this).text().trim() === 'Reopen';
-            //     }).length > 0;
-
-                
-            //     if (approveExists && !reopenExists) {
-
-                    
-            //         if ($('.dropdown-menu a.reject-with-remarks').length === 0) {
-
-            //             let approveBtn = $('.dropdown-menu a').filter(function() {
-            //                 return $(this).text().trim() === 'Approve';
-            //             });
-
-            //             let customBtn = $('<a style="margin-top:10px;" class="dropdown-item reject-with-remarks" href="#">Reject</a>');
-
-                        
-            //             if (approveBtn.length) {
-            //                 approveBtn.after(customBtn);
-            //             } else {
-            //                 $('.dropdown-menu').append(customBtn);
-            //             }
-
-                        
-            //             customBtn.on('click', function(e) {
-            //                 e.preventDefault();
-
-            //                 let previous_state = cur_frm.doc.workflow_state;
-
-            //                 let d = new frappe.ui.Dialog({
-            //                     title: "Provide Rejection Remarks",
-            //                     fields: [
-            //                         {
-            //                             fieldname: "rejection_remarks",
-            //                             label: "Rejection Remarks",
-            //                             fieldtype: "Small Text",
-            //                             reqd: 1
-            //                         }
-            //                     ],
-            //                     primary_action_label: "Submit",
-            //                     primary_action(values) {
-            //                         let remarks = values.rejection_remarks?.trim();
-            //                         if (!remarks) {
-            //                             frappe.msgprint("Rejection remarks are required.");
-            //                             return;
-            //                         }
-
-            //                         d.hide();
-
-            //                         frappe.call({
-            //                             method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.set_rejection_remarks",
-            //                             args: {
-            //                                 doctype: cur_frm.doc.doctype,
-            //                                 docname: cur_frm.doc.name,
-            //                                 remarks: remarks,
-            //                                 previous_state: previous_state
-            //                             },
-            //                             callback(r) {
-            //                                 if (!r.exc) {
-            //                                     frappe.msgprint("Document has been rejected successfully.");
-            //                                     frm.reload_doc();
-            //                                     location.reload();
-            //                                 }
-            //                             }
-            //                         });
-            //                     }
-            //                 });
-
-            //                 d.show();
-            //             });
-            //         }
-            //     } else {
-                    
-            //         $('.dropdown-menu a.reject-with-remarks').remove();
-            //     }
-
-            // }, 250); 
+        // setTimeout(function() {
 
 
-            
+        //     $('.dropdown-menu a').each(function() {
+        //         if ($(this).text().trim() === 'Reject') {
+        //             $(this).hide();
+        //         }
+        //     });
 
-     
+
+        //     let approveExists = $('.dropdown-menu a').filter(function() {
+        //         return $(this).text().trim() === 'Approve';
+        //     }).length > 0;
+
+
+        //     let reopenExists = $('.dropdown-menu a').filter(function() {
+        //         return $(this).text().trim() === 'Reopen';
+        //     }).length > 0;
+
+
+        //     if (approveExists && !reopenExists) {
+
+
+        //         if ($('.dropdown-menu a.reject-with-remarks').length === 0) {
+
+        //             let approveBtn = $('.dropdown-menu a').filter(function() {
+        //                 return $(this).text().trim() === 'Approve';
+        //             });
+
+        //             let customBtn = $('<a style="margin-top:10px;" class="dropdown-item reject-with-remarks" href="#">Reject</a>');
+
+
+        //             if (approveBtn.length) {
+        //                 approveBtn.after(customBtn);
+        //             } else {
+        //                 $('.dropdown-menu').append(customBtn);
+        //             }
+
+
+        //             customBtn.on('click', function(e) {
+        //                 e.preventDefault();
+
+        //                 let previous_state = cur_frm.doc.workflow_state;
+
+        //                 let d = new frappe.ui.Dialog({
+        //                     title: "Provide Rejection Remarks",
+        //                     fields: [
+        //                         {
+        //                             fieldname: "rejection_remarks",
+        //                             label: "Rejection Remarks",
+        //                             fieldtype: "Small Text",
+        //                             reqd: 1
+        //                         }
+        //                     ],
+        //                     primary_action_label: "Submit",
+        //                     primary_action(values) {
+        //                         let remarks = values.rejection_remarks?.trim();
+        //                         if (!remarks) {
+        //                             frappe.msgprint("Rejection remarks are required.");
+        //                             return;
+        //                         }
+
+        //                         d.hide();
+
+        //                         frappe.call({
+        //                             method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.set_rejection_remarks",
+        //                             args: {
+        //                                 doctype: cur_frm.doc.doctype,
+        //                                 docname: cur_frm.doc.name,
+        //                                 remarks: remarks,
+        //                                 previous_state: previous_state
+        //                             },
+        //                             callback(r) {
+        //                                 if (!r.exc) {
+        //                                     frappe.msgprint("Document has been rejected successfully.");
+        //                                     frm.reload_doc();
+        //                                     location.reload();
+        //                                 }
+        //                             }
+        //                         });
+        //                     }
+        //                 });
+
+        //                 d.show();
+        //             });
+        //         }
+        //     } else {
+
+        //         $('.dropdown-menu a.reject-with-remarks').remove();
+        //     }
+
+        // }, 250); 
+
+
+
+
+
 
 
 
@@ -1361,7 +1392,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                     frm.set_value("employee_name", r.message.employee_name)
                 } else {
                     frm.set_value("employee_name", "")
-                    
+
                 }
             });
 
@@ -1375,7 +1406,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             //         console.log(frm.doc.reports_to)
             //     } else {
             //         frm.set_value("reports_to", "")
-                    
+
             //     }
             // });
 
@@ -1386,113 +1417,113 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
 
     refresh(frm) {
 
-        
 
-          
-            setTimeout(function() {
 
-                
-                $('.dropdown-menu a').each(function() {
-                    if ($(this).text().trim() === 'Reject') {
-                        $(this).hide();
-                    }
-                });
 
-                
-                let approveExists = $('.dropdown-menu a').filter(function() {
-                    return $(this).text().trim() === 'Approve';
-                }).length > 0;
+        setTimeout(function () {
 
-                
-                let reopenExists = $('.dropdown-menu a').filter(function() {
-                    return $(this).text().trim() === 'Reopen';
-                }).length > 0;
 
-                
-                if (approveExists && !reopenExists) {
-
-                    
-                    if ($('.dropdown-menu a.reject-with-remarks').length === 0) {
-
-                        let approveBtn = $('.dropdown-menu a').filter(function() {
-                            return $(this).text().trim() === 'Approve';
-                        });
-
-                        let customBtn = $('<a style="margin-top:10px;" class="dropdown-item reject-with-remarks" href="#">Reject</a>');
-
-                        
-                        if (approveBtn.length) {
-                            approveBtn.after(customBtn);
-                        } else {
-                            $('.dropdown-menu').append(customBtn);
-                        }
-
-                        
-                        customBtn.on('click', function(e) {
-                            e.preventDefault();
-
-                            let previous_state = cur_frm.doc.workflow_state;
-
-                            let d = new frappe.ui.Dialog({
-                                title: "Provide Rejection Remarks",
-                                fields: [
-                                    {
-                                        fieldname: "rejection_remarks",
-                                        label: "Rejection Remarks",
-                                        fieldtype: "Small Text",
-                                        reqd: 1
-                                    }
-                                ],
-                                primary_action_label: "Submit",
-                                primary_action(values) {
-                                    let remarks = values.rejection_remarks?.trim();
-                                    if (!remarks) {
-                                        frappe.msgprint("Rejection remarks are required.");
-                                        return;
-                                    }
-
-                                    d.hide();
-
-                                    frappe.call({
-                                        method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.set_rejection_remarks",
-                                        args: {
-                                            doctype: cur_frm.doc.doctype,
-                                            docname: cur_frm.doc.name,
-                                            remarks: remarks,
-                                            previous_state: previous_state
-                                        },
-                                        callback(r) {
-                                            if (!r.exc) {
-                                                frappe.msgprint("Document has been rejected successfully.");
-                                                frm.reload_doc();
-                                                location.reload();
-                                            }
-                                        }
-                                    });
-                                }
-                            });
-
-                            d.show();
-                        });
-                    }
-                } else {
-                    
-                    $('.dropdown-menu a.reject-with-remarks').remove();
+            $('.dropdown-menu a').each(function () {
+                if ($(this).text().trim() === 'Reject') {
+                    $(this).hide();
                 }
+            });
 
-            }, 250); 
+
+            let approveExists = $('.dropdown-menu a').filter(function () {
+                return $(this).text().trim() === 'Approve';
+            }).length > 0;
 
 
-            toggle_funded_amount(frm);
-       
+            let reopenExists = $('.dropdown-menu a').filter(function () {
+                return $(this).text().trim() === 'Reopen';
+            }).length > 0;
+
+
+            if (approveExists && !reopenExists) {
+
+
+                if ($('.dropdown-menu a.reject-with-remarks').length === 0) {
+
+                    let approveBtn = $('.dropdown-menu a').filter(function () {
+                        return $(this).text().trim() === 'Approve';
+                    });
+
+                    let customBtn = $('<a style="margin-top:10px;" class="dropdown-item reject-with-remarks" href="#">Reject</a>');
+
+
+                    if (approveBtn.length) {
+                        approveBtn.after(customBtn);
+                    } else {
+                        $('.dropdown-menu').append(customBtn);
+                    }
+
+
+                    customBtn.on('click', function (e) {
+                        e.preventDefault();
+
+                        let previous_state = cur_frm.doc.workflow_state;
+
+                        let d = new frappe.ui.Dialog({
+                            title: "Provide Rejection Remarks",
+                            fields: [
+                                {
+                                    fieldname: "rejection_remarks",
+                                    label: "Rejection Remarks",
+                                    fieldtype: "Small Text",
+                                    reqd: 1
+                                }
+                            ],
+                            primary_action_label: "Submit",
+                            primary_action(values) {
+                                let remarks = values.rejection_remarks?.trim();
+                                if (!remarks) {
+                                    frappe.msgprint("Rejection remarks are required.");
+                                    return;
+                                }
+
+                                d.hide();
+
+                                frappe.call({
+                                    method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.set_rejection_remarks",
+                                    args: {
+                                        doctype: cur_frm.doc.doctype,
+                                        docname: cur_frm.doc.name,
+                                        remarks: remarks,
+                                        previous_state: previous_state
+                                    },
+                                    callback(r) {
+                                        if (!r.exc) {
+                                            frappe.msgprint("Document has been rejected successfully.");
+                                            frm.reload_doc();
+                                            location.reload();
+                                        }
+                                    }
+                                });
+                            }
+                        });
+
+                        d.show();
+                    });
+                }
+            } else {
+
+                $('.dropdown-menu a.reject-with-remarks').remove();
+            }
+
+        }, 250);
+
+
+        toggle_funded_amount(frm);
+
         if (frm.get_field("customer_gstin"))
             india_compliance.set_gstin_status(frm.get_field("customer_gstin"));
-        if(frm.doc.gstin_no){
-        if (frm.get_field("gstin_no"))
-            india_compliance.set_gstin_status(frm.get_field("gstin_no"));
-    }
+        if (frm.doc.gstin_no) {
+            if (frm.get_field("gstin_no"))
+                india_compliance.set_gstin_status(frm.get_field("gstin_no"));
+        }
         // update_gstin_no_status(frm);
-        if (frm.doc.iom_type == "Approval for Stock Change Request - Stock Reconciliation" || frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Business Visit"||frm.doc.iom_type=="Approval for New Supplier Registration") {
+        if (frm.doc.iom_type == "Approval for Stock Change Request - Stock Reconciliation" || frm.doc.iom_type == "Approval for Manpower Request" || frm.doc.iom_type == "Approval for Business Visit" || frm.doc.iom_type == "Approval for New Supplier Registration") {
             frm.set_df_property("customer", "hidden", 1)
             frm.refresh_field("customer");
             frm.set_df_property("subject", "reqd", 1)
@@ -1502,7 +1533,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         frm.set_df_property("fright_cost_if_air_inr", "label", "Fright Cost if Air (" + frm.doc.currency + ")");
 
         if (frm.doc.rejection_remarks && frm.doc.rejection_remarks.length > 0) {
-            frm.add_custom_button(__('View Rejection Remarks'), function() {
+            frm.add_custom_button(__('View Rejection Remarks'), function () {
                 let table_html = `
                     <table class="table table-bordered">
                         <thead>
@@ -1564,13 +1595,13 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         // }
         if (frm.doc.docstatus === 1 && frm.doc.workflow_state === "Rejected" && (frappe.session.user == frm.doc.owner || frappe.user.has_role("ERP Team"))) {
             setTimeout(() => {
-                frm.page.add_action_item(__("Reopen"), function() {
+                frm.page.add_action_item(__("Reopen"), function () {
                     frappe.call({
                         method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.reopen_iom",
                         args: {
                             doc: frm.doc.name,
                         },
-                        callback: function(r) {
+                        callback: function (r) {
                             if (!r.exc) {
                                 frappe.show_alert({
                                     message: __("Document Reopened"),
@@ -1592,12 +1623,12 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                     frm.set_value("department_from", r.message.department)
                 } else {
                     frm.set_value("department_from", "")
-                    
+
                 }
             });
         }
-        if ( frappe.user.has_role("Employee") && !frm.doc.reports_to) {
-            
+        if (frappe.user.has_role("Employee") && !frm.doc.reports_to) {
+
             frappe.db.get_value("Employee", {
                 "user_id": frm.doc.owner
             }, "reports_to").then(r => {
@@ -1606,23 +1637,23 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
                 // else {
                 //     frm.set_value("reports_to", "")
-                    
+
                 // }
             });
         }
 
 
 
-      
 
-        if (frappe.session.user === frm.doc.owner || frappe.session.user == "divya.p@groupteampro.com" || frappe.session.user == "jothi.m@gruoupteampro.com"||frappe.user.has_role("ERP Team")) {
-            $.each(frm.fields_dict, function(fieldname, field) {
+
+        if (frappe.session.user === frm.doc.owner || frappe.session.user == "divya.p@groupteampro.com" || frappe.session.user == "jothi.m@gruoupteampro.com" || frappe.user.has_role("ERP Team")) {
+            $.each(frm.fields_dict, function (fieldname, field) {
                 if (frm.doc.iom_type === "Approval for Schedule Revised") {
                     frm.set_df_property(fieldname, 'read_only', 0);
                     frm.set_df_property("approval_remarks", 'read_only', 0);
                     frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
                 }
-                
+
 
 
             });
@@ -1643,9 +1674,9 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
 
             frm.set_intro(__(""));
         } else {
-            $.each(frm.fields_dict, function(fieldname, field) {
-                if(fieldname!="approval_remarks"){
-                    if(fieldname!="custom_rejection_remarks"){
+            $.each(frm.fields_dict, function (fieldname, field) {
+                if (fieldname != "approval_remarks") {
+                    if (fieldname != "custom_rejection_remarks") {
                         frm.set_df_property(fieldname, 'read_only', 1);
                     }
                 }
@@ -1655,16 +1686,16 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             frm.set_df_property("tot_short_value", 'read_only', 1);
             frm.set_df_property("total_shortage_value", 'read_only', 1);
             frm.set_df_property("total_excess_value", 'read_only', 1);
-            
+
             frm.set_df_property("supplier_not_accept_debit_value", 'read_only', 1);
             toggle_phy_stock(frm);
-            if(frm.doc.workflow_state=="Pending for Supplier"){
-            frm.set_df_property("remarks", 'read_only', 0);
+            if (frm.doc.workflow_state == "Pending for Supplier") {
+                frm.set_df_property("remarks", 'read_only', 0);
             }
             frm.set_df_property("approval_remarks", 'read_only', 0);
             frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
             frm.set_intro(__("Only the user who prepared this document can edit it."));
-            
+
         }
 
         if (frappe.user.has_role("ERP Team")) {
@@ -1674,20 +1705,20 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         } else {
             frm.set_df_property("approval_remarks", 'read_only', 0);
             frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
-               
+
             frm.set_df_property("department_from", "read_only", 1);
         }
         frm.set_df_property("approval_remarks", 'read_only', 0);
         frm.set_df_property("custom_rejection_remarks", 'read_only', 0);
 
-        frm.set_query("department_from", function() {
+        frm.set_query("department_from", function () {
             return {
                 filters: {
                     "custom_iom": 1
                 }
             };
         });
-        frm.set_query("forwarder_name", function() {
+        frm.set_query("forwarder_name", function () {
             return {
                 filters: {
                     "ffw": 1
@@ -1695,7 +1726,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
         if (frm.doc.iom_type == 'Approval for Air Shipment' && frm.doc.department_from == "M P L & Purchase - WAIP") {
-            frm.set_query("supplier", function() {
+            frm.set_query("supplier", function () {
                 return {
                     filters: {
                         "supplier_group": "Importer"
@@ -1703,7 +1734,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 };
             });
         }
-        frm.set_query("title_of_attachment", 'attachments', function(doc, cdt, cdn) {
+        frm.set_query("title_of_attachment", 'attachments', function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: [
@@ -1712,7 +1743,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
 
-        frm.set_query("part_noto", "table_mugs", function(doc, cdt, cdn) {
+        frm.set_query("part_noto", "table_mugs", function (doc, cdt, cdn) {
             return {
                 filters: [
                     ["Item", "item_group", "in", ["Raw Material", "Purchase Item", "Consumables"]]
@@ -1721,7 +1752,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         });
 
 
-        frm.set_query("part_no", "approval_credit_note", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "approval_credit_note", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_item",
@@ -1730,7 +1761,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("invoice_no", "approval_payment_right_off", function(doc, cdt, cdn) {
+        frm.set_query("invoice_no", "approval_payment_right_off", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_invoice_item",
@@ -1740,7 +1771,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
 
-        frm.set_query("part_no", "approval_business_volume", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "approval_business_volume", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_item",
@@ -1749,7 +1780,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("part_no", "approval_air_shipment", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "approval_air_shipment", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_item",
@@ -1768,7 +1799,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         //     };
         // });
 
-        frm.set_query("part_no", "price_revision_jo", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "price_revision_jo", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_supplier_purchase",
@@ -1777,7 +1808,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("part_no", "custom_approval_for_price_revision_po_new", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "custom_approval_for_price_revision_po_new", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_supplier_purchase",
@@ -1795,7 +1826,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         //         }
         //     };
         // });
-        frm.set_query("part_no", "table_fkwq", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "table_fkwq", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_purchase_item",
@@ -1804,7 +1835,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("part_no", "schedule_revised", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "schedule_revised", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_supplier_purchase_item",
@@ -1813,7 +1844,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("purchase_order", "schedule_revised", function(doc, cdt, cdn) {
+        frm.set_query("purchase_order", "schedule_revised", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_purchase_orders",
@@ -1832,7 +1863,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         //     };
         // });
 
-        frm.set_query("part_no", "approval_debit_note", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "approval_debit_note", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_item",
@@ -1842,7 +1873,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
 
         });
-        frm.set_query("part_no", "approval_schdule_increase", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "approval_schdule_increase", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_item",
@@ -1852,7 +1883,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
 
-        frm.set_query("part_no", "proto_sample_po", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "proto_sample_po", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_item",
@@ -1862,7 +1893,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
 
-        frm.set_query("item_code", 'approval_for_material_request', function(doc, cdt, cdn) {
+        frm.set_query("item_code", 'approval_for_material_request', function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: [
@@ -1871,7 +1902,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
 
-        frm.set_query("part_no", 'table_scdo', function(doc, cdt, cdn) {
+        frm.set_query("part_no", 'table_scdo', function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: [
@@ -1879,7 +1910,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 ]
             };
         });
-        frm.set_query("part_no", 'approval_supplementary_invoice', function(doc, cdt, cdn) {
+        frm.set_query("part_no", 'approval_supplementary_invoice', function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: [
@@ -1888,7 +1919,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
 
-        frm.set_query("part_no", "price_revision_po", function(doc, cdt, cdn) {
+        frm.set_query("part_no", "price_revision_po", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_item",
@@ -1898,7 +1929,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
 
-        frm.set_query("part_no", 'approval_business_po', function(doc, cdt, cdn) {
+        frm.set_query("part_no", 'approval_business_po', function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: [
@@ -1906,7 +1937,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 ]
             };
         });
-        frm.set_query("part_no", 'approval_sales_order', function(doc, cdt, cdn) {
+        frm.set_query("part_no", 'approval_sales_order', function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: [
@@ -1914,7 +1945,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 ]
             };
         });
-        frm.set_query("part_no", 'approval_part_level', function(doc, cdt, cdn) {
+        frm.set_query("part_no", 'approval_part_level', function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: [
@@ -1932,7 +1963,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         // 	};
         // });
 
-        frm.set_query("part_nofrom", 'table_koir', function(doc, cdt, cdn) {
+        frm.set_query("part_nofrom", 'table_koir', function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: [
@@ -1940,7 +1971,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 ]
             };
         });
-        frm.set_query("part_noto", 'table_koir', function(doc, cdt, cdn) {
+        frm.set_query("part_noto", 'table_koir', function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: [
@@ -1959,7 +1990,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         //     };
         // });
 
-        frm.set_query("po_no", "table_fkwq", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "table_fkwq", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po",
@@ -1969,7 +2000,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("invoice_no", "approval_invoice_cancel", function(doc, cdt, cdn) {
+        frm.set_query("invoice_no", "approval_invoice_cancel", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_sales_invoice",
@@ -1978,7 +2009,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("po_no", "approval_credit_note", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "approval_credit_note", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_sales_orders",
@@ -1988,7 +2019,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("customer", "approval_schdule_increase", function(doc, cdt, cdn) {
+        frm.set_query("customer", "approval_schdule_increase", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 filters: {
@@ -1996,7 +2027,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("sales_order", "approval_schdule_increase", function(doc, cdt, cdn) {
+        frm.set_query("sales_order", "approval_schdule_increase", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_sales_orders",
@@ -2006,7 +2037,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("po_no", "approval_business_volume", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "approval_business_volume", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_sales_orders",
@@ -2016,7 +2047,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("po_no", "approval_debit_note", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "approval_debit_note", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_sales_orders",
@@ -2026,7 +2057,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("po_no", "proto_sample_po", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "proto_sample_po", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_sales_orders",
@@ -2036,7 +2067,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("pojo__no", "table_scdo", function(doc, cdt, cdn) {
+        frm.set_query("pojo__no", "table_scdo", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_schedule",
@@ -2048,7 +2079,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
         });
 
 
-        frm.set_query("po_no", "approval_supplementary_invoice", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "approval_supplementary_invoice", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_sales_orders",
@@ -2058,7 +2089,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("po_no", "price_revision_jo", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "price_revision_jo", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_name",
@@ -2069,7 +2100,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
 
-        frm.set_query("po_no", "custom_approval_for_price_revision_po_new", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "custom_approval_for_price_revision_po_new", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_po_name",
@@ -2080,7 +2111,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
             };
         });
 
-        frm.set_query("po_no", "approval_tooling_invoice", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "approval_tooling_invoice", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_sales_orders",
@@ -2090,7 +2121,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query("po_no", "price_revision_po", function(doc, cdt, cdn) {
+        frm.set_query("po_no", "price_revision_po", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             return {
                 query: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_filtered_sales_orders",
@@ -2100,7 +2131,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                 }
             };
         });
-        frm.set_query('iom_type', function() {
+        frm.set_query('iom_type', function () {
             return {
                 query: 'onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_iom_type_by_department',
                 filters: {
@@ -2252,7 +2283,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
 
     },
 
-    
+
     currency(frm) {
         if (frm.doc.iom_type == "Approval for Air Shipment") {
             if (frm.doc.currency == "INR") {
@@ -2270,7 +2301,7 @@ if (frm.doc.iom_type == "Approval for Supplier Stock Reconciliation") {
                         order_by: "date desc",
                         limit_page_length: 1
                     },
-                    callback: function(r) {
+                    callback: function (r) {
                         if (r.message && r.message.length > 0) {
                             const rate = r.message[0].exchange_rate;
                             frm.set_value("total_loss_value", (frm.doc.fright_cost_if_air_inr - frm.doc.fright_cost_if_sea_inr) * rate)
@@ -2422,7 +2453,7 @@ frappe.ui.form.on("Approval for Payment Write Off", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'price_inr', child.price * rate);
@@ -2454,7 +2485,7 @@ function calculate_total_payment_write_off(frm) {
     frm.set_value("total_invoice_priceinr", total_invoice_priceinr);
 }
 frappe.ui.form.on("Approval for Price Revision PO", {
-    price_revision_po_remove: function(frm) {
+    price_revision_po_remove: function (frm) {
         calculate_new_price(frm); // always recalc totals on manual row delete\
         calculate_po_price_tax_and_total(frm)
     },
@@ -2477,7 +2508,7 @@ frappe.ui.form.on("Approval for Price Revision PO", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'new_priceinr', child.new_price * rate);
@@ -2515,7 +2546,7 @@ frappe.ui.form.on("Approval for Price Revision PO", {
 
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -2526,18 +2557,18 @@ frappe.ui.form.on("Approval for Price Revision PO", {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     frappe.model.set_value(cdt, cdn, "gst", r.message || "");
                 }
             });
             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
-             frappe.db.get_value('Item', row.part_no, 'stock_uom')
-            .then(r => {
+                })
+            frappe.db.get_value('Item', row.part_no, 'stock_uom')
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
-            })
+                })
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
         }
@@ -2585,7 +2616,7 @@ frappe.ui.form.on("Approval for Price Revision PO", {
                         },
                         freeze: true,
                         freeze_message: __("Fetching Tax..."),
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
                                     .then(() => {
@@ -2625,7 +2656,7 @@ frappe.ui.form.on("Approval for Price Revision PO", {
                     customer: frm.doc.customer || frm.doc.new_customer,
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "po_no", r.message);
                     }
@@ -2643,7 +2674,7 @@ frappe.ui.form.on("Approval for Price Revision PO", {
                     sales_order: d.po_no,
                     item_code: d.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "qty", r.message.qty);
                         frappe.model.set_value(cdt, cdn, "po_price", r.message.rate);
@@ -2661,7 +2692,7 @@ frappe.ui.form.on("Approval for Price Revision PO", {
 });
 
 frappe.ui.form.on("Approval for Price Revision PO NEW", {
-    custom_approval_for_price_revision_po_new_remove: function(frm) {
+    custom_approval_for_price_revision_po_new_remove: function (frm) {
         calculate_new_price_mpl(frm); // always recalc totals on manual row delete\
         calculate_proto_tax_and_total_material_all_price(frm)
     },
@@ -2684,7 +2715,7 @@ frappe.ui.form.on("Approval for Price Revision PO NEW", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'new_priceinr', child.new_price * rate);
@@ -2722,7 +2753,7 @@ frappe.ui.form.on("Approval for Price Revision PO NEW", {
 
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -2733,18 +2764,18 @@ frappe.ui.form.on("Approval for Price Revision PO NEW", {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     frappe.model.set_value(cdt, cdn, "gst", r.message || "");
                 }
             });
-             frappe.db.get_value('Item', row.part_no, 'item_name')
+            frappe.db.get_value('Item', row.part_no, 'item_name')
                 .then(r => {
-                        frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
+                    frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
                 })
             frappe.db.get_value('Item', row.part_no, 'stock_uom')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
-            })
+                })
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
         }
@@ -2792,7 +2823,7 @@ frappe.ui.form.on("Approval for Price Revision PO NEW", {
                         },
                         freeze: true,
                         freeze_message: __("Fetching Tax..."),
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
                                     .then(() => {
@@ -2834,7 +2865,7 @@ frappe.ui.form.on("Approval for Price Revision PO NEW", {
                     purchase_order: d.po_no,
                     item_code: d.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "qty", r.message.qty);
                         frappe.model.set_value(cdt, cdn, "po_price", r.message.rate);
@@ -2876,7 +2907,7 @@ function calculate_po_price_tax_and_total(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -2933,7 +2964,7 @@ function calculate_po_price_tax_and_total(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -3040,7 +3071,7 @@ frappe.ui.form.on("Approval for Supplementary Invoice", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'revised_priceinr', child.new_price * rate);
@@ -3069,7 +3100,7 @@ frappe.ui.form.on("Approval for Supplementary Invoice", {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     frappe.model.set_value(cdt, cdn, "gst", r.message || "");
                     // if (!r.message) frappe.msgprint(__('No Item Tax Template found for HSN Code: ' + row.hsn_code));
                 }
@@ -3088,7 +3119,7 @@ frappe.ui.form.on("Approval for Supplementary Invoice", {
                     sales_order: d.po_no,
                     item_code: d.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "po_price", r.message.rate);
                         frappe.model.set_value(cdt, cdn, "invoiced_priceinr", r.message.base_rate);
@@ -3105,7 +3136,7 @@ frappe.ui.form.on("Approval for Supplementary Invoice", {
 });
 
 frappe.ui.form.on("Approval for Tooling Invoice", {
-    approval_tooling_invoice_remove: function(frm) {
+    approval_tooling_invoice_remove: function (frm) {
         calculate_total_tool_cost(frm); // always recalc totals on manual row 
         calculate_tooling_tax_and_total(frm);
     },
@@ -3127,7 +3158,7 @@ frappe.ui.form.on("Approval for Tooling Invoice", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'tool_cost_inr', child.tool_cost * rate);
@@ -3151,7 +3182,7 @@ frappe.ui.form.on("Approval for Tooling Invoice", {
 
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
         if (row.part_no) {
@@ -3167,7 +3198,7 @@ frappe.ui.form.on("Approval for Tooling Invoice", {
                 args: {
                     tool: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
                     } else {
@@ -3221,7 +3252,7 @@ frappe.ui.form.on("Approval for Tooling Invoice", {
                                 },
                                 freeze: true,
                                 freeze_message: __("Fetching Tax..."),
-                                callback: function(r) {
+                                callback: function (r) {
                                     if (r.message) {
                                         frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                         frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -3261,7 +3292,7 @@ frappe.ui.form.on("Approval for Tooling Invoice", {
         }
 
     },
-    qty: function(frm, cdt, cdn) {
+    qty: function (frm, cdt, cdn) {
         var child = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "tool_cost", child.qty * child.po_price)
         if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
@@ -3277,7 +3308,7 @@ frappe.ui.form.on("Approval for Tooling Invoice", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'tool_cost_inr', child.tool_cost * rate);
@@ -3302,7 +3333,7 @@ frappe.ui.form.on("Approval for Tooling Invoice", {
         }
 
     },
-    po_price: function(frm, cdt, cdn) {
+    po_price: function (frm, cdt, cdn) {
         var child = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "tool_cost", child.qty * child.po_price)
         if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
@@ -3318,7 +3349,7 @@ frappe.ui.form.on("Approval for Tooling Invoice", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'tool_cost_inr', child.tool_cost * rate);
@@ -3346,7 +3377,7 @@ frappe.ui.form.on("Approval for Tooling Invoice", {
 
 });
 frappe.ui.form.on("Approval for Tools and Dies Invoice", {
-    approval_tools_and_dies_invoice_remove: function(frm) {
+    approval_tools_and_dies_invoice_remove: function (frm) {
         calculate_tad_total_tool_cost(frm); // always recalc totals on manual row 
         calculate_tad_tooling_tax_and_total(frm);
     },
@@ -3368,7 +3399,7 @@ frappe.ui.form.on("Approval for Tools and Dies Invoice", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'tool_cost_inr', child.tool_cost * rate);
@@ -3392,7 +3423,7 @@ frappe.ui.form.on("Approval for Tools and Dies Invoice", {
 
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
         if (row.part_no) {
@@ -3408,7 +3439,7 @@ frappe.ui.form.on("Approval for Tools and Dies Invoice", {
                 args: {
                     tool: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
 
@@ -3464,7 +3495,7 @@ frappe.ui.form.on("Approval for Tools and Dies Invoice", {
                                 },
                                 freeze: true,
                                 freeze_message: __("Fetching Tax..."),
-                                callback: function(r) {
+                                callback: function (r) {
                                     if (r.message) {
                                         frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                         frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -3504,7 +3535,7 @@ frappe.ui.form.on("Approval for Tools and Dies Invoice", {
         }
 
     },
-    qty: function(frm, cdt, cdn) {
+    qty: function (frm, cdt, cdn) {
         var child = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "tool_cost", child.qty * child.quotation_price)
         if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
@@ -3520,7 +3551,7 @@ frappe.ui.form.on("Approval for Tools and Dies Invoice", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'tool_cost_inr', child.tool_cost * rate);
@@ -3545,7 +3576,7 @@ frappe.ui.form.on("Approval for Tools and Dies Invoice", {
         }
 
     },
-    quotation_price: function(frm, cdt, cdn) {
+    quotation_price: function (frm, cdt, cdn) {
         var child = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "tool_cost", child.qty * child.quotation_price)
         if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
@@ -3561,7 +3592,7 @@ frappe.ui.form.on("Approval for Tools and Dies Invoice", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'tool_cost_inr', child.tool_cost * rate);
@@ -3616,7 +3647,7 @@ function calculate_tooling_tax_and_total(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -3676,7 +3707,7 @@ function calculate_tad_tooling_tax_and_total(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -3757,7 +3788,7 @@ frappe.ui.form.on("Approval for Credit Note", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         let rate; // declare rate once
 
@@ -3785,10 +3816,10 @@ frappe.ui.form.on("Approval for Credit Note", {
             calculate_total_cn_values(frm)
         }
     },
-    approval_credit_note_remove: function(frm) {
+    approval_credit_note_remove: function (frm) {
         calculate_total_cn_values(frm); // always recalc totals on manual row delete
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -3798,7 +3829,7 @@ frappe.ui.form.on("Approval for Credit Note", {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
                     } else {
@@ -3852,7 +3883,7 @@ frappe.ui.form.on("Approval for Credit Note", {
                                 },
                                 freeze: true,
                                 freeze_message: __("Fetching Tax..."),
-                                callback: function(r) {
+                                callback: function (r) {
                                     if (r.message) {
                                         frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                         frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -3890,15 +3921,15 @@ frappe.ui.form.on("Approval for Credit Note", {
 
                 })
             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
+                })
 
 
         }
 
     },
-    po_no: function(frm, cdt, cdn) {
+    po_no: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         if (d.po_no && d.part_no) {
             frappe.call({
@@ -3907,7 +3938,7 @@ frappe.ui.form.on("Approval for Credit Note", {
                     sales_order: d.po_no,
                     item_code: d.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "po_price", r.message.rate);
                         frappe.model.set_value(cdt, cdn, "po_price_inr", r.message.base_rate);
@@ -3919,7 +3950,7 @@ frappe.ui.form.on("Approval for Credit Note", {
         }
 
     },
-    total_supplied_qty: function(frm, cdt, cdn) {
+    total_supplied_qty: function (frm, cdt, cdn) {
         calculate_difference_and_cn_value(cdt, cdn);
         calculate_total_cn_values(frm)
         calculate_tax_and_total(frm);
@@ -3953,7 +3984,7 @@ function calculate_tax_and_total(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -4037,7 +4068,7 @@ frappe.ui.form.on("Approval for Debit Note", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'settled_price_inr', child.settled_price * rate);
@@ -4057,7 +4088,7 @@ frappe.ui.form.on("Approval for Debit Note", {
             update_parent_totals(frm);
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -4067,7 +4098,7 @@ frappe.ui.form.on("Approval for Debit Note", {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
                     } else {
@@ -4075,10 +4106,10 @@ frappe.ui.form.on("Approval for Debit Note", {
                     }
                 }
             });
-             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+            frappe.db.get_value('Item', row.part_no, 'item_name')
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
+                })
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
         }
@@ -4125,7 +4156,7 @@ frappe.ui.form.on("Approval for Debit Note", {
                                 },
                                 freeze: true,
                                 freeze_message: __("Fetching Tax..."),
-                                callback: function(r) {
+                                callback: function (r) {
                                     if (r.message) {
                                         frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                         frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -4168,14 +4199,14 @@ frappe.ui.form.on("Approval for Debit Note", {
                 })
 
         }
-        if(row.part_no && frm.doc.customer){
+        if (row.part_no && frm.doc.customer) {
             frappe.call({
                 method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_latest_sales_order",
                 args: {
                     customer: frm.doc.customer || frm.doc.new_customer,
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "po_no", r.message);
                     }
@@ -4184,7 +4215,7 @@ frappe.ui.form.on("Approval for Debit Note", {
         }
 
     },
-    po_no: function(frm, cdt, cdn) {
+    po_no: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         if (d.po_no && d.part_no) {
             frappe.call({
@@ -4193,7 +4224,7 @@ frappe.ui.form.on("Approval for Debit Note", {
                     sales_order: d.po_no,
                     item_code: d.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         // frappe.model.set_value(cdt, cdn, "po_price", r.message.rate); 
                         // frappe.model.set_value(cdt, cdn, "po_priceinr", r.message.base_rate); 
@@ -4205,13 +4236,13 @@ frappe.ui.form.on("Approval for Debit Note", {
         }
 
     },
-    total_supplied_qty: function(frm, cdt, cdn) {
+    total_supplied_qty: function (frm, cdt, cdn) {
         calculate_difference_and_dn_value(cdt, cdn);
         update_parent_totals(frm);
         calculate_dn_tax_and_total(frm);
 
     },
-    po_price: function(frm, cdt, cdn) {
+    po_price: function (frm, cdt, cdn) {
         var child = locals[cdt][cdn];
         if (frm.doc.currency !== "INR") {
             frappe.call({
@@ -4226,7 +4257,7 @@ frappe.ui.form.on("Approval for Debit Note", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'po_priceinr', child.po_price * rate);
@@ -4247,7 +4278,7 @@ frappe.ui.form.on("Approval for Debit Note", {
             calculate_difference_and_dn_value(cdt, cdn);
         }
     },
-    approval_debit_note_remove: function(frm, cdt, cdn) {
+    approval_debit_note_remove: function (frm, cdt, cdn) {
         calculate_dn_tax_and_total(frm);
         update_parent_totals(frm);
         calculate_difference_and_dn_value(cdt, cdn);
@@ -4281,7 +4312,7 @@ function calculate_dn_tax_and_total(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -4362,7 +4393,7 @@ frappe.ui.form.on("Approval for Business Volume Increase", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'new_price_inr', child.new_price * rate);
@@ -4379,7 +4410,7 @@ frappe.ui.form.on("Approval for Business Volume Increase", {
             calculate_total_business_volume(frm)
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.part_no) {
             frappe.call({
@@ -4387,7 +4418,7 @@ frappe.ui.form.on("Approval for Business Volume Increase", {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
                     } else {
@@ -4397,9 +4428,9 @@ frappe.ui.form.on("Approval for Business Volume Increase", {
                 }
             });
             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
+                })
 
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
@@ -4414,7 +4445,7 @@ frappe.ui.form.on("Approval for Business Volume Increase", {
                     sales_order: d.po_no,
                     item_code: d.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "qty", r.message.qty);
                         frappe.model.set_value(cdt, cdn, "current_price", r.message.rate);
@@ -4440,7 +4471,7 @@ function calculate_total_business_volume(frm) {
     frm.set_value("total_new_price_value_inr", total_new_price_inr);
 }
 frappe.ui.form.on('Approval for Air Shipment Material', {
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
         frm.doc.approval_shipment_materail.forEach(other_row => {
@@ -4448,10 +4479,10 @@ frappe.ui.form.on('Approval for Air Shipment Material', {
                 duplicate_found = true;
             }
         });
-         frappe.db.get_value('Item', row.part_no, 'item_name')
-                .then(r => {
-                        frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-                })
+        frappe.db.get_value('Item', row.part_no, 'item_name')
+            .then(r => {
+                frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
+            })
         if (duplicate_found) {
             let d = frappe.msgprint({
                 title: __("Removing Duplicate Entry"),
@@ -4594,7 +4625,7 @@ frappe.ui.form.on("Approval for Price Revision PO Material", {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'new_price_inr', child.fright_cost * rate);
@@ -4609,7 +4640,7 @@ frappe.ui.form.on("Approval for Price Revision PO Material", {
             frappe.model.set_value(cdt, cdn, 'new_price_inr', child.fright_cost);
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.part_no) {
             frappe.call({
@@ -4617,7 +4648,7 @@ frappe.ui.form.on("Approval for Price Revision PO Material", {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
                     } else {
@@ -4628,7 +4659,7 @@ frappe.ui.form.on("Approval for Price Revision PO Material", {
             });
             frappe.db.get_value('Item', row.part_no, 'item_name')
                 .then(r => {
-                        frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
+                    frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
                 })
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
@@ -4805,7 +4836,7 @@ frappe.ui.form.on("Approval for Price Revision PO Material", {
 //     });
 // }
 
-frappe.ui.form.on('Approval for Proto Sample PO', { 
+frappe.ui.form.on('Approval for Proto Sample PO', {
     po_price_new(frm, cdt, cdn) {
         var child = locals[cdt][cdn];
         calculate_total_po_price(frm);
@@ -4824,7 +4855,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'po_price_inrexisting', child.po_price_new * rate);
@@ -4860,7 +4891,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'value_inr', child.value * rate);
@@ -4884,7 +4915,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
 
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -4894,7 +4925,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "item_tax_template", r.message);
                     } else {
@@ -4948,7 +4979,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
                                 },
                                 freeze: true,
                                 freeze_message: __("Fetching Tax..."),
-                                callback: function(r) {
+                                callback: function (r) {
                                     if (r.message) {
                                         frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                         frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -4997,7 +5028,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
                     sales_order: d.po_no,
                     item_code: d.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "qty", r.message.qty);
                         frappe.model.set_value(cdt, cdn, "po_price", r.message.rate);
@@ -5025,12 +5056,12 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
         calculate_proto_tax_and_total(frm)
 
     },
-    proto_sample_po_remove: function(frm) {
+    proto_sample_po_remove: function (frm) {
         calculate_total_po_price(frm);
 
         calculate_proto_tax_and_total(frm); // always recalc totals on manual row delete
     },
-    hsn_code: function(frm, cdt, cdn) {
+    hsn_code: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -5070,7 +5101,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
                         },
                         freeze: true,
                         freeze_message: __("Fetching Tax..."),
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                 frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -5106,7 +5137,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
 
         }
     },
-    qty_new: function(frm, cdt, cdn) {
+    qty_new: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "value", d.qty_new * d.po_price_new)
         if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
@@ -5122,7 +5153,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'value_inr', d.value * rate);
@@ -5149,7 +5180,7 @@ frappe.ui.form.on('Approval for Proto Sample PO', {
 });
 
 function calculate_proto_tax_and_total(frm) {
-    
+
     if (frm.doc.iom_type === "Approval for Proto Sample SO" &&
         (frm.doc.proto_sample_po || frm.doc.approval_for_proto_sample_so) &&
         frm.doc.department_from === "Marketing - WAIP") {
@@ -5164,7 +5195,7 @@ function calculate_proto_tax_and_total(frm) {
 
             }
         });
-         (frm.doc.approval_for_proto_sample_so || []).forEach(row => {
+        (frm.doc.approval_for_proto_sample_so || []).forEach(row => {
             if (row.value) {
                 if (row.value) total += row.value;
                 if (row.value_inr) total_inr += row.value_inr;
@@ -5182,7 +5213,7 @@ function calculate_proto_tax_and_total(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -5247,7 +5278,7 @@ frappe.ui.form.on('Approval for New Business PO', { // Child table doctype
     //         is_open_order ? 1 : 0
     //     );
     // },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
 
         let row = locals[cdt][cdn];
         let duplicate_found = false;
@@ -5265,18 +5296,18 @@ frappe.ui.form.on('Approval for New Business PO', { // Child table doctype
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     frappe.model.set_value(cdt, cdn, "gst", r.message || "");
                 }
             });
             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
+                })
             frappe.db.get_value('Item', row.part_no, 'stock_uom')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
-            })
+                })
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
         }
@@ -5323,7 +5354,7 @@ frappe.ui.form.on('Approval for New Business PO', { // Child table doctype
                         },
                         freeze: true,
                         freeze_message: __("Fetching Tax..."),
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
                                     .then(() => {
@@ -5361,7 +5392,7 @@ frappe.ui.form.on('Approval for New Business PO', { // Child table doctype
 
 
 
-    approval_business_po_remove: function(frm) {
+    approval_business_po_remove: function (frm) {
         calculate_po_price(frm); // always recalc totals on manual row delete\
         calculate_po_tax_and_total(frm)
     },
@@ -5383,7 +5414,7 @@ frappe.ui.form.on('Approval for New Business PO', { // Child table doctype
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'po_priceinr', child.po_price * rate);
@@ -5428,7 +5459,7 @@ frappe.ui.form.on('Approval for New Business PO', { // Child table doctype
 });
 
 frappe.ui.form.on('Approval for New Business PO - NEW', { // Child table doctype
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
         if (frm.doc.order_type == "Open Order") {
@@ -5440,22 +5471,22 @@ frappe.ui.form.on('Approval for New Business PO - NEW', { // Child table doctype
         }
         frm.refresh_field("custom_approval_for_new_business_po");
         frappe.db.get_value('Item', row.part_no, 'item_name')
-                .then(r => {
-                        frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-                })
-         frappe.db.get_value('Item', row.part_no, 'stock_uom')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+                frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
+            })
+        frappe.db.get_value('Item', row.part_no, 'stock_uom')
+            .then(r => {
+                frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
             })
         frm.doc.custom_approval_for_new_business_po.forEach(other_row => {
             if (other_row.part_no === row.part_no && other_row.name !== row.name) {
                 duplicate_found = true;
             }
         });
-        if(row.part_no){
+        if (row.part_no) {
             frappe.db.get_value('Item', row.part_no, 'item_name')
                 .then(r => {
-                        frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
+                    frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
                 })
         }
         if (duplicate_found) {
@@ -5494,7 +5525,7 @@ frappe.ui.form.on('Approval for New Business PO - NEW', { // Child table doctype
                         },
                         freeze: true,
                         freeze_message: __("Fetching Tax..."),
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                 frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -5534,7 +5565,7 @@ frappe.ui.form.on('Approval for New Business PO - NEW', { // Child table doctype
 
 
 
-    approval_business_po_remove: function(frm) {
+    approval_business_po_remove: function (frm) {
         calculate_po_price1(frm); // always recalc totals on manual row delete\
         calculate_proto_tax_and_total_material_all1(frm);
 
@@ -5557,7 +5588,7 @@ frappe.ui.form.on('Approval for New Business PO - NEW', { // Child table doctype
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'po_priceinr', child.po_price * rate);
@@ -5714,7 +5745,7 @@ function calculate_po_tax_and_total(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -5776,7 +5807,7 @@ function calculate_proto_tax_and_total_material_all1(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -5820,7 +5851,7 @@ function calculate_proto_tax_and_total_material_all_price(frm) {
             if (row.value) total += row.value;
             if (row.value_inr) total_inr += row.value_inr;
         });
-        
+
 
         // frappe.model.set_value(frm.doc.doctype, frm.doc.name, "total_po_value", total);
         // frappe.model.set_value(frm.doc.doctype, frm.doc.name, "total_po_value_inr", total_inr);
@@ -5832,7 +5863,7 @@ function calculate_proto_tax_and_total_material_all_price(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -5865,13 +5896,13 @@ function calculate_proto_tax_and_total_material_all_price(frm) {
 }
 
 frappe.ui.form.on('Approval for Invoice Cancel', {
-    invoice_no: function(frm, cdt, cdn) {
+    invoice_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let part_nos = {};
         let duplicate_rows = [];
 
         // Loop through child table and track duplicates
-        frm.doc.approval_invoice_cancel.forEach(function(r) {
+        frm.doc.approval_invoice_cancel.forEach(function (r) {
             if (r.invoice_no) {
                 if (part_nos[r.invoice_no]) {
                     // Mark this row as duplicate
@@ -5883,7 +5914,7 @@ frappe.ui.form.on('Approval for Invoice Cancel', {
         });
 
         if (duplicate_rows.length > 0) {
-            duplicate_rows.forEach(function(name) {
+            duplicate_rows.forEach(function (name) {
                 let child = frm.doc.approval_invoice_cancel.find(d => d.name === name);
                 frappe.model.clear_doc(child.doctype, child.name);
             });
@@ -5892,10 +5923,10 @@ frappe.ui.form.on('Approval for Invoice Cancel', {
         }
         update_total_invoice(frm)
     },
-    amount_in: function(frm, cdt, cdn) {
+    amount_in: function (frm, cdt, cdn) {
         update_total_invoice(frm)
     },
-    approval_invoice_cancel_remove: function(frm) {
+    approval_invoice_cancel_remove: function (frm) {
         update_total_invoice(frm)
 
     },
@@ -5904,7 +5935,7 @@ frappe.ui.form.on('Approval for Invoice Cancel', {
 
 function update_total_invoice(frm) {
     let total = 0;
-    frm.doc.approval_invoice_cancel.forEach(function(r) { // assuming child table fieldname is 'items'
+    frm.doc.approval_invoice_cancel.forEach(function (r) { // assuming child table fieldname is 'items'
         total += r.amount_in ? r.amount_in : 0;
     });
     frm.set_value('total_invoice_value', total);
@@ -5912,7 +5943,7 @@ function update_total_invoice(frm) {
 
 
 frappe.ui.form.on('Approval for Sales Order DC', { // Child table doctype
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.part_no) {
             frappe.call({
@@ -5920,7 +5951,7 @@ frappe.ui.form.on('Approval for Sales Order DC', { // Child table doctype
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
                     } else {
@@ -5930,16 +5961,16 @@ frappe.ui.form.on('Approval for Sales Order DC', { // Child table doctype
                 }
             });
             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
+                })
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
         }
     }
 });
 frappe.ui.form.on('Approval for Part Level Change', { // Child table doctype
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.part_no) {
             frappe.call({
@@ -5947,7 +5978,7 @@ frappe.ui.form.on('Approval for Part Level Change', { // Child table doctype
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
                     } else {
@@ -5957,16 +5988,16 @@ frappe.ui.form.on('Approval for Part Level Change', { // Child table doctype
                 }
             });
             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
+                })
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
         }
     }
 });
 frappe.ui.form.on('Approval for Air shipment', {
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
 
         let row = locals[cdt][cdn];
         let duplicate_found = false;
@@ -5976,9 +6007,9 @@ frappe.ui.form.on('Approval for Air shipment', {
             }
         });
         frappe.db.get_value('Item', row.part_no, 'item_name')
-                .then(r => {
-                        frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-                })
+            .then(r => {
+                frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
+            })
         if (duplicate_found) {
             let d = frappe.msgprint({
                 title: __("Removing Duplicate Entry"),
@@ -5999,7 +6030,7 @@ frappe.ui.form.on('Approval for Air shipment', {
 })
 
 frappe.ui.form.on('Approval for Schedule Increase', { // Child table doctype
-    customer: function(frm, cdt, cdn) {
+    customer: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         frappe.db.get_value("Customer", row.customer, "default_currency").then(r => {
             if (r && r.message && r.message.default_currency) {
@@ -6017,7 +6048,7 @@ frappe.ui.form.on('Approval for Schedule Increase', { // Child table doctype
                             order_by: "date desc",
                             limit_page_length: 1
                         },
-                        callback: function(r) {
+                        callback: function (r) {
                             let rate = 0;
                             if (r.message && r.message.length > 0) {
                                 rate = r.message[0].exchange_rate;
@@ -6036,7 +6067,7 @@ frappe.ui.form.on('Approval for Schedule Increase', { // Child table doctype
             }
         });
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.part_no) {
             frappe.call({
@@ -6044,7 +6075,7 @@ frappe.ui.form.on('Approval for Schedule Increase', { // Child table doctype
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
                     } else {
@@ -6053,9 +6084,9 @@ frappe.ui.form.on('Approval for Schedule Increase', { // Child table doctype
                 }
             });
             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
+                })
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
         }
@@ -6070,7 +6101,7 @@ frappe.ui.form.on('Approval for Schedule Increase', { // Child table doctype
                     item_code: d.part_no,
                     schedule_month: frm.doc.schedule_month
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "current_schedule_value", r.message.qty);
                         frappe.model.set_value(cdt, cdn, "current_schedule_value1", r.message.schedule_amount);
@@ -6197,7 +6228,7 @@ frappe.ui.form.on('Approval for Schedule Increase', { // Child table doctype
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     let rate = 0;
                     if (r.message && r.message.length > 0) {
                         rate = r.message[0].exchange_rate;
@@ -6248,7 +6279,7 @@ function calculate_values(frm, cdt, cdn) {
     frappe.model.set_value(cdt, cdn, "difference_value_inr", difference_value_inr);
 }
 frappe.ui.form.on('Approval for Product Conversion New', {
-    warehouse_from: function(frm, cdt, cdn) {
+    warehouse_from: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
 
         if (row.part_nofrom && row.warehouse_from) {
@@ -6262,7 +6293,7 @@ frappe.ui.form.on('Approval for Product Conversion New', {
                     },
                     fieldname: ["actual_qty"]
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.actual_qty > 0) {
                         frappe.model.set_value(cdt, cdn, "stock_qty", r.message.actual_qty);
                     } else {
@@ -6274,27 +6305,27 @@ frappe.ui.form.on('Approval for Product Conversion New', {
             frappe.model.set_value(cdt, cdn, "stock_qty", 0);
         }
     },
-    part_nofrom: function(frm, cdt, cdn) {
+    part_nofrom: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (!row.part_nofrom) return;
 
         let duplicates = frm.doc.product_convertion.filter(r => r.part_nofrom === row.part_nofrom);
         frappe.db.get_value('Item', row.part_nofrom, 'item_name')
-                .then(r => {
-                        frappe.model.set_value(cdt, cdn, "part_namefrom", r.message.item_name);
-                })
+            .then(r => {
+                frappe.model.set_value(cdt, cdn, "part_namefrom", r.message.item_name);
+            })
         // If more than 1 entry found for same item → remove the latest duplicate
         if (duplicates.length > 1) {
             frappe.model.clear_doc(cdt, cdn); // remove current duplicate row
             frm.refresh_field("product_convertion");
             frappe.msgprint(__("Duplicate item removed: " + row.part_nofrom));
         }
-         frappe.db.get_value('Item', row.part_nofrom, 'stock_uom')
+        frappe.db.get_value('Item', row.part_nofrom, 'stock_uom')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+                frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
             })
     },
-    qtyfrom: function(frm, cdt, cdn) {
+    qtyfrom: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.qtyfrom > row.stock_qty) {
             frappe.model.set_value(cdt, cdn, "qtyfrom", 0)
@@ -6303,7 +6334,7 @@ frappe.ui.form.on('Approval for Product Conversion New', {
     }
 });
 frappe.ui.form.on('Approval for Product Conversion', {
-    warehouse_from: function(frm, cdt, cdn) {
+    warehouse_from: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
 
         if (row.part_nofrom && row.warehouse_from) {
@@ -6317,7 +6348,7 @@ frappe.ui.form.on('Approval for Product Conversion', {
                     },
                     fieldname: ["actual_qty"]
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.actual_qty > 0) {
 
                         frappe.model.set_value(cdt, cdn, "stock_qty", r.message.actual_qty);
@@ -6330,15 +6361,15 @@ frappe.ui.form.on('Approval for Product Conversion', {
             frappe.model.set_value(cdt, cdn, "stock_qty", 0);
         }
     },
-    part_nofrom: function(frm, cdt, cdn) {
+    part_nofrom: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (!row.part_nofrom) return;
 
         let duplicates = frm.doc.table_mugs.filter(r => r.part_nofrom === row.part_nofrom);
         frappe.db.get_value('Item', row.part_nofrom, 'item_name')
-                .then(r => {
-                        frappe.model.set_value(cdt, cdn, "part_namefrom", r.message.item_name);
-                })
+            .then(r => {
+                frappe.model.set_value(cdt, cdn, "part_namefrom", r.message.item_name);
+            })
         if (duplicates.length > 1) {
             frappe.model.clear_doc(cdt, cdn);
             frm.refresh_field("table_mugs");
@@ -6346,12 +6377,12 @@ frappe.ui.form.on('Approval for Product Conversion', {
         }
         frappe.db.get_value('Item', row.part_nofrom, 'stock_uom')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+                frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
             })
     }
 });
 frappe.ui.form.on('Approval for Vendor Split order', { // Child table doctype
-    part_nofrom: function(frm, cdt, cdn) {
+    part_nofrom: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.part_nofrom) {
             frappe.model.set_value(cdt, cdn, "supplier_nameexisting", frm.doc.supplier);
@@ -6360,7 +6391,7 @@ frappe.ui.form.on('Approval for Vendor Split order', { // Child table doctype
                 args: {
                     item_code: row.part_nofrom
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst_existing", r.message);
                     } else {
@@ -6370,14 +6401,14 @@ frappe.ui.form.on('Approval for Vendor Split order', { // Child table doctype
                 }
             });
             frappe.db.get_value('Item', row.part_nofrom, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_namefrom", r.message.item_name);
-            })
+                })
         } else {
             frappe.model.set_value(cdt, cdn, "gst_existing", "");
         }
     },
-    part_noto: function(frm, cdt, cdn) {
+    part_noto: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.part_noto) {
             frappe.call({
@@ -6385,7 +6416,7 @@ frappe.ui.form.on('Approval for Vendor Split order', { // Child table doctype
                 args: {
                     item_code: row.part_noto
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst_new", r.message);
                     } else {
@@ -6398,7 +6429,7 @@ frappe.ui.form.on('Approval for Vendor Split order', { // Child table doctype
             frappe.model.set_value(cdt, cdn, "gst_new", "");
         }
     },
-    supplier_nameexisting: function(frm, cdt, cdn) {
+    supplier_nameexisting: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.supplier_nameexisting && row.part_nofrom) {
             frappe.call({
@@ -6407,7 +6438,7 @@ frappe.ui.form.on('Approval for Vendor Split order', { // Child table doctype
                     supplier: row.supplier_nameexisting,
                     item_code: row.part_nofrom
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "qtyfrom", r.message.qty);
                     }
@@ -6422,7 +6453,7 @@ frappe.ui.form.on('Approval for Vendor Split order', { // Child table doctype
             frappe.model.set_value(cdt, cdn, "qtyto", 0);
         }
     },
-    revisied_qty: function(frm, cdt, cdn) {
+    revisied_qty: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.qtyfrom) {
             frappe.model.set_value(cdt, cdn, "qtyto", row.qtyfrom - row.revisied_qty);
@@ -6432,7 +6463,7 @@ frappe.ui.form.on('Approval for Vendor Split order', { // Child table doctype
     }
 });
 frappe.ui.form.on('Approval for schedule Increase Material', {
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.part_no) {
             frappe.call({
@@ -6440,7 +6471,7 @@ frappe.ui.form.on('Approval for schedule Increase Material', {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "gst", r.message);
                     } else {
@@ -6464,29 +6495,29 @@ frappe.ui.form.on('Approval for schedule Increase Material', {
     }
 });
 frappe.ui.form.on('Approval for Material Request', {
-    unitkg: function(frm, cdt, cdn) {
+    unitkg: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.unitkg) {
             frappe.model.set_value(cdt, cdn, "totalkg", row.unitkg * row.qty);
         }
     },
-    qty: function(frm, cdt, cdn) {
+    qty: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.unitkg) {
             frappe.model.set_value(cdt, cdn, "totalkg", row.unitkg * row.qty);
         }
     },
-    item_code:function(frm,cdt,cdn){
-        let row=locals[cdt][cdn];
-        if(row.item_code){
+    item_code: function (frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        if (row.item_code) {
             frappe.db.get_value('Item', row.item_code, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "item_name", r.message.item_name);
-            })
+                })
             frappe.db.get_value('Item', row.item_code, 'stock_uom')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
-            })
+                })
         }
 
     }
@@ -6582,113 +6613,113 @@ frappe.ui.form.on('Approval for New Business JO', {
     //         d.show();
     //     }
     // }
-    add: function(frm, cdt, cdn) {
-            let row = locals[cdt][cdn];
-            let bom_operations = [];
-            let selected_ops = [];
+    add: function (frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        let bom_operations = [];
+        let selected_ops = [];
 
-            // Step 1: Fetch operations from BOM in sequence order
-            function fetch_bom_operations(item_code) {
-                if (!item_code) {
-                    open_operation_dialog();
-                    return;
-                }
-
-                frappe.call({
-                    method: "frappe.client.get_value",
-                    args: {
-                        doctype: "BOM",
-                        filters: {
-                            item: item_code,
-                            is_default: 1
-                        },
-                        fieldname: ["name"]
-                    },
-                    callback: function(r) {
-                        if (r.message && r.message.name) {
-                            frappe.call({
-                                method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_bom_operations",
-                                args: {
-                                    bom_name: r.message.name
-                                },
-                                freeze: true, // prevent multiple clicks
-                                freeze_message: "Fetching Operations...",
-                                callback: function(res) {
-                                    if (res.message && res.message.length) {
-                                        res.message.sort((a, b) => a.sequence_id - b.sequence_id);
-                                        bom_operations = res.message.map(op => ({
-                                            name: op.operation,
-                                            label: `${op.sequence_id || ''} - ${op.operation}`
-                                        }));
-                                    }
-                                    open_operation_dialog();
-                                }
-                            });
-                        } else {
-                            open_operation_dialog();
-                        }
-                    }
-                });
+        // Step 1: Fetch operations from BOM in sequence order
+        function fetch_bom_operations(item_code) {
+            if (!item_code) {
+                open_operation_dialog();
+                return;
             }
 
-            // Step 2: Open operation dialog
-            function open_operation_dialog() {
-                let d = new frappe.ui.Dialog({
-                    title: "Select Operations",
-                    fields: [{
-                        fieldname: "operations_html",
-                        fieldtype: "HTML",
-                        label: "Available Operations"
-                    }],
-                    primary_action_label: "Update",
-                    primary_action() {
-                        if (selected_ops.length > 0) {
-                            frappe.model.set_value(cdt, cdn, "operation_data", selected_ops.join(", "));
-                        }
-                        d.hide();
+            frappe.call({
+                method: "frappe.client.get_value",
+                args: {
+                    doctype: "BOM",
+                    filters: {
+                        item: item_code,
+                        is_default: 1
+                    },
+                    fieldname: ["name"]
+                },
+                callback: function (r) {
+                    if (r.message && r.message.name) {
+                        frappe.call({
+                            method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_bom_operations",
+                            args: {
+                                bom_name: r.message.name
+                            },
+                            freeze: true, // prevent multiple clicks
+                            freeze_message: "Fetching Operations...",
+                            callback: function (res) {
+                                if (res.message && res.message.length) {
+                                    res.message.sort((a, b) => a.sequence_id - b.sequence_id);
+                                    bom_operations = res.message.map(op => ({
+                                        name: op.operation,
+                                        label: `${op.sequence_id || ''} - ${op.operation}`
+                                    }));
+                                }
+                                open_operation_dialog();
+                            }
+                        });
+                    } else {
+                        open_operation_dialog();
                     }
-                });
+                }
+            });
+        }
 
-                // Render checkboxes instead of Link field
-                let html = `<div class="bom-op-list" style="max-height:300px;overflow:auto;">`;
-                if (bom_operations.length) {
-                    html += bom_operations
-                        .map(op => `
+        // Step 2: Open operation dialog
+        function open_operation_dialog() {
+            let d = new frappe.ui.Dialog({
+                title: "Select Operations",
+                fields: [{
+                    fieldname: "operations_html",
+                    fieldtype: "HTML",
+                    label: "Available Operations"
+                }],
+                primary_action_label: "Update",
+                primary_action() {
+                    if (selected_ops.length > 0) {
+                        frappe.model.set_value(cdt, cdn, "operation_data", selected_ops.join(", "));
+                    }
+                    d.hide();
+                }
+            });
+
+            // Render checkboxes instead of Link field
+            let html = `<div class="bom-op-list" style="max-height:300px;overflow:auto;">`;
+            if (bom_operations.length) {
+                html += bom_operations
+                    .map(op => `
                     <div class="flex items-center m-1">
                         <input type="checkbox" class="op-check" data-op="${frappe.utils.escape_html(op.name)}">
                         <label class="ml-2">${frappe.utils.escape_html(op.label)}</label>
                     </div>
                 `)
-                        .join("");
-                } else {
-                    html += `<p class="text-muted">No operations found for this item.</p>`;
-                }
-                html += `</div>`;
-
-                let wrapper = d.fields_dict.operations_html.$wrapper;
-                wrapper.html(html);
-
-                // handle checkbox clicks efficiently
-                wrapper.on("change", ".op-check", function() {
-                    const op = $(this).data("op");
-                    if (this.checked) {
-                        if (!selected_ops.includes(op)) selected_ops.push(op);
-                    } else {
-                        selected_ops = selected_ops.filter(o => o !== op);
-                    }
-                });
-
-                d.show();
+                    .join("");
+            } else {
+                html += `<p class="text-muted">No operations found for this item.</p>`;
             }
+            html += `</div>`;
 
-            // Initialize
-            fetch_bom_operations(row.item_code);
+            let wrapper = d.fields_dict.operations_html.$wrapper;
+            wrapper.html(html);
+
+            // handle checkbox clicks efficiently
+            wrapper.on("change", ".op-check", function () {
+                const op = $(this).data("op");
+                if (this.checked) {
+                    if (!selected_ops.includes(op)) selected_ops.push(op);
+                } else {
+                    selected_ops = selected_ops.filter(o => o !== op);
+                }
+            });
+
+            d.show();
         }
 
-        ,
+        // Initialize
+        fetch_bom_operations(row.item_code);
+    }
+
+    ,
 
 
-    item_code: function(frm, cdt, cdn) {
+    item_code: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
         frappe.model.set_value(cdt, cdn, "operation_data", "")
@@ -6704,18 +6735,18 @@ frappe.ui.form.on('Approval for New Business JO', {
         frm.refresh_field("new_business_jo");
         frappe.db.get_value('Item', row.item_code, 'item_name')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "item_name", r.message.item_name);
+                frappe.model.set_value(cdt, cdn, "item_name", r.message.item_name);
             })
         frappe.db.get_value('Item', row.item_code, 'stock_uom')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+                frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
             })
         frm.doc.new_business_jo.forEach(other_row => {
             if (other_row.item_code === row.item_code && other_row.name !== row.name) {
                 duplicate_found = true;
             }
         });
-        
+
         if (duplicate_found) {
             let d = frappe.msgprint({
                 title: __("Removing Duplicate Entry"),
@@ -6784,7 +6815,7 @@ frappe.ui.form.on('Approval for New Business JO', {
     //         }, 200); // 200ms delay ensures the row exists in the grid
     //     },
 
-    new_business_jo_remove: function(frm) {
+    new_business_jo_remove: function (frm) {
         calculate_jo_price(frm);
     },
 
@@ -6812,7 +6843,7 @@ frappe.ui.form.on('Approval for New Business JO', {
                         order_by: "date desc",
                         limit_page_length: 1
                     },
-                    callback: function(r) {
+                    callback: function (r) {
                         let rate = 1;
                         if (r.message && r.message.length > 0) {
                             rate = r.message[0].exchange_rate;
@@ -6959,110 +6990,110 @@ frappe.ui.form.on("Approval for Price Revision JO", {
     //         d.show();
     //     }
     // }
-    add: function(frm, cdt, cdn) {
-            let row = locals[cdt][cdn];
-            let bom_operations = [];
-            let selected_ops = [];
+    add: function (frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        let bom_operations = [];
+        let selected_ops = [];
 
-            // Step 1: Fetch operations from BOM in sequence order
-            function fetch_bom_operations(item_code) {
-                if (!item_code) {
-                    open_operation_dialog();
-                    return;
-                }
-
-                frappe.call({
-                    method: "frappe.client.get_value",
-                    args: {
-                        doctype: "BOM",
-                        filters: {
-                            item: item_code,
-                            is_default: 1
-                        },
-                        fieldname: ["name"]
-                    },
-                    callback: function(r) {
-                        if (r.message && r.message.name) {
-                            frappe.call({
-                                method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_bom_operations",
-                                args: {
-                                    bom_name: r.message.name
-                                },
-                                freeze: true, // prevent multiple clicks
-                                freeze_message: "Fetching Operations...",
-                                callback: function(res) {
-                                    if (res.message && res.message.length) {
-                                        res.message.sort((a, b) => a.sequence_id - b.sequence_id);
-                                        bom_operations = res.message.map(op => ({
-                                            name: op.operation,
-                                            label: `${op.sequence_id || ''} - ${op.operation}`
-                                        }));
-                                    }
-                                    open_operation_dialog();
-                                }
-                            });
-                        } else {
-                            open_operation_dialog();
-                        }
-                    }
-                });
+        // Step 1: Fetch operations from BOM in sequence order
+        function fetch_bom_operations(item_code) {
+            if (!item_code) {
+                open_operation_dialog();
+                return;
             }
 
-            // Step 2: Open operation dialog
-            function open_operation_dialog() {
-                let d = new frappe.ui.Dialog({
-                    title: "Select Operations",
-                    fields: [{
-                        fieldname: "operations_html",
-                        fieldtype: "HTML",
-                        label: "Available Operations"
-                    }],
-                    primary_action_label: "Update",
-                    primary_action() {
-                        if (selected_ops.length > 0) {
-                            frappe.model.set_value(cdt, cdn, "operation_data", selected_ops.join(", "));
-                        }
-                        d.hide();
+            frappe.call({
+                method: "frappe.client.get_value",
+                args: {
+                    doctype: "BOM",
+                    filters: {
+                        item: item_code,
+                        is_default: 1
+                    },
+                    fieldname: ["name"]
+                },
+                callback: function (r) {
+                    if (r.message && r.message.name) {
+                        frappe.call({
+                            method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_bom_operations",
+                            args: {
+                                bom_name: r.message.name
+                            },
+                            freeze: true, // prevent multiple clicks
+                            freeze_message: "Fetching Operations...",
+                            callback: function (res) {
+                                if (res.message && res.message.length) {
+                                    res.message.sort((a, b) => a.sequence_id - b.sequence_id);
+                                    bom_operations = res.message.map(op => ({
+                                        name: op.operation,
+                                        label: `${op.sequence_id || ''} - ${op.operation}`
+                                    }));
+                                }
+                                open_operation_dialog();
+                            }
+                        });
+                    } else {
+                        open_operation_dialog();
                     }
-                });
+                }
+            });
+        }
 
-                // Render checkboxes instead of Link field
-                let html = `<div class="bom-op-list" style="max-height:300px;overflow:auto;">`;
-                if (bom_operations.length) {
-                    html += bom_operations
-                        .map(op => `
+        // Step 2: Open operation dialog
+        function open_operation_dialog() {
+            let d = new frappe.ui.Dialog({
+                title: "Select Operations",
+                fields: [{
+                    fieldname: "operations_html",
+                    fieldtype: "HTML",
+                    label: "Available Operations"
+                }],
+                primary_action_label: "Update",
+                primary_action() {
+                    if (selected_ops.length > 0) {
+                        frappe.model.set_value(cdt, cdn, "operation_data", selected_ops.join(", "));
+                    }
+                    d.hide();
+                }
+            });
+
+            // Render checkboxes instead of Link field
+            let html = `<div class="bom-op-list" style="max-height:300px;overflow:auto;">`;
+            if (bom_operations.length) {
+                html += bom_operations
+                    .map(op => `
                     <div class="flex items-center m-1">
                         <input type="checkbox" class="op-check" data-op="${frappe.utils.escape_html(op.name)}">
                         <label class="ml-2">${frappe.utils.escape_html(op.label)}</label>
                     </div>
                 `)
-                        .join("");
-                } else {
-                    html += `<p class="text-muted">No operations found for this item.</p>`;
-                }
-                html += `</div>`;
-
-                let wrapper = d.fields_dict.operations_html.$wrapper;
-                wrapper.html(html);
-
-                // handle checkbox clicks efficiently
-                wrapper.on("change", ".op-check", function() {
-                    const op = $(this).data("op");
-                    if (this.checked) {
-                        if (!selected_ops.includes(op)) selected_ops.push(op);
-                    } else {
-                        selected_ops = selected_ops.filter(o => o !== op);
-                    }
-                });
-
-                d.show();
+                    .join("");
+            } else {
+                html += `<p class="text-muted">No operations found for this item.</p>`;
             }
+            html += `</div>`;
 
-            // Initialize
-            fetch_bom_operations(row.part_no);
+            let wrapper = d.fields_dict.operations_html.$wrapper;
+            wrapper.html(html);
+
+            // handle checkbox clicks efficiently
+            wrapper.on("change", ".op-check", function () {
+                const op = $(this).data("op");
+                if (this.checked) {
+                    if (!selected_ops.includes(op)) selected_ops.push(op);
+                } else {
+                    selected_ops = selected_ops.filter(o => o !== op);
+                }
+            });
+
+            d.show();
         }
 
-        ,
+        // Initialize
+        fetch_bom_operations(row.part_no);
+    }
+
+    ,
 
 
     new_price(frm, cdt, cdn) {
@@ -7089,7 +7120,7 @@ frappe.ui.form.on("Approval for Price Revision JO", {
                         order_by: "date desc",
                         limit_page_length: 1
                     },
-                    callback: function(r) {
+                    callback: function (r) {
                         if (r.message && r.message.length > 0) {
                             let rate = r.message[0].exchange_rate;
                             frappe.model.set_value(cdt, cdn, 'new_priceinr', child.new_price * rate);
@@ -7111,7 +7142,7 @@ frappe.ui.form.on("Approval for Price Revision JO", {
         }
     },
 
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -7122,18 +7153,18 @@ frappe.ui.form.on("Approval for Price Revision JO", {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     frappe.model.set_value(cdt, cdn, "gst", r.message || "");
                 }
             });
             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
-             frappe.db.get_value('Item', row.part_no, 'stock_uom')
-            .then(r => {
+                })
+            frappe.db.get_value('Item', row.part_no, 'stock_uom')
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
-            })
+                })
         } else {
             frappe.model.set_value(cdt, cdn, "gst", "");
         }
@@ -7202,7 +7233,7 @@ frappe.ui.form.on("Approval for Price Revision JO", {
                     },
                     fieldname: ["name"]
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.name) {
                         let bom_name = r.message.name;
 
@@ -7212,7 +7243,7 @@ frappe.ui.form.on("Approval for Price Revision JO", {
                             args: {
                                 bom_name: bom_name
                             },
-                            callback: function(res) {
+                            callback: function (res) {
                                 if (res.message && res.message.length > 0) {
                                     // Collect operation names
                                     let selected_ops = res.message.map(op => op.operation);
@@ -7247,7 +7278,7 @@ frappe.ui.form.on("Approval for Price Revision JO", {
                     purchase_order: d.po_no,
                     item_code: d.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "po_price", r.message.rate);
                         frappe.model.set_value(cdt, cdn, "current_priceinr", r.message.base_rate);
@@ -7276,7 +7307,7 @@ frappe.ui.form.on('Approval for Schedule Revised', { // Child table doctype
                     item_code: d.part_no,
                     schedule_month: frm.doc.schedule_month
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "current_schedule_value", r.message.qty);
                         frappe.model.set_value(cdt, cdn, "current_schedule_value1", r.message.schedule_amount);
@@ -7316,7 +7347,7 @@ frappe.ui.form.on('Approval for Schedule Revised', { // Child table doctype
         calculate_values_revised(frm, cdt, cdn);
     },
 
-    supplier: function(frm, cdt, cdn) {
+    supplier: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         frappe.db.get_value("Supplier", row.supplier, "default_currency").then(r => {
             if (r && r.message && r.message.default_currency) {
@@ -7338,7 +7369,7 @@ frappe.ui.form.on('Approval for Schedule Revised', { // Child table doctype
                             order_by: "date desc",
                             limit_page_length: 1
                         },
-                        callback: function(r) {
+                        callback: function (r) {
                             let rate = 1;
                             if (r.message && r.message.length > 0) {
                                 rate = r.message[0].exchange_rate;
@@ -7357,7 +7388,7 @@ frappe.ui.form.on('Approval for Schedule Revised', { // Child table doctype
             }
         });
     },
-    currency: function(frm, cdt, cdn) {
+    currency: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.currency && row.currency !== "INR") {
             frappe.call({
@@ -7372,7 +7403,7 @@ frappe.ui.form.on('Approval for Schedule Revised', { // Child table doctype
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     let rate = 1;
                     if (r.message && r.message.length > 0) {
                         rate = r.message[0].exchange_rate;
@@ -7386,17 +7417,17 @@ frappe.ui.form.on('Approval for Schedule Revised', { // Child table doctype
             calculate_values_revised(frm, cdt, cdn);
         }
     },
-    exchange_rate: function(frm, cdt, cdn) {
+    exchange_rate: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         calculate_values_revised(frm, cdt, cdn);
     },
-    part_no:function(frm,cdt,cdn){
-        let row=locals[cdt][cdn];
-        if(row.part_no){
-             frappe.db.get_value('Item', row.part_no, 'item_name')
-            .then(r => {
+    part_no: function (frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        if (row.part_no) {
+            frappe.db.get_value('Item', row.part_no, 'item_name')
+                .then(r => {
                     frappe.model.set_value(cdt, cdn, "part_name", r.message.item_name);
-            })
+                })
         }
     }
 });
@@ -7449,7 +7480,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Material', { // Child table doct
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'po_price_inrexisting', child.po_price_new * rate);
@@ -7485,7 +7516,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Material', { // Child table doct
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'value_inr', child.value * rate);
@@ -7509,7 +7540,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Material', { // Child table doct
 
         }
     },
-    item_code_new: function(frm, cdt, cdn) {
+    item_code_new: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -7538,12 +7569,12 @@ frappe.ui.form.on('Approval for Proto Sample PO Material', { // Child table doct
 
     },
 
-    table_cpri_remove: function(frm) {
+    table_cpri_remove: function (frm) {
         calculate_total_po_price_all(frm);
 
         calculate_proto_tax_and_total_material_all(frm); // always recalc totals on manual row delete
     },
-    hsn_code: function(frm, cdt, cdn) {
+    hsn_code: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -7583,7 +7614,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Material', { // Child table doct
                         },
                         freeze: true,
                         freeze_message: __("Fetching Tax..."),
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                 frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -7619,7 +7650,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Material', { // Child table doct
 
         }
     },
-    qty_new: function(frm, cdt, cdn) {
+    qty_new: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "value", d.qty_new * d.po_price_new)
         if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
@@ -7635,7 +7666,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Material', { // Child table doct
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'value_inr', d.value * rate);
@@ -7687,7 +7718,7 @@ function calculate_proto_tax_and_total_material(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -7757,7 +7788,7 @@ frappe.ui.form.on('Approval for Debit Note Material', { // Child table doctype
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'pojo_price_inr', child.pojo_price * rate);
@@ -7793,7 +7824,7 @@ frappe.ui.form.on('Approval for Debit Note Material', { // Child table doctype
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'dn_amount_inr', child.dn_amount * rate);
@@ -7817,7 +7848,7 @@ frappe.ui.form.on('Approval for Debit Note Material', { // Child table doctype
 
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -7829,7 +7860,7 @@ frappe.ui.form.on('Approval for Debit Note Material', { // Child table doctype
         });
         frappe.db.get_value('Item', row.part_no, 'stock_uom')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+                frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
             })
         if (duplicate_found) {
             let d = frappe.msgprint({
@@ -7849,12 +7880,12 @@ frappe.ui.form.on('Approval for Debit Note Material', { // Child table doctype
 
     },
 
-    approval_debit_note_material_remove: function(frm) {
+    approval_debit_note_material_remove: function (frm) {
         calculate_po_price_material(frm);
 
         calculate_po_tax_and_total_material(frm); // always recalc totals on manual row delete
     },
-    hsn_code: function(frm, cdt, cdn) {
+    hsn_code: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -7894,7 +7925,7 @@ frappe.ui.form.on('Approval for Debit Note Material', { // Child table doctype
                         },
                         freeze: true,
                         freeze_message: __("Fetching Tax..."),
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                 frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -7930,7 +7961,7 @@ frappe.ui.form.on('Approval for Debit Note Material', { // Child table doctype
 
         }
     },
-    qty: function(frm, cdt, cdn) {
+    qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "dn_amount", d.qty * d.pojo_price)
         if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
@@ -7946,7 +7977,7 @@ frappe.ui.form.on('Approval for Debit Note Material', { // Child table doctype
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'dn_amount_inr', d.dn_amount * rate);
@@ -7998,7 +8029,7 @@ function calculate_po_tax_and_total_material(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -8050,7 +8081,7 @@ function calculate_po_price_material(frm) {
 }
 
 frappe.ui.form.on('Approval for Customer Name Address Change', {
-    approval_address_change_add: function(frm, cdt, cdn) {
+    approval_address_change_add: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "current_address", frm.doc.primary_address);
         frm.refresh_field("approval_address_change");
@@ -8077,7 +8108,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Existing', { // Child table doct
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'po_price_inrexisting', child.po_price_new * rate);
@@ -8113,7 +8144,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Existing', { // Child table doct
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'value_inr', child.value * rate);
@@ -8137,7 +8168,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Existing', { // Child table doct
 
         }
     },
-    item_code_new: function(frm, cdt, cdn) {
+    item_code_new: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -8147,12 +8178,12 @@ frappe.ui.form.on('Approval for Proto Sample PO Existing', { // Child table doct
                 duplicate_found = true;
             }
         });
-        if(row.item_code_new){
-        frappe.db.get_value('Item', row.item_code_new, 'item_name')
+        if (row.item_code_new) {
+            frappe.db.get_value('Item', row.item_code_new, 'item_name')
                 .then(r => {
-                        frappe.model.set_value(cdt, cdn, "item_name_new", r.message.item_name);
+                    frappe.model.set_value(cdt, cdn, "item_name_new", r.message.item_name);
                 })
-            }
+        }
         if (duplicate_found) {
             let d = frappe.msgprint({
                 title: __("Removing Duplicate Entry"),
@@ -8171,12 +8202,12 @@ frappe.ui.form.on('Approval for Proto Sample PO Existing', { // Child table doct
 
     },
 
-    proto_sample_existing_remove: function(frm) {
+    proto_sample_existing_remove: function (frm) {
         calculate_total_po_price_all(frm);
 
         calculate_proto_tax_and_total_material_all(frm); // always recalc totals on manual row delete
     },
-    hsn_code: function(frm, cdt, cdn) {
+    hsn_code: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -8216,7 +8247,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Existing', { // Child table doct
                         },
                         freeze: true,
                         freeze_message: __("Fetching Tax..."),
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                 frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -8252,7 +8283,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Existing', { // Child table doct
 
         }
     },
-    qty_new: function(frm, cdt, cdn) {
+    qty_new: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "value", d.qty_new * d.po_price_new)
         if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
@@ -8268,7 +8299,7 @@ frappe.ui.form.on('Approval for Proto Sample PO Existing', { // Child table doct
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'value_inr', d.value * rate);
@@ -8321,7 +8352,7 @@ function calculate_proto_tax_and_total_material_all(frm) {
                 args: {
                     doc: frm.doc
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
@@ -8376,21 +8407,21 @@ function calculate_total_po_price_all(frm) {
     frm.refresh_field("total_po_value_inr");
 }
 frappe.ui.form.on('Approval for Stock Change Request', { // Child table doctype
-    phy_stock: function(frm, cdt, cdn) {
+    phy_stock: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "difference", row.phy_stock - row.erp_stock)
         frappe.model.set_value(cdt, cdn, "value", row.rate * row.difference)
     },
-    erp_stock: function(frm, cdt, cdn) {
+    erp_stock: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "difference", row.phy_stock - row.erp_stock)
         frappe.model.set_value(cdt, cdn, "value", row.rate * row.difference)
     },
-    rate: function(frm, cdt, cdn) {
+    rate: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "value", row.rate * row.difference)
     },
-    item_code: function(frm, cdt, cdn) {
+    item_code: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -8402,11 +8433,15 @@ frappe.ui.form.on('Approval for Stock Change Request', { // Child table doctype
         });
         frappe.db.get_value('Item', row.item_code, 'item_name')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "item_name", r.message.item_name);
+                frappe.model.set_value(cdt, cdn, "item_name", r.message.item_name);
             })
         frappe.db.get_value('Item', row.item_code, 'stock_uom')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+                frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+            })
+        frappe.db.get_value('Item', row.item_code, 'custom_rm_cost')
+            .then(r => {
+                frappe.model.set_value(cdt, cdn, "rate", r.message.custom_rm_cost);
             })
         if (duplicate_found) {
             let d = frappe.msgprint({
@@ -8439,7 +8474,7 @@ function calculate_days(frm) {
     }
 }
 frappe.ui.form.on('Travel Itinerary IOM', {
-    departure_date: function(frm, cdt, cdn) {
+    departure_date: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.departure_date && row.arrival_date) {
             let from = moment(row.departure_date);
@@ -8450,7 +8485,7 @@ frappe.ui.form.on('Travel Itinerary IOM', {
             frappe.model.set_value(cdt, cdn, "no_of_days", days > 0 ? days : 0);
         }
     },
-    arrival_date: function(frm, cdt, cdn) {
+    arrival_date: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.departure_date && row.arrival_date) {
             let from = moment(row.departure_date);
@@ -8463,7 +8498,7 @@ frappe.ui.form.on('Travel Itinerary IOM', {
     }
 })
 frappe.ui.form.on('IOM Approval Remarks', {
-    approval_remarks_add: function(frm, cdt, cdn) {
+    approval_remarks_add: function (frm, cdt, cdn) {
         frappe.model.set_value(cdt, cdn, "user", frappe.session.user);
         frappe.model.set_value(cdt, cdn, "date", frappe.datetime.now_datetime());
         frm.refresh_field("iom_approval_remarks");
@@ -8501,7 +8536,7 @@ async function update_gstin_no_status(frm) {
 
 frappe.ui.form.on('Travel Costing Details', {
 
-   
+
     sponsored_amount(frm, cdt, cdn) {
         calculate_totals(frm);
     },
@@ -8536,40 +8571,40 @@ function calculate_totals(frm) {
 function toggle_funded_amount(frm) {
 
     let is_read_only = frm.doc.workflow_state !== "Pending for Finance";
-    let is_mandatory = frm.doc.workflow_state === "Pending for Finance";  
-    
+    let is_mandatory = frm.doc.workflow_state === "Pending for Finance";
+
     frm.fields_dict["travel_costing_details"].grid.update_docfield_property(
         "funded_amount", "read_only", is_read_only
     );
 
-    
+
     frm.fields_dict["travel_costing_details"].grid.update_docfield_property(
         "funded_amount", "reqd", is_mandatory
     );
 
-    
+
     frm.refresh_field("travel_costing_details");
 }
 
-frappe.ui.form.on('Supplier Stock Reconciliation', { 
-    phy_stock: function(frm, cdt, cdn) {
+frappe.ui.form.on('Supplier Stock Reconciliation', {
+    phy_stock: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "difference", row.phy_stock - row.erp_stock)
         frappe.model.set_value(cdt, cdn, "value", row.rate * row.difference)
         cal_shortage_val(frm)
     },
-    erp_stock: function(frm, cdt, cdn) {
+    erp_stock: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "difference", row.phy_stock - row.erp_stock)
         frappe.model.set_value(cdt, cdn, "value", row.rate * row.difference)
         cal_shortage_val(frm)
     },
-    rate: function(frm, cdt, cdn) {
+    rate: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "value", row.rate * row.difference)
         cal_shortage_val(frm)
     },
-    item_code: function(frm, cdt, cdn) {
+    item_code: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -8581,11 +8616,11 @@ frappe.ui.form.on('Supplier Stock Reconciliation', {
         });
         frappe.db.get_value('Item', row.item_code, 'item_name')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "item_name", r.message.item_name);
+                frappe.model.set_value(cdt, cdn, "item_name", r.message.item_name);
             })
         frappe.db.get_value('Item', row.item_code, 'stock_uom')
             .then(r => {
-                    frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
+                frappe.model.set_value(cdt, cdn, "uom", r.message.stock_uom);
             })
         if (duplicate_found) {
             let d = frappe.msgprint({
@@ -8604,11 +8639,11 @@ frappe.ui.form.on('Supplier Stock Reconciliation', {
 
 
     },
-    supplier_stock_reconciliation_add:function(frm, cdt, cdn) {
-       cal_shortage_val(frm)
+    supplier_stock_reconciliation_add: function (frm, cdt, cdn) {
+        cal_shortage_val(frm)
     },
-    supplier_stock_reconciliation_remove:function(frm, cdt, cdn) {
-       cal_shortage_val(frm)
+    supplier_stock_reconciliation_remove: function (frm, cdt, cdn) {
+        cal_shortage_val(frm)
     }
 })
 function cal_shortage_val(frm) {
@@ -8618,7 +8653,7 @@ function cal_shortage_val(frm) {
     (frm.doc.supplier_stock_reconciliation || []).forEach(row => {
         if (row.value < 0) {
             // tot_shortage += (row.value);
-            tot_shortage += Math.abs(row.value);   
+            tot_shortage += Math.abs(row.value);
         } else {
             total_excess += (row.value);
         }
@@ -8633,9 +8668,9 @@ function cal_shortage_val(frm) {
     frm.refresh_field("total_excess_value");
     frm.set_value("supplier_not_accept_debit_value", tot_shortage - frm.doc.supplier_accept_debit_value)
 }
-frappe.ui.form.on('Proto Sample SO IOM', { 
-    
-    
+frappe.ui.form.on('Proto Sample SO IOM', {
+
+
     po_price_new(frm, cdt, cdn) {
         var child = locals[cdt][cdn];
         calculate_total_po_price(frm);
@@ -8654,7 +8689,7 @@ frappe.ui.form.on('Proto Sample SO IOM', {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'po_price_inrexisting', child.po_price_new * rate);
@@ -8690,7 +8725,7 @@ frappe.ui.form.on('Proto Sample SO IOM', {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'value_inr', child.value * rate);
@@ -8714,7 +8749,7 @@ frappe.ui.form.on('Proto Sample SO IOM', {
 
         }
     },
-    part_no: function(frm, cdt, cdn) {
+    part_no: function (frm, cdt, cdn) {
         console.log("hi")
         let row = locals[cdt][cdn];
         let duplicate_found = false;
@@ -8725,7 +8760,7 @@ frappe.ui.form.on('Proto Sample SO IOM', {
                 args: {
                     item_code: row.part_no
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(cdt, cdn, "item_tax_template", r.message);
                     } else {
@@ -8779,7 +8814,7 @@ frappe.ui.form.on('Proto Sample SO IOM', {
                                 },
                                 freeze: true,
                                 freeze_message: __("Fetching Tax..."),
-                                callback: function(r) {
+                                callback: function (r) {
                                     if (r.message) {
                                         frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                         frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -8819,19 +8854,19 @@ frappe.ui.form.on('Proto Sample SO IOM', {
         }
 
     },
-    
+
     po_price(frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         calculate_total_po_price(frm);
         calculate_proto_tax_and_total(frm)
 
     },
-    approval_for_proto_sample_so_remove: function(frm) {
+    approval_for_proto_sample_so_remove: function (frm) {
         calculate_total_po_price(frm);
 
         calculate_proto_tax_and_total(frm); // always recalc totals on manual row delete
     },
-    hsn_code: function(frm, cdt, cdn) {
+    hsn_code: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -8871,7 +8906,7 @@ frappe.ui.form.on('Proto Sample SO IOM', {
                         },
                         freeze: true,
                         freeze_message: __("Fetching Tax..."),
-                        callback: function(r) {
+                        callback: function (r) {
                             if (r.message) {
                                 frappe.model.set_value(cdt, cdn, "item_tax_template", r.message.item_tax_template);
                                 frm.set_value("taxes_and_charges", r.message.sales_taxes_and_charges_template)
@@ -8907,7 +8942,7 @@ frappe.ui.form.on('Proto Sample SO IOM', {
 
         }
     },
-    qty_new: function(frm, cdt, cdn) {
+    qty_new: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "value", d.qty_new * d.po_price_new)
         console.log("inside")
@@ -8924,7 +8959,7 @@ frappe.ui.form.on('Proto Sample SO IOM', {
                     order_by: "date desc",
                     limit_page_length: 1
                 },
-                callback: function(r) {
+                callback: function (r) {
                     if (r.message && r.message.length > 0) {
                         const rate = r.message[0].exchange_rate;
                         frappe.model.set_value(cdt, cdn, 'value_inr', d.value * rate);
@@ -8956,7 +8991,7 @@ function toggle_phy_stock(frm) {
     frm.fields_dict["supplier_stock_reconciliation"].grid.update_docfield_property(
         "phy_stock", "read_only", is_read_only
     );
-    frm.set_df_property("remarks","read_only",read_only)
+    frm.set_df_property("remarks", "read_only", read_only)
     frm.fields_dict["supplier_stock_reconciliation"].grid.update_docfield_property(
         "item_code", "read_only", read_only
     );
@@ -9009,12 +9044,12 @@ frappe.ui.form.on('Employee Travel Visit Details', {
 
 function toggle_order_type(frm) {
     let is_read_only = frm.doc.order_type !== "Fixed Order";
-    if(is_read_only===1){
+    if (is_read_only === 1) {
         frm.fields_dict["approval_business_po"].grid.update_docfield_property(
             "qty", "read_only", is_read_only
         );
     }
-    else{
+    else {
 
         frm.fields_dict["approval_business_po"].grid.update_docfield_property(
             "qty", "read_only", 0
@@ -9023,11 +9058,11 @@ function toggle_order_type(frm) {
     frm.fields_dict["custom_approval_for_new_business_po"].grid.update_docfield_property(
         "qty", "read_only", is_read_only
     );
-  
+
 }
 
 frappe.ui.form.on('Travel Visit Schedule', {
-    date: function(frm, cdt, cdn) {
+    date: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
 
         if (!row.date || !frm.doc.travel_itinerary) return;
