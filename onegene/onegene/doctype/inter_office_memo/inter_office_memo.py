@@ -1507,9 +1507,12 @@ class InterOfficeMemo(Document):
         if (self.iom_type=="Approval for Price Revision SO" or self.iom_type=="Approval for New Business SO") or (self.iom_type=="Approval for Tools & Dies Invoice" and self.department_from=="M P L & Purchase - WAIP" ):
             if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for ERP Team":
                 self.hod_approved_on=now_datetime()
-            if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for Plant Head":
+            if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for Marketing Manager":
                 self.erp_team_approved_on=now_datetime()
                 self.erp_team=frappe.session.user
+            if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for Plant Head":
+                self.marketing_manager_approved_on=now_datetime()
+                self.marketing_manager=frappe.session.user
             if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for GM":
                 self.plant_head_approved_on=now_datetime()
                 self.plant_head="k.selvaraja@onegeneindia.in"
@@ -16321,3 +16324,5 @@ def revert_iom_workflow(doc):
     )
 
     frappe.db.commit()
+
+
