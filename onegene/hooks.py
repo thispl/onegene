@@ -337,7 +337,8 @@ doc_events = {
 	"Employee":{
 		"validate": "onegene.onegene.custom.inactive_employee",
 		'after_insert':'onegene.onegene.custom.create_user_id',
-		"on_update": ["onegene.onegene.custom.renamed_doc","onegene.onegene.custom.update_birthday_alowance","onegene.onegene.custom.mark_disable"]
+		"on_update": ["onegene.onegene.custom.renamed_doc","onegene.onegene.custom.update_birthday_alowance","onegene.onegene.custom.mark_disable"],
+		"before_rename": "onegene.onegene.event.employee.capture_old_name"
 	},
 	"User":{
 		'after_insert':'onegene.onegene.custom.remove_system_manager_role',
