@@ -32,6 +32,7 @@
   "column_break_vtaw",
   "order_rate",
   "order_rate_inr",
+  "company",
   "qty_amount_section",
   "qty",
   "delivered_qty",
@@ -454,13 +455,20 @@
    "in_standard_filter": 1,
    "label": "Customer's Purchase Order",
    "options": "Customer Purchase Order"
+  },
+  {
+   "fetch_from": "sales_order_number.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-28 14:55:14.245672",
- "modified_by": "Administrator",
+ "modified": "2026-02-24 16:34:08.746438",
+ "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Sales Order Schedule",
  "naming_rule": "Expression",
@@ -479,6 +487,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

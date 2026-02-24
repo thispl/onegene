@@ -15,9 +15,19 @@
  "links": [
   {
    "hidden": 0,
+   "is_query_report": 1,
+   "label": "Customer Commitment Report",
+   "link_count": 0,
+   "link_to": "Customer Kanban Report",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
    "is_query_report": 0,
    "label": "Production",
-   "link_count": 6,
+   "link_count": 7,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -85,15 +95,15 @@
   {
    "hidden": 0,
    "is_query_report": 1,
-   "label": "Customer Commitment Report",
+   "label": "Customer Commitment",
    "link_count": 0,
-   "link_to": "Customer Kanban Report",
+   "link_to": "Customer Commitment",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
   }
  ],
- "modified": "2026-02-09 15:26:52.728325",
+ "modified": "2026-02-24 17:42:18.477052",
  "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Production",

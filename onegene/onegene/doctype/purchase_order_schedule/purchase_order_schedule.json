@@ -31,6 +31,7 @@
   "column_break_qstg",
   "order_rate",
   "order_rate_inr",
+  "company",
   "section_break_oyzr",
   "qty",
   "received_qty",
@@ -50,7 +51,6 @@
   "created_by",
   "column_break_nsxl",
   "remarks",
-  "amended_from",
   "disable_update_items",
   "section_break_ibif",
   "column_break_bway",
@@ -61,7 +61,8 @@
   "column_break_rmly",
   "child_name",
   "summary_tab",
-  "schedule_summary"
+  "schedule_summary",
+  "amended_from"
  ],
  "fields": [
   {
@@ -440,13 +441,20 @@
    "label": "Order Type",
    "options": "\nPurchase Order\nJob Order\nService Order",
    "read_only": 1
+  },
+  {
+   "fetch_from": "purchase_order_number.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-28 10:46:56.045874",
- "modified_by": "Administrator",
+ "modified": "2026-02-24 16:35:19.525694",
+ "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Purchase Order Schedule",
  "naming_rule": "By \"Naming Series\" field",
@@ -465,6 +473,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

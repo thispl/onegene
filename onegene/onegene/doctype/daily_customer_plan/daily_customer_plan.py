@@ -38,3 +38,8 @@ def validate_item_for_month(item_code, month):
         {"item_code": item_code, "schedule_month": month}
     )
     return bool(exists)
+
+def test_check():
+    sales_order = frappe.get_doc("Sales Order", "SAL-ORD-2026-00010")
+    for row in sales_order.items:
+        print([row.item_code, row.name, row.qty])

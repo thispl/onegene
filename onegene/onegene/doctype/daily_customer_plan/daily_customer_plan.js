@@ -17,7 +17,7 @@ frappe.ui.form.on("Daily Customer Plan Item", {
         let duplicate_found = false;
 
         frm.doc.items.forEach(row => {
-            if (row.item_code === current_row.item_code && row.name !== current_row.name) {
+            if (row.item_code === current_row.item_code && row.name !== current_row.name && row.customer === current_row.customer) {
                 duplicate_found = true;
             }
         });
@@ -55,6 +55,30 @@ frappe.ui.form.on("Daily Customer Plan Item", {
             }
         });
 
+    },
+
+    customer(frm, cdt, cdn) {
+        let current_row = locals[cdt][cdn];
+        let duplicate_found = false;
+
+        frm.doc.items.forEach(row => {
+            if (row.item_code === current_row.item_code && row.name !== current_row.name && row.customer === current_row.customer) {
+                duplicate_found = true;
+            }
+        });
+
+        if (duplicate_found) {
+            let d = frappe.msgprint({
+                title: __("Removing Duplicate Entry"),
+                message: __("Item Code <b>{0}</b> is already added.", [current_row.item_code]),
+                indicator: 'red'
+            });
+            frm.get_field('items').grid.grid_rows_by_docname[cdn].remove();
+            frm.refresh_field('items');
+            setTimeout(() => {
+                if (d && d.hide) d.hide();
+            }, 1500);
+        }
     }
 });
 
@@ -73,6 +97,4 @@ function set_item_code_query(frm) {
             }
         };
     };
-}
-
-        
+}    
