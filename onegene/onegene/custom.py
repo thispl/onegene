@@ -3914,11 +3914,14 @@ def update_quantity_in_job_card(doc, method):
 			row.consumption_qty = flt(row.required_qty) * flt(doc.custom_processed_qty)
 			possible_qty = min(row.possible_production, possible_qty) if possible_qty > 0 else row.possible_production
 		
-		possible_qty = min(possible_qty, doc.for_quantity)
-		possible_qty = math.floor(possible_qty) - flt(doc.custom_rework_waiting_qty_details) # if rework qty is there, reduce from possible qty
-		possible_qty = possible_qty - (flt(doc.custom_rejected_qty) - flt(doc.custom_rework_rejected_qty)) # if there is rejected qty in process, reduce from possible qty
+		if operation_count > 1:
+			possible_qty = min(possible_qty, doc.for_quantity)
+			possible_qty = math.floor(possible_qty) - flt(doc.custom_rework_waiting_qty_details) # if rework qty is there, reduce from possible qty
+			possible_qty = possible_qty - (flt(doc.custom_rejected_qty) - flt(doc.custom_rework_rejected_qty)) # if there is rejected qty in process, reduce from possible qty
 		
 		if operation_count == 1:
+			possible_qty = min(possible_qty, doc.for_quantity)
+   
 			if possible_qty > (flt(doc.for_quantity) - flt(doc.custom_processed_qty)):
 				yet_to_process = (flt(doc.for_quantity) - flt(doc.custom_processed_qty)) # Waiting Qty
 				possible_qty = yet_to_process
@@ -4215,51 +4218,37 @@ def create_stock_entry_for_rework(doc, args):
 	"""If all the Job Cards are done and on completion of final
 	Job Card, the completed qty will be updated in the Work Order.
 	And Stock Entry will be created."""
-	actual_fg = frappe.db.get_value("Work Order", doc.work_order, "custom_actual_fg") or None
-	# if doc.production_item != actual_fg:
-	completed_qty = args.accepted_qty
+ 
+	completed_qty = args.accepted_qty + args.rejected_qty
 	process_loss_qty = args.rejected_qty
-	process_loss_percentage = (process_loss_qty / completed_qty) * 100 if completed_qty > 0 else 0
 	produced_qty = completed_qty - process_loss_qty
 	last_sequence = frappe.db.count("Work Order Operation", {"parent": doc.work_order})
 	frappe.db.sql("""
 			UPDATE `tabWork Order Operation`
 			SET completed_qty = completed_qty + %s,
 				process_loss_qty = process_loss_qty + %s,
-				custom_waiting_qty = %s - completed_qty
+				custom_waiting_qty = %s - completed_qty - %s
 			WHERE name = %s
-		""", (flt(completed_qty), flt(doc.process_loss_qty), flt(doc.for_quantity), doc.operation_id))
+		""", (flt(args.accepted_qty), flt(doc.process_loss_qty), flt(doc.for_quantity), flt(doc.process_loss_qty), doc.operation_id))
 	if doc.sequence_id == last_sequence:
-		source_warehouse = frappe.db.get_value("Work Order", doc.work_order, "wip_warehouse")
+		source_warehouse = "Rework - WAIP"
 		target_warehouse = frappe.db.get_value("Item", doc.production_item, "custom_warehouse")
 		item_billing_type = frappe.db.get_value("Item", {"item_code": doc.production_item}, "item_billing_type")
-		if completed_qty > 0:
+		
+		if args.accepted_qty > 0:
 			se = frappe.new_doc("Stock Entry")
 			se.disable_auto_set_process_loss_qty = 1
-			se.company = "WONJIN AUTOPARTS INDIA PVT.LTD."
-			se.stock_entry_type = "Manufacture"
+			se.company = doc.company
+			se.stock_entry_type = "Material Transfer"
 			se.work_order = doc.work_order
-			se.from_bom = 1
-			se.fg_completed_qty = completed_qty
-			se.process_loss_qty = completed_qty
-			se.process_loss_percentage = process_loss_percentage
 			se.bom_no = doc.bom_no
 			se.set('items', [])
-			if len(doc.custom_required_material_for_operation):
-				for row in doc.custom_required_material_for_operation:
-					converted_raw_material_qty = (row.required_qty) * completed_qty
-					se.append('items', {
-						"s_warehouse": source_warehouse,
-						"item_code": row.item_code,
-						"qty": converted_raw_material_qty,
-						"basic_rate": 12,
-						"expense_account": "Stock Adjustment - WAIP",
-						"valuation_rate": 12,
-						"allow_zero_valuation_rate": 1,
-					})
-			else:
-				update_job_card_raw_material_for_operation(doc.sequence_id, doc.work_order, se, source_warehouse, completed_qty)
+			se.remarks = f"Rework Entry: Accepted from {doc.name}"
+			se.custom_reference_document = "Job Card"
+			se.custom_reference_id = doc.name	
+   
 			se.append('items', {
+				"s_warehouse": source_warehouse,
 				"t_warehouse": target_warehouse if item_billing_type != "Billing" else "Quality Inspection Pending - WAIP", # WIP
 				"item_code": doc.production_item,
 				"qty": produced_qty,
@@ -4270,7 +4259,33 @@ def create_stock_entry_for_rework(doc, args):
 			})
 			se.insert()
 			se.submit()
-			frappe.db.commit()
+			# frappe.db.commit()
+
+		if args.rejected_qty > 0:
+			se = frappe.new_doc("Stock Entry")
+			se.disable_auto_set_process_loss_qty = 1
+			se.company = doc.company
+			se.stock_entry_type = "Material Transfer"
+			se.work_order = doc.work_order
+			se.bom_no = doc.bom_no
+			se.set('items', [])
+			se.remarks = f"Rework Entry: Rejected from {doc.name}"
+			se.custom_reference_document = "Job Card"
+			se.custom_reference_id = doc.name	
+   
+			se.append('items', {
+				"s_warehouse": "Rework - WAIP",
+				"t_warehouse": "Rejections - WAIP",
+				"item_code": doc.production_item,
+				"qty": args.rejected_qty,
+				"basic_rate": 0.4766,
+				"expense_account": "Stock Adjustment - WAIP",
+				"valuation_rate": 0.4766,
+				"allow_zero_valuation_rate": 1,
+			})
+			se.insert()
+			se.submit()
+			# frappe.db.commit()
 
 @frappe.whitelist()
 def update_tool_and_log(processed_qty, job_card):
@@ -4633,9 +4648,7 @@ def create_stock_entry(doc, args):
 	Job Card, the completed qty will be updated in the Work Order.
 	And Stock Entry will be created."""
 	
-	actual_fg = frappe.db.get_value("Work Order", doc.work_order, "custom_actual_fg") or None
-	# if doc.production_item != actual_fg:
-	completed_qty = args.accepted_qty
+	completed_qty = args.accepted_qty + args.rejected_qty # This variable is passed only for the accepted qty not for the rework qty
 	process_loss_qty = args.rejected_qty
 	process_loss_percentage = (process_loss_qty / completed_qty) * 100 if completed_qty > 0 else 0
 	produced_qty = completed_qty - process_loss_qty
@@ -4646,15 +4659,17 @@ def create_stock_entry(doc, args):
 				process_loss_qty = process_loss_qty + %s,
 				custom_waiting_qty = %s - completed_qty
 			WHERE name = %s
-		""", (flt(completed_qty), flt(doc.process_loss_qty), flt(doc.for_quantity), doc.operation_id))
+		""", (flt(args.accepted_qty), flt(doc.process_loss_qty), flt(doc.for_quantity), doc.operation_id))
 	if doc.sequence_id == last_sequence:
 		source_warehouse = frappe.db.get_value("Work Order", doc.work_order, "wip_warehouse")
 		target_warehouse = frappe.db.get_value("Item", doc.production_item, "custom_warehouse")
 		item_billing_type = frappe.db.get_value("Item", {"item_code": doc.production_item}, "item_billing_type")
-		if completed_qty > 0:
+  
+		# Stock Entry for Accepted Qty
+		if args.accepted_qty > 0:
 			se = frappe.new_doc("Stock Entry")
 			se.disable_auto_set_process_loss_qty = 1
-			se.company = "WONJIN AUTOPARTS INDIA PVT.LTD."
+			se.company = doc.company
 			se.stock_entry_type = "Manufacture"
 			se.work_order = doc.work_order
 			se.from_bom = 1
@@ -4662,6 +4677,10 @@ def create_stock_entry(doc, args):
 			se.process_loss_qty = process_loss_qty
 			se.process_loss_percentage = process_loss_percentage
 			se.bom_no = doc.bom_no
+			se.remarks = f"Direct Entry: Accepted {doc.name}"
+			se.custom_reference_document = "Job Card"
+			se.custom_reference_id = doc.name	
+   
 			se.set('items', [])
 			if len(doc.custom_required_material_for_operation):
 				for row in doc.custom_required_material_for_operation:
@@ -4688,7 +4707,76 @@ def create_stock_entry(doc, args):
 			})
 			se.insert()
 			se.submit()
-			frappe.db.commit()
+			# frappe.db.commit()
+   
+		# Stock Entry for Rework Qty
+		if args.rework_qty > 0:
+			se = frappe.new_doc("Stock Entry")
+			se.disable_auto_set_process_loss_qty = 1
+			se.company = doc.company
+			se.stock_entry_type = "Manufacture"
+			se.work_order = doc.work_order
+			se.from_bom = 1
+			se.fg_completed_qty = args.rework_qty
+			se.process_loss_qty = 0
+			se.process_loss_percentage = 0
+			se.bom_no = doc.bom_no
+			se.remarks = f"Direct Entry: Rework from {doc.name}"
+			se.custom_reference_document = "Job Card"
+			se.custom_reference_id = doc.name	
+   
+			se.set('items', [])
+			if len(doc.custom_required_material_for_operation):
+				for row in doc.custom_required_material_for_operation:
+					converted_raw_material_qty = (row.required_qty) * args.rework_qty
+					se.append('items', {
+						"s_warehouse": source_warehouse,
+						"item_code": row.item_code,
+						"qty": converted_raw_material_qty,
+						"basic_rate": 12,
+						"expense_account": "Stock Adjustment - WAIP",
+						"valuation_rate": 12,
+						"allow_zero_valuation_rate": 1,
+					})
+			else:
+				update_job_card_raw_material_for_operation(doc.sequence_id, doc.work_order, se, source_warehouse, args.rework_qty)
+			se.append('items', {
+				"t_warehouse": "Rework - WAIP",
+				"item_code": doc.production_item,
+				"qty": args.rework_qty,
+				"basic_rate": 0.4766,
+				"expense_account": "Stock Adjustment - WAIP",
+				"valuation_rate": 0.4766,
+				"allow_zero_valuation_rate": 1,
+			})
+			se.insert()
+			se.submit()
+			# frappe.db.commit()
+
+		# Stock Entry for Rejected Qty
+		if args.rejected_qty > 0:
+			se = frappe.new_doc("Stock Entry")
+			se.disable_auto_set_process_loss_qty = 1
+			se.company = doc.company
+			se.stock_entry_type = "Material Receipt"
+			se.work_order = doc.work_order
+			se.bom_no = doc.bom_no
+			se.set('items', [])
+			se.remarks = f"Direct Entry: Rejected from {doc.name}"
+			se.custom_reference_document = "Job Card"
+			se.custom_reference_id = doc.name	
+			se.append('items', {
+				"t_warehouse": "Rejections - WAIP",
+				"item_code": doc.production_item,
+				"qty": args.rejected_qty,
+				"basic_rate": 0.4766,
+				"expense_account": "Stock Adjustment - WAIP",
+				"valuation_rate": 0.4766,
+				"allow_zero_valuation_rate": 1,
+			})
+			se.insert()
+			se.submit()
+			# frappe.db.commit()
 
 
 @frappe.whitelist()
@@ -11732,3 +11820,129 @@ def get_error_log():
 	doc=frappe.db.get_value("Error Log",{"method":"Attendance Alert","error":error},["creation"])
 	if doc:
 		return doc
+
+
+
+@frappe.whitelist(allow_guest=True)
+def get_live_checkin_count():
+    nowtime = datetime.now()
+
+    max_out = datetime.strptime('07:30', '%H:%M').time()
+    if nowtime.time() < max_out:
+        date1 = (nowtime - timedelta(days=1)).date()
+    else:
+        date1 = nowtime.date()
+
+    start = datetime.combine(date1, datetime.min.time())
+    end = datetime.combine(date1 + timedelta(days=1), datetime.min.time())
+
+    data = frappe.db.sql("""
+        SELECT 
+            e.custom_employee_category,
+            COUNT(DISTINCT e.employee) as count,
+            MAX(e.time) as last_checkin
+        FROM `tabEmployee Checkin` e
+        WHERE e.time >= %s 
+            AND e.time < %s
+            AND e.log_type = 'IN'
+            AND NOT EXISTS (
+                SELECT 1
+                FROM `tabEmployee Checkin` e2
+                WHERE e2.employee = e.employee
+                    AND e2.log_type = 'OUT'
+                    AND e2.time > e.time
+                    AND e2.time >= %s
+                    AND e2.time < %s
+            )
+        GROUP BY e.custom_employee_category
+    """, (start, end, start, end), as_dict=True)
+
+    staff = ops = aps = trainee = cl = total = 0
+    latest_time = None
+
+    for row in data:
+        category = row.custom_employee_category
+        count = row.count
+        
+        if not latest_time or (row.last_checkin and row.last_checkin > latest_time):
+            latest_time = row.last_checkin
+
+        if category in ("Staff", "Sub Staff", "Director"):
+            staff += count
+        elif category == "Operator":
+            ops = count
+        elif category == "Apprentice":
+            aps = count
+        elif category == "Trainee":
+            trainee = count
+        elif category == "Contractor":
+            cl = count
+
+        total += count
+
+    last_updated_str = latest_time.strftime('%Y-%m-%d %H:%M:%S') if latest_time else "No Check-ins"
+
+    html = f"""
+    <div style="width: 600px; margin: 20px auto; font-family: Arial, sans-serif;">
+        <p style="text-align: center; font-size: 14px; color:font-weight: bold; #666;">Last Check-in: {last_updated_str}</p>
+        <table style="width: 100%; border-collapse: collapse; text-align: center;">
+            <tr>
+                <td colspan="6" 
+                    style="background-color: #cfcfcf; 
+                           font-weight: bold; 
+                           font-size: 14px; 
+                           padding: 10px; 
+                           border: 1px solid black;">
+                    Attendance
+                </td>
+            </tr>
+            <tr style="background-color: orange; font-weight: bold;">
+                <td style="padding: 10px; border: 1px solid black;">Staff</td>
+                <td style="padding: 10px; border: 1px solid black;">Operator</td>
+                <td style="padding: 10px; border: 1px solid black;">Apprentice</td>
+                <td style="padding: 10px; border: 1px solid black;">Trainee</td>
+                <td style="padding: 10px; border: 1px solid black;">CL</td>
+                <td style="padding: 10px; border: 1px solid black;">Total</td>
+            </tr>
+            <tr style="background-color: #d9d9d9; font-size: 14px;">
+                <td style="padding: 12px; border: 1px solid black;">{staff}</td>
+                <td style="padding: 12px; border: 1px solid black;">{ops}</td>
+                <td style="padding: 12px; border: 1px solid black;">{aps}</td>
+                <td style="padding: 12px; border: 1px solid black;">{trainee}</td>
+                <td style="padding: 12px; border: 1px solid black;">{cl}</td>
+                <td style="padding: 12px; border: 1px solid black; ">{total}</td>
+            </tr>
+        </table>
+    </div>
+    """
+    return html
+
+
+
+def check_duplicate_so():
+    duplicates = frappe.db.sql("""
+        SELECT parent, item_code, COUNT(*) as count
+        FROM `tabSales Order Item`
+        GROUP BY parent, item_code
+        HAVING COUNT(*) > 1
+    """, as_dict=True)
+
+    for row in duplicates:
+        frappe.log_error(
+            message=f"Sales Order: {row.parent}\nDuplicate Item: {row.item_code}",
+            title="Duplicate Item in Sales Order"
+        )
+
+def check_duplicate_po():
+    duplicates = frappe.db.sql("""
+        SELECT parent, item_code, COUNT(*) as count
+        FROM `tabPurchase Order Item`
+        GROUP BY parent, item_code
+        HAVING COUNT(*) > 1
+    """, as_dict=True)
+
+    for row in duplicates:
+        frappe.log_error(
+            message=f"Purchase Order: {row.parent}\nDuplicate Item: {row.item_code}",
+            title="Duplicate Item in Purchase Order"
+        )
