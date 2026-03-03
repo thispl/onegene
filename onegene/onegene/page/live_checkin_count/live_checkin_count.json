@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2026-02-24 12:20:00.790915",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-02-24 12:20:15.388776",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "live-checkin-count",
+ "owner": "Administrator",
+ "page_name": "live-checkin-count",
+ "roles": [
+  {
+   "role": "Guest"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Live Checkin Count"
+}
