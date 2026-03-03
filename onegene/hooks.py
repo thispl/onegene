@@ -34,7 +34,10 @@ desk_include_js = [
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Item" : "public/js/item.js"}
+doctype_js = {
+    "Item" : "public/js/item.js",
+    "Job Card" : "public/js/job_card.js"
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 doctype_tree_js = {"BOM" : "public/js/bom_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -64,6 +67,7 @@ jinja = {
 	"methods":[
 		"onegene.onegene.custom.get_data_system",
 		"onegene.onegene.utils.packing_list",
+		"onegene.onegene.custom.get_request_vs_actual"
 		
 	] 
 	# "filters": "onegene.utils.jinja_filters"
@@ -305,7 +309,7 @@ doc_events = {
                 "onegene.onegene.stock_entry.reverse_update_stock_qty_in_job_card"],
         # "before_submit": "onegene.onegene.stock_entry.get_target_warehouse_from_mt",
 		'on_submit':['onegene.onegene.custom.update_material_req',
-					 "onegene.onegene.stock_entry.update_stock_qty_in_job_card"
+					#  "onegene.onegene.stock_entry.update_stock_qty_in_job_card"
                      ]
 	},
 	"Sales Order":{

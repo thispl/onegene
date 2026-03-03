@@ -35,7 +35,7 @@ frappe.query_reports["Customer Commitment"] = {
             "label": __("Item"),
             "fieldtype": "Link",
             "options": "Item",
-            "get_query": function() {
+            "get_query": function () {
                 return {
                     filters: {
                         item_billing_type: "Billing"
@@ -44,8 +44,8 @@ frappe.query_reports["Customer Commitment"] = {
             }
         },
     ],
-    formatter: function(value, row, column, data, default_formatter) {
-        
+    formatter: function (value, row, column, data, default_formatter) {
+
         const clickable_fields = [
             "commitment_plan",
         ];
@@ -53,7 +53,7 @@ frappe.query_reports["Customer Commitment"] = {
         if (!clickable_fields.includes(column.fieldname)) {
             return default_formatter(value, row, column, data);
         }
-        
+
         if (clickable_fields.includes(column.fieldname)) {
 
             const row_json = encodeURIComponent(JSON.stringify(data));
@@ -71,58 +71,67 @@ frappe.query_reports["Customer Commitment"] = {
         return default_formatter(value, row, column, data);
     },
 
-    onload: function(report) {
+    onload: function (report) {
         // Upload Plan dialog
-        let upload_plan_btn = report.page.add_inner_button(__("Upload Plan Quantity"), function() {
+        report.get_no_result_message = function () {
+            return `<div class="msg-box no-border">
+			<div>
+				<img src="/assets/frappe/images/ui-states/planning.svg" alt="Generic Empty State" class="null-state">
+			</div>
+			<p style="color:red;">${__("No plan has been posted yet")}</p>
+		</div>`;
+        }
+
+        let upload_plan_btn = report.page.add_inner_button(__("Upload Plan Quantity"), function () {
             var d = new frappe.ui.Dialog({
                 title: __("Upload Production Plan Quantity"),
                 fields: [{
-                        label: "",
-                        fieldname: "a_select_month",
-                        fieldtype: "HTML",
-                        options: "<p style='font-size: 15px; margin-top: 20px;'>A) Select month to get the template</p>"
-                    },
-                    {
-                        label: "",
-                        fieldname: "b_download",
-                        fieldtype: "HTML",
-                        options: "<p style='font-size: 15px; margin-top: 30px;'>B) Download the template of Production Plan Quantity</p>"
-                    },
-                    {
-                        label: "",
-                        fieldname: "c_attach",
-                        fieldtype: "HTML",
-                        options: "<p style='font-size: 15px; margin-top: 25px;'>C) Attach the file to be uploaded</p>"
-                    },
-                    {
-                        label: "",
-                        fieldname: "col1",
-                        fieldtype: "Column Break",
-                    },
-                    {
-                        "fieldname": "month",
-                        "label": __("Month"),
-                        "fieldtype": "Select",
-                        "options": [],
-                        "default": (function() {
-                            const monthIndex = new Date().getMonth();
-                            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                            return months[monthIndex];
-                        })()
-                    },
-                    {
-                        label: "Download",
-                        fieldname: "download",
-                        fieldtype: "Button",
-                    },
-                    {
-                        label: "",
-                        fieldname: "attach",
-                        fieldtype: "Attach",
-                    },
+                    label: "",
+                    fieldname: "a_select_month",
+                    fieldtype: "HTML",
+                    options: "<p style='font-size: 15px; margin-top: 20px;'>A) Select month to get the template</p>"
+                },
+                {
+                    label: "",
+                    fieldname: "b_download",
+                    fieldtype: "HTML",
+                    options: "<p style='font-size: 15px; margin-top: 30px;'>B) Download the template of Production Plan Quantity</p>"
+                },
+                {
+                    label: "",
+                    fieldname: "c_attach",
+                    fieldtype: "HTML",
+                    options: "<p style='font-size: 15px; margin-top: 25px;'>C) Attach the file to be uploaded</p>"
+                },
+                {
+                    label: "",
+                    fieldname: "col1",
+                    fieldtype: "Column Break",
+                },
+                {
+                    "fieldname": "month",
+                    "label": __("Month"),
+                    "fieldtype": "Select",
+                    "options": [],
+                    "default": (function () {
+                        const monthIndex = new Date().getMonth();
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        return months[monthIndex];
+                    })()
+                },
+                {
+                    label: "Download",
+                    fieldname: "download",
+                    fieldtype: "Button",
+                },
+                {
+                    label: "",
+                    fieldname: "attach",
+                    fieldtype: "Attach",
+                },
                 ],
 
-                primary_action: function() {
+                primary_action: function () {
                     var data = d.get_values();
                     if (data.attach) {
                         frappe.call({
@@ -175,7 +184,7 @@ frappe.query_reports["Customer Commitment"] = {
                     },
                     freeze: true,
                     freeze_message: "Preparing Download...",
-                    callback: function(r) {
+                    callback: function (r) {
                         if (!r.message || !r.message.data) {
                             frappe.msgprint("No file data received");
                             return;
@@ -202,14 +211,14 @@ frappe.query_reports["Customer Commitment"] = {
                         a.click();
                         document.body.removeChild(a);
                     },
-                    error: function(err) {
+                    error: function (err) {
                         frappe.msgprint("Download failed");
                     }
                 });
             });
         });
 
-        let customer_plan = report.page.add_inner_button(__("Customer Wise Report"), function() {
+        let customer_plan = report.page.add_inner_button(__("Customer Wise Report"), function () {
             var d = new frappe.ui.Dialog({
                 title: __("Customer Wise Report"),
                 size: "extra-large",
@@ -226,8 +235,8 @@ frappe.query_reports["Customer Commitment"] = {
                 args: {
                     data: frappe.query_report.data
                 },
-				freeze: true,
-                callback: function(r) {
+                freeze: true,
+                callback: function (r) {
                     if (r.message) {
                         d.fields_dict.customer_wise_plan.$wrapper.html(r.message);
                     } else {
@@ -238,7 +247,7 @@ frappe.query_reports["Customer Commitment"] = {
 
         }, ("Summary"));
 
-		let department_plan = report.page.add_inner_button(__("Department Wise Report"), function() {
+        let department_plan = report.page.add_inner_button(__("Department Wise Report"), function () {
             var d = new frappe.ui.Dialog({
                 title: __("Department Wise Report"),
                 size: "extra-large",
@@ -255,8 +264,8 @@ frappe.query_reports["Customer Commitment"] = {
                 args: {
                     data: frappe.query_report.data
                 },
-				freeze: true,
-                callback: function(r) {
+                freeze: true,
+                callback: function (r) {
                     if (r.message) {
                         d.fields_dict.department_Wise_plan.$wrapper.html(r.message);
                     } else {
@@ -271,7 +280,7 @@ frappe.query_reports["Customer Commitment"] = {
         // Customer Plan document dialog
         $(document).off("click", ".commitment-click");
 
-        $(document).on("click", ".commitment-click", function(e) {
+        $(document).on("click", ".commitment-click", function (e) {
 
             // Read full row data from attribute
             const row = JSON.parse(decodeURIComponent($(this).attr("data-row")));
@@ -328,9 +337,9 @@ frappe.query_reports["Customer Commitment"] = {
                             let today_plan = d.get_value("today_customer_plan") || 0;
                             let fg_stock = d.get_value("fg_stock") || 0;
                             let commitment_plan = d.get_value("commitment_plan") || 0;
-                            
+
                             let plan = fg_stock;
-                            if (fg_stock > today_plan){
+                            if (fg_stock > today_plan) {
                                 plan = today_plan;
                             }
                             const failure = plan - commitment_plan;
@@ -342,7 +351,7 @@ frappe.query_reports["Customer Commitment"] = {
                                     d.set_value("commitment_failure", 0);
                                     d.set_df_property("reason_for_failure", "reqd", false);
                                 }
-                            } 
+                            }
                             else {
                                 d.set_value("commitment_failure", 0);
                                 d.set_df_property("reason_for_failure", "reqd", false);
