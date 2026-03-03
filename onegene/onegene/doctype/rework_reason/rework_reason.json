@@ -10,9 +10,9 @@
  "engine": "InnoDB",
  "field_order": [
   "rework_reason",
-  "remarks",
   "issue_name",
-  "applicable_for"
+  "applicable_for",
+  "remarks"
  ],
  "fields": [
   {
@@ -37,13 +37,14 @@
   {
    "fieldname": "issue_name",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Issue Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-07 06:02:46.372771",
- "modified_by": "Administrator",
+ "modified": "2026-02-28 09:21:34.969312",
+ "modified_by": "senthilkumar.r@onegeneindia.in",
  "module": "ONEGENE",
  "name": "Rework Reason",
  "naming_rule": "By fieldname",
@@ -63,6 +64,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
