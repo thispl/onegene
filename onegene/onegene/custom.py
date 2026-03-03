@@ -6084,6 +6084,199 @@ def create_html_mr(doc):
 	return {"html": html}
 
 
+@frappe.whitelist()
+def create_html_mt(doc):
+
+	
+	doc = json.loads(doc)
+
+	
+	if "creation" in doc:
+		try:
+			doc["creation"] = datetime.strptime(doc["creation"], "%Y-%m-%d %H:%M:%S.%f")
+		except ValueError:
+			doc["creation"] = datetime.strptime(doc["creation"], "%Y-%m-%d %H:%M:%S")
+
+	
+	items = doc.get("item") or []
+
+	
+	template = """
+
+	<style>
+		td { font-size: 13px; }
+		.dialog-page-wrapper {
+			border: 1px solid black;
+			padding-top: 15px;
+			padding-right: 15px;
+			padding-left: 15px;
+			padding-bottom: 8px;
+			border-radius: 10px;
+		}
+		.content-wrapper { flex: 1; }
+		.item-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: -5px;
+		}
+		.item-table th, .item-table td {
+			border: 1px solid black;
+			padding: 4px;
+			text-align: center;
+		}
+		.item-table td.right-align { text-align: right; }
+		.signature-footer {
+			margin-top: auto;
+			width: 100%;
+			border-collapse: collapse;
+		}
+		.signature-footer td {
+			font-weight: 700;
+			margin-bottom: -80px;
+		}
+	</style>
+
+	{% set total_items = items|length %}
+	{% for i in range(0, total_items, 25) %}
+		{% set batch = items[i:i+25] %}
+		{% set last_index = total_items - 1 %}
+		{% set is_last_batch = (i + batch|length) == total_items %}
+
+		<div class="dialog-page-wrapper">
+			<div class="content-wrapper">
+				{% if i == 0 %}
+					<!-- Header (only on first page) -->
+					<table width="100%" style="border-bottom-style: hidden; margin-bottom:5px; border: none;">
+						<tr style="border: solid 1px black;">
+							<td><img src="/files/ci_img.png" width="120px"></td>
+							<td style="text-align: center; font-weight: 700; font-size: 18px;">MATERIAL TRANSFER NOTE</td>
+							<td style="text-align: right;">DOCUMENT NO : STR\\R\\02</td>
+						</tr>
+					</table>
+
+					<!-- MT Info -->
+					<table style="width:100%; border-collapse: collapse; margin-top:-6px; border-top-style: hidden;">
+						<tr>
+							<td style="width:65%; border:1px solid black; padding:5px; border-bottom:none; border-right:none; font-size:12px;">
+								<p style="line-height:1">
+									<span style="display:inline-block; width:110px;">Department</span>: {{ doc.requested_department or '' }}<br><br>
+									<span style="display:inline-block; width:110px;">Requested By</span>: <span style="font-size:12px;">{{ doc.requested_by or '' }} - {{ doc.requester_name or '' }}</span><br><br>
+									<span style="display:inline-block; width:110px;">From Warehouse</span>: {{ doc.default_source_warehouse or '' }}
+								</p>
+							</td>
+							<td style="width:35%; border:1px solid black; padding:5px; border-bottom:none; border-left:none; font-size:12px;">
+								<p style="line-height:1;">
+									<span style="display:inline-block; width:110px;">MT No</span>: {{ doc.name }}<br><br>
+									<span style="display:inline-block; width:110px;">MT Date</span>: {{ frappe.utils.format_date(doc.posting_date, "dd-MM-yyyy") or '' }}<br><br>
+									<span style="display:inline-block; width:110px;">To Warehouse</span>: {{ doc.default_target_warehouse or '' }}
+								</p>
+							</td>
+						</tr>
+					</table>
+				{% else %}
+					<div style="page-break-before: always;"></div>
+				{% endif %}
+
+				<!-- Items Table -->
+				<table class="item-table">
+					<tr style="background-color: #fec76f;">
+						<th style="font-size: 12px;">S.No.</th>
+						<th style="font-size: 12px;">Item Description</th>
+						<th style="font-size: 12px;">Requested Qty</th>
+						<th style="font-size: 12px;">Issued Qty</th>
+						<th style="font-size: 12px;">Balance Qty to Receive</th>
+					</tr>
+
+					{% for row in items %}
+					<tr>
+						<td style="font-size: 12px;">{{ loop.index }}</td>
+						<td style="font-size: 12px; text-align: left;">{{ row.item_code or '' }} - {{ row.item_name or '' }}</td>
+						<td class="right-align" style="font-size: 12px;">{{ row.requested_qty or 0 }}</td>
+						<td class="right-align" style="font-size: 12px;">{{ row.issued_qty or 0 }}</td>
+						<td class="right-align" style="font-size: 12px;">{{ row.balance_qty_to_receive or 0 }}</td>
+					</tr>
+					{% endfor %}
+
+					<!-- ✅ Total row INSIDE same table -->
+					<tr>
+						<td colspan="4" style="font-weight:bold; text-align:center; font-size:12px; border-top:1px solid black;">
+							Total
+						</td>
+						<td style="font-weight:bold; text-align:right; font-size:12px; border-top:1px solid black;">
+							{{ items | sum(attribute='balance_qty_to_receive') }}
+						</td>
+					</tr>
+
+				</table>
+
+			</div>
+		
+		<div style="border: 1px solid black; border-top: none; padding-top: 30px;">
+			{% set mr_prepared_by = frappe.db.get_value("Material Request",{"name":doc.material_request}, "owner") %}	
+			{% set prepared_signature = frappe.db.get_value("Employee", {"user_id": mr_prepared_by}, "custom_digital_signature") if mr_prepared_by else None %}
+			{% set prepared_by_name = frappe.db.get_value("User", mr_prepared_by, "full_name") if mr_prepared_by else None %}
+
+
+			{% set hod_signature = frappe.db.get_value("Employee", {"user_id": doc.custom_hod_approved_by}, "custom_digital_signature") if doc.custom_hod_approved_by else None %}
+			{% set erp_team_signature = frappe.db.get_value("Employee", {"user_id": doc.custom_erp_team}, "custom_digital_signature") if doc.custom_erp_team else None %}
+			{% set issued_by_signature = frappe.db.get_value("Employee", {"name": doc.issued_by}, "custom_digital_signature") if doc.issued_by else None %}
+			
+			<div style="display: flex; flex-direction: row; justify-content: space-around; text-align: center; margin-bottom: 10px;">
+				<div class="d-flex flex-column">
+					{% if prepared_signature %}
+						<img src="{{ prepared_signature }}" style="height:40px;">
+					{% else %}
+						<b style="font-size: 12px; height: 40px;">{{prepared_by_name}}</b>
+					{% endif %}
+					{% if doc.creation %}
+					<b style="font-size: 10px;">{{ frappe.utils.format_datetime(doc.creation, "dd-MM-yyyy HH:mm:ss") or '' }}</b>
+					{% else %}
+					<b style="font-size: 10px;">&nbsp;</b>
+					{% endif %}
+					<b>Requested By</b>
+				</div>
+
+			
+
+				<div class="d-flex flex-column">
+					{% if issued_by_signature and doc.custom_issued_by_on %}
+						<img src="{{ issued_by_signature }}" style="height:40px;">
+					{% elif doc.custom_issued_by_on %}
+						<b style="font-size: 12px; height: 40px;">{{doc.issued_by_name}}</b>
+					{% endif %}
+					{% if doc.custom_issued_by_on %}
+						<b style="font-size: 10px;">{{ frappe.utils.format_datetime(doc.custom_issued_by_on, "dd-MM-yyyy HH:mm:ss") or '' }}</b>
+					{% else %}
+						<b style="font-size: 10px;">&nbsp;</b>
+						<b style="font-size: 10px;">&nbsp;</b>
+						<b style="font-size: 10px;">&nbsp;</b>
+						
+					{% endif %}
+					<b>Issued By</b>
+				</div>
+
+				
+
+			</div>
+
+		</div>
+	<div style="text-align:left; font-size:10px;margin-top:5px;font-weight:normal;">
+		Note: This document is Digitally Signed
+	</div>
+	</div>
+	{% endfor %}
+
+	
+	"""
+
+	html = render_template(template, {"doc": doc, "items": items})
+	return {"html": html}
+
+
+
+
+
+
 # @frappe.whitelist()
 # def create_html_mr(doc):
 # 	# Parse JSON safely
@@ -9391,6 +9584,7 @@ def get_custom_bom_pmr(doctype, txt, searchfield, start, page_len, filters):
 		bom_list = [
 			bom for bom in bom_list
 			if txt.lower() in bom.name.lower()
+			or txt in (bom.item_name or "").lower()
 		]
 
 	# Ensure uniqueness by name
@@ -10648,33 +10842,56 @@ def request_vs_actual_mt(from_date, to_date):
 					"docstatus": 1,
 					"custom_department": ["in", dep_per]
 				},
-				pluck="name"
+				fields=["name","creation"]
 			)
 	else:
 		mr = frappe.get_all(
 			"Material Request",
 			filters={"creation": ["between", [start_dt, end_dt]], "docstatus": 1},
-			pluck="name"
+			fields=["name","creation"]
 		)
 
 	
 	if mr:
-		data = frappe.get_all(
+		raw_data = frappe.get_all(
 			"Material Request Item",
-			filters={"parent": ["in", mr]},
-			fields=["item_code", "item_name", "custom_requesting_qty", "ordered_qty"]
+			filters={"parent": ["in", [i["name"] for i in mr]]},
+			fields=["item_code", "item_name", "custom_requesting_qty", "ordered_qty","parent"]
 		)
 
+
 		grouped_data = {}
-		for item in data:
-			key = (item["item_code"], item["item_name"])
+		mr_map = {m["name"]: m["creation"] for m in mr}
+
+
+		for item in raw_data:
+			creation_dt = get_datetime(mr_map.get(item["parent"]))
+
+			if creation_dt.time() >= time(8, 31):
+				shift_date = creation_dt.date()
+			else:
+				shift_date = add_days(creation_dt.date(), -1)
+
+			key = (shift_date, item["item_code"], item["item_name"])
+
 			if key not in grouped_data:
-				grouped_data[key] = {"requested_qty": 0, "completed_qty": 0}
+				grouped_data[key] = {
+					"requested_qty": 0,
+					"completed_qty": 0
+				}
+
 			grouped_data[key]["requested_qty"] += item.get("custom_requesting_qty", 0) or 0
 			grouped_data[key]["completed_qty"] += item.get("ordered_qty", 0) or 0
 
-		for (item_code, item_name), qtys in grouped_data.items():
+
+
+		
+
+			
+
+		for (creation, item_code, item_name), qtys in grouped_data.items():
 			results.append({
+				"creation" : creation,
 				"item_code": item_code,
 				"item_name": item_name,
 				"requested_qty": qtys["requested_qty"],
@@ -10682,6 +10899,14 @@ def request_vs_actual_mt(from_date, to_date):
 			})
 
 	return results
+
+def get_request_vs_actual(from_date , to_date):
+    return request_vs_actual_mt(from_date, to_date)
+
+@frappe.whitelist()
+def set_req_act_value(from_date, to_date):
+    frappe.db.set_single_value("Reports Dashboard",{"report":"Request Vs Actual","from_date": from_date, "to_date_request_actual": to_date })
+    frappe.db.commit()
 
 
 @frappe.whitelist()
