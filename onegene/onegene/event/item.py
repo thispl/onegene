@@ -54,15 +54,30 @@ def move_old_items_stock(old_item, new_item):
 @frappe.whitelist()
 def get_price_history_html(item_code):
 	# Last Purchase Rate
+	# purchase_order_schedules = frappe.db.sql("""
+	# 	SELECT pos.purchase_order_number, pos.order_rate_inr, pos.supplier_code, po.transaction_date, po.schedule_date, pos.name as purchase_order_schedule, pos.schedule_date
+	# 	FROM `tabPurchase Order Schedule` pos
+	# 	INNER JOIN `tabPurchase Order` po
+	# 		ON po.name = pos.purchase_order_number
+	# 	WHERE pos.docstatus = 1 AND pos.po_type = "Purchase Order" AND pos.item_code = %s
+	# 	ORDER BY pos.modified DESC
+	# 	LIMIT 10
+	# """, (item_code), as_dict=1)
+ 
 	purchase_order_schedules = frappe.db.sql("""
-		SELECT pos.purchase_order_number, pos.order_rate_inr, pos.supplier_code, po.transaction_date, po.schedule_date, pos.name as purchase_order_schedule, pos.schedule_date
-		FROM `tabPurchase Order Schedule` pos
-		INNER JOIN `tabPurchase Order` po
-			ON po.name = pos.purchase_order_number
-		WHERE pos.docstatus = 1 AND pos.po_type = "Purchase Order" AND pos.item_code = %s
-		ORDER BY pos.modified DESC
+		SELECT child.revised_on, child.revised_by, child.old_value, child.new_value, parent.supplier_code as supplier_code,child.parent
+		FROM `tabPurchase Order Revision` child
+		JOIN `tabPurchase Order` parent ON child.parent = parent.name
+		INNER JOIN (
+			SELECT parent, MAX(revised_on) as max_revised
+			FROM `tabPurchase Order Revision`
+			WHERE item_code LIKE %s
+			GROUP BY parent
+		) latest ON child.parent = latest.parent AND child.revised_on = latest.max_revised
+		WHERE child.item_code LIKE %s
+		ORDER BY child.revised_on DESC
 		LIMIT 10
-	""", (item_code), as_dict=1)
+	""", (f"%{item_code}%", f"%{item_code}%"), as_dict=True)
  
 	html = """
 		<div style="margin-bottom: 30px;">
@@ -70,28 +85,26 @@ def get_price_history_html(item_code):
 			<table width="100%" style="border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
 				<tr style="background-color: #777472;">
 					<td class="text-white text-right pr-4 pt-2 pb-2"><b>S#</b></td>
-					<td class="text-white pr-2 pt-2 pb-2 pl-5"><b>Schedule Date</b></td>
-					<td class="text-white pr-2 pt-2 pb-2 pl-5"><b>Purchase Order</b></td>
-					<td class="text-white pt-2 pb-2 pl-5"><b>Purchase Order Schedule</b></td>
+					<td class="text-white pr-2 pt-2 pb-2 pl-5"><b>Revised On</b></td>
+					<td class="text-white pr-2 pt-2 pb-2 pl-5"><b>Revised By</b></td>
 					<td class="text-white pt-2 pb-2 pl-5"><b>Supplier Code</b></td>
-					<td class="text-white text-right pr-2 pt-2 pb-2"><b>Rate</b></td>
+					<td class="text-white pt-2 pb-2 pl-5"><b>Old Rate</b></td>
+					<td class="text-white text-right pr-2 pt-2 pb-2"><b>Revised Rate</b></td>
 				</tr>
 	"""
 	idx = 0
 	if not purchase_order_schedules:
 		html += f"""<td colspan=6 class="pt-2 pb-2 pr-4 text-center">No Purchase History</td>"""
   
-	precision = frappe.get_precision("Item", "last_purchase_rate") + 1
 	for pos in purchase_order_schedules:
 		idx += 1
-		html += f"""<tr class="schedule-row" data-schedule="{pos.name}" style="cursor:pointer;{ 'background-color:#e5e8eb;' if idx%2==0 else ''}">"""
 		html += f"""
 				<td class="pt-2 pb-2 pr-4 text-right">{idx}</td>
-				<td class="pt-2 pb-2 pr-2 pl-5">{formatdate(pos.schedule_date)}</td>
-				<td class="pt-2 pb-2 pl-5">{pos.purchase_order_number}</td>
-				<td class="pt-2 pb-2 pl-5">{pos.purchase_order_schedule}</td>
+				<td class="pt-2 pb-2 pr-2 pl-5">{pos.revised_on}</td>
+				<td class="pt-2 pb-2 pl-5">{pos.revised_by}</td>
 				<td class="pt-2 pb-2 pl-5">{pos.supplier_code}</td>
-				<td class="pt-2 pb-2 pr-2 text-right">{round(flt(pos.order_rate_inr), precision)}</td>
+				<td class="pt-2 pb-2 pl-5">{pos.old_value}</td>
+				<td class="pt-2 pb-2 pr-2 text-right">{pos.new_value}</td>
 			</tr>
 		"""
 
@@ -101,27 +114,41 @@ def get_price_history_html(item_code):
 	"""
  
 	# Last Sales Rate
-	sales_order_schedules = frappe.db.sql("""
-		SELECT sos.sales_order_number, sos.order_rate_inr, sos.customer_code, so.transaction_date, so.delivery_date, sos.name as sales_order_schedule, sos.schedule_date
-		FROM `tabSales Order Schedule` sos
-		INNER JOIN `tabSales Order` so
-			ON so.name = sos.sales_order_number
-		WHERE sos.docstatus = 1 AND sos.item_code = %s
-		ORDER BY sos.modified DESC
-		LIMIT 10
-	""", (item_code), as_dict=1)
+	# sales_order_schedules = frappe.db.sql("""
+	# 	SELECT sos.sales_order_number, sos.order_rate_inr, sos.customer_code, so.transaction_date, so.delivery_date, sos.name as sales_order_schedule, sos.schedule_date
+	# 	FROM `tabSales Order Schedule` sos
+	# 	INNER JOIN `tabSales Order` so
+	# 		ON so.name = sos.sales_order_number
+	# 	WHERE sos.docstatus = 1 AND sos.item_code = %s
+	# 	ORDER BY sos.modified DESC
+	# 	LIMIT 10
+	# """, (item_code), as_dict=1)
  
+	sales_order_schedules = frappe.db.sql("""
+		SELECT child.revised_on, child.revised_by, child.old_value, child.new_value, parent.custom_customer_code as customer_code,child.parent
+		FROM `tabSales Order Revision` child
+		JOIN `tabSales Order` parent ON child.parent = parent.name
+		INNER JOIN (
+			SELECT parent, MAX(revised_on) as max_revised
+			FROM `tabSales Order Revision`
+			WHERE item_code LIKE %s
+			GROUP BY parent
+		) latest ON child.parent = latest.parent AND child.revised_on = latest.max_revised
+		WHERE child.item_code LIKE %s
+		ORDER BY child.revised_on DESC
+		LIMIT 10
+	""", (f"%{item_code}%", f"%{item_code}%"), as_dict=True)
 	html += """
 		<div style="margin-bottom: 30px;">
 			<p>Sales History</p>
 			<table width="100%" style="border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
 				<tr style="background-color: #777472;">
 					<td class="text-white text-right pr-4 pt-2 pb-2"><b>S#</b></td>
-					<td class="text-white pr-2 pt-2 pb-2 pl-5"><b>Schedule Date</b></td>
-					<td class="text-white pr-2 pt-2 pb-2 pl-5"><b>Sales Order</b></td>
-					<td class="text-white pt-2 pb-2 pl-5"><b>Sales Order Schedule</b></td>
-					<td class="text-white pt-2 pb-2 pl-5"><b>Supplier Code</b></td>
-					<td class="text-white text-right pr-2 pt-2 pb-2"><b>Rate</b></td>
+					<td class="text-white pr-2 pt-2 pb-2 pl-5"><b>Revised On</b></td>
+					<td class="text-white pr-2 pt-2 pb-2 pl-5"><b>Revised By</b></td>
+					<td class="text-white pt-2 pb-2 pl-5"><b>Customer Code</b></td>
+					<td class="text-white pt-2 pb-2 pl-5"><b>Old Rate</b></td>
+					<td class="text-white text-right pr-2 pt-2 pb-2"><b>Revised Rate</b></td>
 				</tr>
 	"""
 	idx = 0
@@ -134,11 +161,11 @@ def get_price_history_html(item_code):
 		html += f"""<tr class="schedule-row" data-schedule="{sos.name}" style="cursor:pointer;{ 'background-color:#e5e8eb;' if idx%2==0 else ''}">"""
 		html += f"""
 				<td class="pt-2 pb-2 pr-4 text-right">{idx}</td>
-				<td class="pt-2 pb-2 pr-2 pl-5">{formatdate(sos.schedule_date)}</td>
-				<td class="pt-2 pb-2 pl-5">{sos.sales_order_number}</td>
-				<td class="pt-2 pb-2 pl-5">{sos.sales_order_schedule}</td>
+				<td class="pt-2 pb-2 pr-2 pl-5">{sos.revised_on}</td>
+				<td class="pt-2 pb-2 pl-5">{sos.revised_by}</td>
 				<td class="pt-2 pb-2 pl-5">{sos.customer_code}</td>
-				<td class="pt-2 pb-2 pr-2 text-right">{round(flt(sos.order_rate_inr), precision)}</td>
+				<td class="pt-2 pb-2 pl-5">{sos.old_value}</td>
+				<td class="pt-2 pb-2 pr-2 text-right">{sos.new_value}</td>
 			</tr>
 		"""
 
