@@ -386,7 +386,9 @@ doc_events = {
 		
 	},
     "Item": {
-		"validate": "onegene.onegene.event.item.update_item_group"						
+		"validate": "onegene.onegene.event.item.update_item_group",
+		"before_rename": "onegene.onegene.custom.update_item_code_revision",
+        "before_save": "onegene.onegene.custom.track_field_changes"						
 	},
 	 "Quality Inspection": {
 		"validate": [

@@ -2999,7 +2999,7 @@ def delete_purchase_order_schedule(doc, method):
 
 @frappe.whitelist()
 def create_sales_open_order(doc,method):
-	if doc.customer_order_type == "Open":
+	if doc.customer_order_type != "Proto":
 		new_doc = frappe.new_doc('Open Order')
 		new_doc.sales_order_number = doc.name
 		new_doc.set('open_order_table', [])
@@ -9525,7 +9525,12 @@ def set_hod(doc, method):
 def get_custom_bom_pmr(doctype, txt, searchfield, start, page_len, filters):
 	warehouse = filters.get("warehouse")
 	department = filters.get("department")
-	replaced_department = department.replace(" - WAIP", "")
+	if department and warehouse:
+		replaced_department = department.replace(" - WAIP", "")
+	if not department:
+		frappe.throw("Set the Department", title="Mandatory")
+	if not warehouse:
+		frappe.throw("Set the Warehouse", title="Mandatory")
 	item_group_map = {
 		"Evap & AC-Tubing": "EVAP/AC-Tubing", 
 		"Condenser Assy": "Condenser Assy", 
@@ -12171,3 +12176,70 @@ def check_duplicate_po():
             message=f"Purchase Order: {row.parent}\nDuplicate Item: {row.item_code}",
             title="Duplicate Item in Purchase Order"
         )
+
+
+
+import frappe
+from frappe.utils import now_datetime
+
+@frappe.whitelist()
+def update_item_code_revision(doc, method, old, new, merge=False):
+
+
+	doc.append("custom_revision_log", {
+		"revised_on": now_datetime(),
+		"revised_by": frappe.session.user,
+		"field_name": "Item Code",
+		"old_value": old,
+		"new_value": new
+	})
+
+	doc.save(ignore_permissions=True)
+
+
+@frappe.whitelist()
+def track_field_changes(doc, method):
+	fields_to_track = ["item_group", "custom_warehouse"]
+	for field in fields_to_track:
+		if doc.has_value_changed(field):
+			old_value = doc.get_doc_before_save().get(field) if doc.get_doc_before_save() else None
+			new_value = doc.get(field)
+
+			if not new_value:
+				continue
+
+			if old_value == new_value:
+				continue
+			
+			field_label = doc.meta.get_label(field)
+
+			doc.append("custom_revision_log", {
+				"revised_on": now_datetime(),
+				"revised_by": frappe.session.user,
+				"field_name": field_label,
+				"old_value": old_value,
+				"new_value": new_value
+			})
+
+@frappe.whitelist()
+def create_pending_open_order():
+	so_list=['SAL-ORD-2026-00012','SAL-ORD-2026-00009','SAL-ORD-2026-00003','SAL-ORD-2026-00008','SAL-ORD-2026-00007','SAL-ORD-2026-00006','SAL-ORD-2026-00005','SAL-ORD-2026-00004',
+		  'SAL-ORD-2026-00001','OGH2025-04-003/25-26 R1','Mail Ref','4371002697','5100003004']
+	for i in so_list:
+		doc=frappe.get_doc('Sales Order',i)
+		new_doc = frappe.new_doc('Open Order')
+		new_doc.sales_order_number = doc.name
+		new_doc.company=doc.company
+		new_doc.set('open_order_table', [])
+		for so in doc.items:
+			new_doc.append("open_order_table", {
+				"item_code": so.item_code,
+				"delivery_date": so.delivery_date,
+				"item_name": so.item_name,
+				"qty": so.qty,
+				"rate": so.rate,
+				"warehouse": so.warehouse,
+				"amount": so.amount,
+				"docname": so.name,
+			})
+		new_doc.save(ignore_permissions=True)

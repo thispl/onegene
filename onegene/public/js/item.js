@@ -1,6 +1,6 @@
 frappe.ui.form.on("Item", {
     refresh(frm) {
-        if (!frm.is_new() && frappe.user.has_role("System Manager") && frm.doc.item_billing_type =="Billing") {
+        if (!frm.is_new() && frappe.user.has_role("System Manager")) {
 
             // Revise Item Code
             frm.add_custom_button("Revise Item Code", function () {
@@ -20,7 +20,7 @@ frappe.ui.form.on("Item", {
                             default: frm.doc.item_name,
                         }
                     ],
-                    primary_action_label: "Create",
+                    primary_action_label: "Revise",
                     primary_action(values) {
 
                         // Check if the new code matches current
@@ -41,28 +41,45 @@ frappe.ui.form.on("Item", {
                                     indicator: "red"
                                 });
                             }
+                            frappe.call({
+                                method: "frappe.client.rename_doc",
+                                args: {
+                                    doctype: "Item",
+                                    old_name: frm.doc.name,
+                                    new_name: values.item_code,
+                                    merge: false
+                                },
+                                freeze:true,
+                                freeze_message:"Processing...",
+                                callback: function(r) {
+                                    if (!r.exc) {
+                                        frappe.set_route("Form", "Item", values.item_code);
+
+                                    }
+                                }
+                            });
 
                             // create duplicated item with new code
-                            let new_item = frappe.model.copy_doc(frm.doc);
+                            // let new_item = frappe.model.copy_doc(frm.doc);
 
-                            if (new_item.item_name === new_item.item_code) {
-                                new_item.item_name = null;
-                            }
-                            if (new_item.item_code === new_item.description) {
-                                new_item.description = null;
-                            }
+                            // if (new_item.item_name === new_item.item_code) {
+                            //     new_item.item_name = null;
+                            // }
+                            // if (new_item.item_code === new_item.description) {
+                            //     new_item.description = null;
+                            // }
 
-                            new_item.item_code = values.item_code;
-                            new_item.custom_revised_from = frm.doc.item_code
-                            new_item.custom_revision_on = frappe.datetime.now_datetime();
-                            frappe.set_route("Form", "Item", new_item.name);
+                            // new_item.item_code = values.item_code;
+                            // new_item.custom_revised_from = frm.doc.item_code
+                            // new_item.custom_revision_on = frappe.datetime.now_datetime();
+                            // frappe.set_route("Form", "Item", new_item.name);
                             d.hide();
                         });
 
                     }
                 });
                 d.show();
-            }, __("Actions"));
+            });
 
             if (frm.doc.custom_revised_from) {
                 // Update stocks
