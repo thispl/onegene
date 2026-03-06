@@ -110,23 +110,48 @@ class SalesOrderSchedule(Document):
 					self.delivered_amount_inr =  self.exchange_rate * self.delivered_amount   
 				if self.pending_amount:
 					self.pending_amount_inr =  self.exchange_rate * self.pending_amount
+
+
+		if self.order_type == "Open":
+			if self.schedule_month:
+				current_year = getdate().year
+				new_date = getdate(f"01-{self.schedule_month}-{current_year}")
+
+				if self.schedule_date != new_date:
+					self.schedule_date = new_date
+
+				if self.schedule_year != current_year:
+					self.schedule_year = current_year
+
+		elif self.order_type == "Fixed":
+			if self.schedule_date:
+				schedule_date = getdate(self.schedule_date)
+
+				new_year = schedule_date.year
+				new_month = schedule_date.strftime("%b").upper()
+
+				if self.schedule_year != new_year:
+					self.schedule_year = new_year
+
+				if self.schedule_month != new_month:
+					self.schedule_month = new_month			
 				
 
 
 	def validate(self):
-		if self.order_type == "Open":
-			current_year = datetime.now().year
-			schedule_month = self.schedule_month.upper() if self.schedule_month else ""
-			self.schedule_date = datetime.strptime(f"01-{schedule_month}-{current_year}", "%d-%b-%Y")
-			self.schedule_year = current_year
-		if self.order_type == "Fixed":
-			if self.schedule_date:
-				if isinstance(self.schedule_date, str):
-					schedule_date = datetime.strptime(self.schedule_date, "%Y-%m-%d")
-				else:
-					schedule_date = self.schedule_date
-				self.schedule_year = schedule_date.year
-				self.schedule_month = schedule_date.strftime("%b").upper()
+		# if self.order_type == "Open":
+		# 	current_year = datetime.now().year
+		# 	schedule_month = self.schedule_month.upper() if self.schedule_month else ""
+		# 	self.schedule_date = datetime.strptime(f"01-{schedule_month}-{current_year}", "%d-%b-%Y")
+		# 	self.schedule_year = current_year
+		# if self.order_type == "Fixed":
+		# 	if self.schedule_date:
+		# 		if isinstance(self.schedule_date, str):
+		# 			schedule_date = datetime.strptime(self.schedule_date, "%Y-%m-%d")
+		# 		else:
+		# 			schedule_date = self.schedule_date
+		# 		self.schedule_year = schedule_date.year
+		# 		self.schedule_month = schedule_date.strftime("%b").upper()
 
 		self.pending_qty = self.qty - self.delivered_qty
 		self.schedule_amount = self.order_rate * self.qty
