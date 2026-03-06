@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import getdate, nowtime
+from frappe.utils import getdate, nowtime, now_datetime
 
 
 class MaterialTransfer(Document):
@@ -43,6 +43,8 @@ class MaterialTransfer(Document):
 
 
     def on_submit(self):
+        self.custom_issued_by_on = now_datetime()
+        
         stock_entry = frappe.new_doc("Stock Entry")
         stock_entry.stock_entry_type = "Material Transfer"
         stock_entry.posting_date = self.posting_date
