@@ -9,9 +9,9 @@
  "field_order": [
   "section_break_hhfv",
   "material_request",
-  "amended_from",
   "column_break_gzrr",
   "posting_date",
+  "company",
   "section_break_rafz",
   "mr_scheduling_table",
   "amended_from"
@@ -66,13 +66,20 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-06-26 17:42:30.851365",
- "modified_by": "Administrator",
+ "modified": "2026-03-04 17:07:54.731636",
+ "modified_by": "bhuvaneswari.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "MR Scheduling",
  "naming_rule": "Expression (old style)",
@@ -92,6 +99,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

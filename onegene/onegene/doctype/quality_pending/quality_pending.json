@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "inspection_pending_type",
+  "company",
   "datetime",
   "column_break_gegl",
   "reference_type",
@@ -230,6 +231,12 @@
    "fieldtype": "Int",
    "label": "Pack Size",
    "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -239,8 +246,8 @@
    "link_fieldname": "custom_quality_pending"
   }
  ],
- "modified": "2025-10-16 19:11:41.377508",
- "modified_by": "Administrator",
+ "modified": "2026-03-04 17:29:32.518173",
+ "modified_by": "bhuvaneswari.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "Quality Pending",
  "naming_rule": "Expression (old style)",
@@ -259,6 +266,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

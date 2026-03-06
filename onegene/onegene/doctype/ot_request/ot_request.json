@@ -35,7 +35,8 @@
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
-   "options": "Company"
+   "options": "Company",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_rkpd",
@@ -162,8 +163,8 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-23 19:56:28.857458",
- "modified_by": "senthilkumar.r@onegeneindia.in",
+ "modified": "2026-03-04 14:12:45.747576",
+ "modified_by": "bhuvaneswari.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "OT Request",
  "naming_rule": "Expression (old style)",

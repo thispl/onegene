@@ -8,6 +8,7 @@
  "field_order": [
   "employee",
   "time",
+  "company",
   "column_break_redu",
   "location__device_id",
   "log_type",
@@ -44,13 +45,19 @@
    "fieldtype": "Date",
    "label": "Checkin Date",
    "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-25 17:49:41.939410",
- "modified_by": "Administrator",
+ "modified": "2026-03-04 17:28:19.661073",
+ "modified_by": "bhuvaneswari.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "Unregistered Employee Checkin",
  "naming_rule": "Expression (old style)",
@@ -69,6 +76,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

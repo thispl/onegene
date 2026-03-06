@@ -8,6 +8,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "company",
   "sales_order_number",
   "disable_update_items",
   "column_break_emyv",
@@ -29,6 +30,7 @@
    "fieldtype": "Section Break"
   },
   {
+   "allow_bulk_edit": 1,
    "fieldname": "open_order_table",
    "fieldtype": "Table",
    "label": "Open Order Table",
@@ -52,12 +54,18 @@
    "in_standard_filter": 1,
    "label": "Customer's Purchase Order",
    "options": "Customer Purchase Order"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-26 09:57:46.350965",
- "modified_by": "Administrator",
+ "modified": "2026-03-05 17:56:33.154350",
+ "modified_by": "pavithra.s@groupteampro.com",
  "module": "ONEGENE",
  "name": "Open Order",
  "naming_rule": "Expression (old style)",
@@ -76,6 +84,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "purchase_order",
+  "company",
   "disable_update_items",
   "open_order_table"
  ],
@@ -30,12 +31,18 @@
    "fieldname": "disable_update_items",
    "fieldtype": "Check",
    "label": "Disable Update Items"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-01 13:21:06.265380",
- "modified_by": "Administrator",
+ "modified": "2026-03-04 17:30:12.450419",
+ "modified_by": "bhuvaneswari.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "Purchase Open Order",
  "naming_rule": "Expression (old style)",
@@ -54,6 +61,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

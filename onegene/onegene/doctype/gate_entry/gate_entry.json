@@ -186,7 +186,8 @@
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
-   "options": "Company"
+   "options": "Company",
+   "reqd": 1
   },
   {
    "bold": 1,
@@ -209,8 +210,8 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-19 10:49:54.322250",
- "modified_by": "pavithra.s@groupteampro.com",
+ "modified": "2026-03-04 14:20:30.360363",
+ "modified_by": "bhuvaneswari.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "Gate Entry",
  "naming_rule": "Expression (old style)",

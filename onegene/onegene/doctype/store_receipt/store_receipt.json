@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "type",
+  "company",
   "column_break_utae",
   "quality_inspection",
   "inspection_id",
@@ -82,13 +83,19 @@
    "fieldname": "inspection_id",
    "fieldtype": "Autocomplete",
    "label": "Inspection ID"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-07 11:51:11.555875",
- "modified_by": "Administrator",
+ "modified": "2026-03-04 17:07:19.248324",
+ "modified_by": "bhuvaneswari.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "Store Receipt",
  "naming_rule": "Expression (old style)",
@@ -109,6 +116,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

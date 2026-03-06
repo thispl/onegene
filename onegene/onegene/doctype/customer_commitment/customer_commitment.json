@@ -71,7 +71,6 @@
    "in_list_view": 1,
    "label": "Company",
    "options": "Company",
-   "read_only": 1,
    "reqd": 1
   },
   {
@@ -185,8 +184,8 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-24 16:27:13.613755",
- "modified_by": "amar.p@groupteampro.com",
+ "modified": "2026-03-04 15:40:58.987613",
+ "modified_by": "bhuvaneswari.a@groupteampro.com",
  "module": "ONEGENE",
  "name": "Customer Commitment",
  "naming_rule": "By \"Naming Series\" field",
@@ -201,6 +200,18 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manufacturing User",
    "share": 1,
    "write": 1
   }
