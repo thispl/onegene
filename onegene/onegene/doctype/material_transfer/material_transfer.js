@@ -4,7 +4,7 @@
 frappe.ui.form.on('Material Transfer', {
 
    
-    material_request :function(frm){
+    material_request: function(frm){
             
         // setTimeout(() => {    
         if (frm.doc.material_request) {
@@ -12,7 +12,8 @@ frappe.ui.form.on('Material Transfer', {
                 method: 'onegene.onegene.doctype.material_transfer.material_transfer.get_mt_table',
                 args: {
                     // doctype: 'Material Request',
-                    name: frm.doc.material_request
+                    name: frm.doc.material_request,
+                    source_warehouse: frm.doc.default_source_warehouse,
                 },
                 callback: function(r) {
                     
@@ -29,9 +30,7 @@ frappe.ui.form.on('Material Transfer', {
                         row.material_request_item = dc_item.name;
                         row.requested_qty = dc_item.qty;
                         row.parent_bom = dc_item.custom_parent_bom;
-                        frappe.db.get_value("Bin", {"warehouse": frm.doc.default_source_warehouse, "item_code": dc_item.item_code}, "actual_qty").then(bin => {
-                            row.stock_qty = bin.message.actual_qty;
-                        })
+                        row.stock_qty = dc_item.stock_qty;
                         row.uom = dc_item.stock_uom;
                         row.source_warehouse=frm.doc.default_source_warehouse;
                         row.target_warehouse=frm.doc.default_target_warehouse;
@@ -229,13 +228,12 @@ frappe.ui.form.on("Material Transfer Items", {
     issued_qty: function(frm, cdt, cdn) {
         let row = frappe.get_doc(cdt,cdn);
         
-        // Temp Hidden
-        // if (row.issued_qty > row.stock_qty){
-        //     frappe.msgprint("Issued Quantity is larger than Stock Quantity");
-        //     frappe.msgprint("Issued Quantity, Stock Quantity-யை விட அதிகமாக உள்ளது");
+        if (row.issued_qty > row.stock_qty){
+            frappe.msgprint("Issued Quantity is larger than Stock Quantity");
+            frappe.msgprint("Issued Quantity, Stock Quantity-யை விட அதிகமாக உள்ளது");
 
-        //     frappe.model.set_value(cdt, cdn, "issued_qty", 0);
-        // }
+            frappe.model.set_value(cdt, cdn, "issued_qty", 0);
+        }
         if(row.issued_qty>row.requested_qty){
             frappe.msgprint("Issued Quantity is larger than Requested Quantity");
             frappe.msgprint("Issued Quantity, Requested Quantity-யை விட அதிகமாக உள்ளது");

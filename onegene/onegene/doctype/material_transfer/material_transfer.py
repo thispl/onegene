@@ -210,12 +210,15 @@ def check_material_request_status(material_request):
 
 
 @frappe.whitelist()
-def get_mt_table(name):
+def get_mt_table(name, source_warehouse):
     items = frappe.get_all(
         "Material Request Item",
         filters={"parent": name},
         fields=["name", "item_code", "item_name", "qty", "stock_uom", "parent", "custom_parent_bom"]
     )
+    for item in items:
+        stock_qty = frappe.db.get_value("Bin", {"warehouse": source_warehouse, "item_code": item.item_code}, "actual_qty")
+        item["stock_qty"] = stock_qty
     return {"items": items}
 
 
