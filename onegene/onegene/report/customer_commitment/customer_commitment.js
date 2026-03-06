@@ -342,7 +342,8 @@ frappe.query_reports["Customer Commitment"] = {
                             if (fg_stock > today_plan) {
                                 plan = today_plan;
                             }
-                            const failure = plan - commitment_plan;
+                            // const failure = plan - commitment_plan;
+                            const failure = today_plan - commitment_plan;
                             if (commitment_plan > 0) {
                                 if (failure > 0) {
                                     d.set_value("commitment_failure", failure);
