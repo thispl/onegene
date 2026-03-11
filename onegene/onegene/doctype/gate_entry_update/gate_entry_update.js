@@ -184,9 +184,9 @@ frappe.ui.form.on("Gate Entry Update", {
                     missing_fields.push(mandatory_fields[field]);
                 }
             }
-            if (!frm.doc.gate_entry_item || frm.doc.gate_entry_item.length === 0) {
-                missing_fields.push("Gate Entry Table");
-            }
+            // if (!frm.doc.gate_entry_item || frm.doc.gate_entry_item.length === 0) {
+            //     missing_fields.push("Gate Entry Table");
+            // }
 
             if (missing_fields.length > 0) {
                 let message = 'Mandatory fields required in Gate Entry Update<br><br>' + 

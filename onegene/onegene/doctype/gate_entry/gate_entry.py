@@ -10,6 +10,8 @@ class GateEntry(Document):
     def before_save(self):
         if frappe.db.exists('Gate Entry',{'docstatus':['!=',2],'entry_against':self.entry_against,'entry_id':self.entry_id,'name':['!=',self.name]}):
             frappe.throw('Gate entry already created for this document')
+        if not self.gate_entry_items and not self.end_bit_scrap:
+            frappe.throw('Atleast one table is needed to proceed. Both Item and Scrap Items table are empty.')
           
     def after_insert(self):
         if self.entry_against == 'General DC' and self.entry_id:
