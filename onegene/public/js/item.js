@@ -1,24 +1,33 @@
 frappe.ui.form.on("Item", {
     refresh(frm) {
         if (!frm.is_new() && frappe.user.has_role("System Manager")) {
-
+            // code to remove the rename dialog while clicking the title
+            var e = document.getElementsByClassName("title-text");
+                for (var i = 0; i < e.length; i++) {
+                    e[i].outerHTML = e[i].outerHTML;
+                }
+            setTimeout(() => {
+                frm.page.menu.find('[data-label="Rename"]').parent().parent().remove();
+            }, 10);
             // Revise Item Code
             frm.add_custom_button("Revise Item Code", function () {
                 let d = new frappe.ui.Dialog({
                     title: "Item Code - Revision",
                     fields: [
                         {
-                            label: "Item Code",
+                            label: "Current Item Code",
+                            fieldname: "old_name",
+                            fieldtype: "Data",
+                            default: frm.doc.name,
+                            read_only:1,
+                        },
+                        {
+                            label: "New Item Code",
                             fieldname: "item_code",
                             fieldtype: "Data",
                             reqd: 1,
                         },
-                        {
-                            label: "Item Name",
-                            fieldname: "item_name",
-                            fieldtype: "Data",
-                            default: frm.doc.item_name,
-                        }
+                        
                     ],
                     primary_action_label: "Revise",
                     primary_action(values) {
@@ -41,6 +50,7 @@ frappe.ui.form.on("Item", {
                                     indicator: "red"
                                 });
                             }
+
                             frappe.call({
                                 method: "frappe.client.rename_doc",
                                 args: {
@@ -59,6 +69,7 @@ frappe.ui.form.on("Item", {
                                 }
                             });
 
+
                             // create duplicated item with new code
                             // let new_item = frappe.model.copy_doc(frm.doc);
 
@@ -71,7 +82,7 @@ frappe.ui.form.on("Item", {
 
                             // new_item.item_code = values.item_code;
                             // new_item.custom_revised_from = frm.doc.item_code
-                            // new_item.custom_revision_on = frappe.datetime.now_datetime();
+                            // new_item.custom_revised_on = frappe.datetime.now_datetime();
                             // frappe.set_route("Form", "Item", new_item.name);
                             d.hide();
                         });
@@ -110,6 +121,7 @@ frappe.ui.form.on("Item", {
             });
         }
     },
+
 
     item_group(frm) {
         if (frm.doc.item_group == "Innovation") {
