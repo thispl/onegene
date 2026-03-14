@@ -36,7 +36,8 @@ desk_include_js = [
 # include js in doctype views
 doctype_js = {
     "Item" : "public/js/item.js",
-    "Job Card" : "public/js/job_card.js"
+	"Job Card" : "public/js/job_card.js",
+	"Quality Inspection": "public/js/quality_inspection.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 doctype_tree_js = {"BOM" : "public/js/bom_tree.js"}
@@ -136,6 +137,7 @@ override_doctype_class = {
 	"Attendance Request": "onegene.overrides.CustomAttendanceRequest",
 	"Job Card": "onegene.overrides.CustomJobCard",
 	"Stock Entry": "onegene.overrides.CustomStockEntry",
+	"Quality Inspection": "onegene.overrides.CustomQualityInspection",
 	# "Production Plan": "onegene.overrides.CustomProductionPlan"
 }
 
@@ -309,7 +311,7 @@ doc_events = {
                 "onegene.onegene.stock_entry.reverse_update_stock_qty_in_job_card"],
         # "before_submit": "onegene.onegene.stock_entry.get_target_warehouse_from_mt",
 		'on_submit':['onegene.onegene.custom.update_material_req',
-					#  "onegene.onegene.stock_entry.update_stock_qty_in_job_card"
+					 "onegene.onegene.stock_entry.update_stock_qty_in_job_card"
                      ]
 	},
 	"Sales Order":{
@@ -388,7 +390,7 @@ doc_events = {
     "Item": {
 		"validate": "onegene.onegene.event.item.update_item_group",
 		"before_rename": "onegene.onegene.custom.update_item_code_revision",
-        "before_save": "onegene.onegene.custom.track_field_changes"						
+        # "before_save": "onegene.onegene.custom.track_field_changes"						
 	},
 	 "Quality Inspection": {
 		"validate": [
@@ -467,7 +469,7 @@ doc_events = {
 		"after_insert": "onegene.onegene.custom.update_pr_in_sdn",
 		"validate": "onegene.onegene.custom.validate_item_rate",
 		"on_submit": ["onegene.onegene.custom.update_received_stock_in_order_schedule",
-                # "onegene.onegene.custom.create_quality_pending_documents"
+                "onegene.onegene.custom.create_quality_pending_documents"
                 ],
 		"on_cancel": "onegene.onegene.custom.revert_received_stock_in_order_schedule",
 		"on_trash": "onegene.onegene.custom.remove_pr_in_sdn",
