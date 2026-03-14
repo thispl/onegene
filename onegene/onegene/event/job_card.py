@@ -98,7 +98,7 @@ def get_material_consumption_html(job_card_name):
 	"""
 		Breakdown for each material consumption in the Job Card
 	"""
-	
+
 	job_card = frappe.get_doc("Job Card", job_card_name)
 
 	html = """
@@ -157,7 +157,8 @@ def get_material_consumption_html(job_card_name):
 	for item in job_card.items:
 		idx += 1
 		item_name = f"{item.item_code} - {item.item_name}"
-
+		conversion = item.required_qty / job_card.for_quantity
+  
 		row_bg = "#e5e8eb" if idx % 2 == 0 else "white"
 
 		# Main Row
@@ -192,16 +193,26 @@ def get_material_consumption_html(job_card_name):
 					<p style="font-weight: 700; width: 20%; text-align: right;">Transferred</p>
 				</div>
 			"""
+			balance = 0
 			for log in job_card.time_logs:
+				transferred = consumption = round(conversion * (log.completed_qty + log.custom_rejected_qty + log.custom_rework_qty), 2) if log.custom_entry_type == "Direct" else 0
+				if log.idx == 1:
+					balance = round(item.required_qty - ((log.completed_qty - log.custom_rejected_qty - log.custom_rework_qty) * conversion), 2)
+					required_qty = item.required_qty
+				else:
+					required_qty = balance
+					balance = round((balance - consumption), 2)
+	
+				
 				html += f"""
 				<div style="display: flex;">
 					<p style="width: 10%; padding-left: 10px;">{log.idx}</p>
 					<p style="width: 30%;">{log.custom_docname}</p>
 					<p style="width: 20%;">{log.custom_entry_type}</p>
-					<p style="width: 20%; text-align: right;">{item.required_qty}</p>
-					<p style="width: 20%; text-align: right;">{log.completed_qty + log.custom_rejected_qty + log.custom_rework_qty}</p>
-					<p style="width: 20%; text-align: right;">{item.required_qty - log.completed_qty - log.custom_rejected_qty - log.custom_rework_qty}</p>
-					<p style="width: 20%; text-align: right;">{log.completed_qty + log.custom_rejected_qty + log.custom_rework_qty}</p>
+					<p style="width: 20%; text-align: right;">{required_qty}</p>
+					<p style="width: 20%; text-align: right;">{consumption}</p>
+					<p style="width: 20%; text-align: right;">{(balance)}</p>
+					<p style="width: 20%; text-align: right;">{transferred}</p>
 				</div>
 				"""
 		else:
