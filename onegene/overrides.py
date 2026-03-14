@@ -34,6 +34,7 @@ from hrms.hr.doctype.leave_application.leave_application import get_holidays
 # from hrms.hr.doctype.salary_slip.salary_slip import SalarySlip
 from erpnext.manufacturing.doctype.job_card.job_card import JobCard
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
+from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection
 from erpnext.manufacturing.doctype.production_plan.production_plan import ProductionPlan
 from frappe.utils import flt, get_link_to_form, time_diff_in_seconds, get_datetime, add_days, format_datetime, time_diff_in_hours
 
@@ -703,3 +704,39 @@ def set_default_warehouses(row, default_warehouses):
 	for field in ["wip_warehouse", "fg_warehouse"]:
 		if not row.get(field):
 			row[field] = default_warehouses.get(field)
+
+class CustomQualityInspection(QualityInspection):
+	@frappe.whitelist()
+	def get_item_specification_details(self):
+		from erpnext.stock.doctype.quality_inspection.quality_inspection import get_template_details
+		if not self.quality_inspection_template:
+			self.quality_inspection_template = frappe.db.get_value(
+				"Item", self.item_code, "quality_inspection_template"
+			)
+
+		if not self.quality_inspection_template:
+			return
+
+		self.set("readings", [])
+		parameters = get_template_details(self.quality_inspection_template)
+		for d in parameters:
+			child = self.append("readings", {})
+			child.update(d)
+			child.status = "Accepted"
+			child.parameter_group = frappe.get_value(
+				"Quality Inspection Parameter", d.specification, "parameter_group"
+			)
+			child.custom_instrument = frappe.db.get_value(
+       			"Item Quality Inspection Parameter", 
+          		{
+                	"parent": self.quality_inspection_template, "specification": d.specification
+            	},
+				"instrument"
+        	)
+			child.custom_condition = frappe.db.get_value(
+       			"Item Quality Inspection Parameter", 
+          		{
+                	"parent": self.quality_inspection_template, "specification": d.specification
+            	},
+				"custom_condition"
+        	)
