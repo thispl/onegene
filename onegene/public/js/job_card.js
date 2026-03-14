@@ -559,7 +559,15 @@ frappe.ui.form.on('Job Card', {
             if ($breadcrumb.length) {
                 $breadcrumb.off().on("click", function(e) {
                     e.preventDefault();
+
                     frappe.set_route("query-report", "Job Card");
+
+                    setTimeout(() => {
+                        if (frappe.query_report) {
+                            frappe.query_report.refresh();
+                        }
+                    }, 700);
+
                     return false;
                 });
             }
@@ -1039,95 +1047,142 @@ frappe.ui.form.on('Job Card', {
                                 message: `<span style="color: red;">${__('செயலாக்கப்பட்ட அளவு, ஏற்றுக்கொள்ளப்பட்ட, மறுக்கப்பட்ட மற்றும் மீள்செய்யும் அளவுகளின் கூட்டுத் தொகைக்கு சமமாக இருக்க வேண்டும்.')}</span>`
                             });
 
-                        } else {
-                            frappe.dom.freeze();
+                        } 
+                        else {
+                            frappe.run_serially([
+    () => frappe.dom.freeze(),
 
-                            // Transfer Materials
+    // Transfer Materials
+    () => {
+        let to_transfer = frm.doc.items.some((row) =>
+            ((row.transferred_qty || 0) - (row.custom_consumption_qty || 0)) < row.required_qty
+        );
 
-                            let to_transfer = frm.doc.items.some((row) => row.transferred_qty < row.required_qty);
-                            if (to_transfer) {
-                                const materials = frm.doc.custom_required_material_for_operation || [];
-                                const warehouse_map = {};
-                                await Promise.all(
-                                    materials.map(row =>
-                                        frappe.db.get_value("Item", row.item_code, "custom_warehouse").then(res => {
-                                            if (res.message.custom_warehouse && res.message.custom_warehouse.includes("Semi Finished Goods - WAIP", "Finished Goods - WAIP")) {
-                                                warehouse_map[row.item_code] = res.message.custom_warehouse;
-                                            } else {
-                                                warehouse_map[row.item_code] = "Shop Floor - WAIP"
-                                            }
-                                        })
-                                    )
-                                );
-                                let data = frm.doc.custom_required_material_for_operation ?
-                                    frm.doc.custom_required_material_for_operation.filter(row => row.stock_qty > 0) // only keep rows with stock
-                                    .map(row => {
-                                        const matching_item = frm.doc.items.find(it => it.item_code === row.item_code && it.transferred_qty < it.required_qty);
-                                        return {
-                                            item_code: row.item_code,
-                                            item_name: row.item_name,
-                                            available_qty: row.stock_qty,
-                                            total_required_qty: row.total_required_qty,
-                                            available_transfer_qty: matching_item ?
-                                                ((processed_qty * (matching_item.required_qty / frm.doc.for_quantity)) <= row.stock_qty ?
-                                                    (processed_qty * (matching_item.required_qty / frm.doc.for_quantity)) :
-                                                    row.stock_qty) : 0,
-                                            // s_warehouse: matching_item ? matching_item.source_warehouse : "SFS - WAIP",
-                                            s_warehouse: warehouse_map[row.item_code],
-                                            t_warehouse: frm.doc.wip_warehouse ? frm.doc.wip_warehouse : "Work In Progress - WAIP"
-                                        };
+        if (!to_transfer) return;
 
-                                    })
-                                    .filter(row => row.available_transfer_qty > 0) : [];
-                                if (data.length > 0) {
+        const materials = frm.doc.custom_required_material_for_operation || [];
+        const warehouse_map = {};
 
-                                    await frappe.call({
-                                        method: "erpnext.manufacturing.doctype.job_card.job_card.make_stock_entry_new",
-                                        args: {
-                                            source_name: frm.doc.name,
-                                            items: data
-                                        },
-                                    });
+        return Promise.all(
+            materials.map(row =>
+                frappe.db.get_value("Item", row.item_code, "custom_warehouse").then(res => {
+                    if (
+                        res.message.custom_warehouse &&
+                        (
+                            res.message.custom_warehouse.includes("Semi Finished Goods - WAIP") ||
+                            res.message.custom_warehouse.includes("Finished Goods - WAIP")
+                        )
+                    ) {
+                        warehouse_map[row.item_code] = res.message.custom_warehouse;
+                    } else {
+                        warehouse_map[row.item_code] = "Shop Floor - WAIP";
+                    }
+                })
+            )
+        ).then(() => {
 
-                                    await frappe.call({
-                                        method: "onegene.onegene.custom.get_raw_materials_for_jobcard_on_mt",
-                                        args: {
-                                            name: frm.doc.name,
-                                        },
-                                    });
-                                }
+            let data = frm.doc.custom_required_material_for_operation
+                .filter(row => row.stock_qty > 0)
+                .map(row => {
+
+                    const matching_item = frm.doc.items.find(
+                        it => it.item_code === row.item_code &&
+                        it.transferred_qty < it.required_qty
+                    );
+
+                    return {
+                        item_code: row.item_code,
+                        item_name: row.item_name,
+                        available_qty: row.stock_qty,
+                        total_required_qty: row.total_required_qty,
+
+                        available_transfer_qty: matching_item ? (() => {
+
+                            let required_for_process =
+                                processed_qty * (matching_item.required_qty / frm.doc.for_quantity);
+
+                            let already_available =
+                                (matching_item.transferred_qty || 0) -
+                                (matching_item.custom_consumption_qty || 0);
+
+                            console.log([
+                                (matching_item.transferred_qty || 0),
+                                (matching_item.custom_consumption_qty || 0)
+                            ]);
+
+                            let remaining_required =
+                                required_for_process - already_available;
+
+                            if (remaining_required <= 0) {
+                                return 0;
                             }
 
-                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            return remaining_required <= row.stock_qty
+                                ? remaining_required
+                                : row.stock_qty;
 
-                            // Process Job Card Entry
-                            const args = {
-                                processed_qty: processed_qty,
-                                rejected_qty: rejected_qty,
-                                rejection_remarks: rejected_qty > 0 ? values.rejection_remarks : null,
-                                rework_qty: rework_qty,
-                                rework_remarks: rework_qty > 0 ? values.rework_remarks : null,
-                                job_card_id: frm.doc.name,
-                                accepted_qty: accepted_qty,
-                                employee: values.employee,
-                                shift: values.shift,
-                                workstation: values.workstation,
-                                rejection_category: values.rejection_category,
-                                rework_category: values.rework_category,
-                                supervisor: values.supervisor,
-                                department: values.department,
-                            };
-                            await frappe.call({
-                                method: "onegene.onegene.custom.job_card_process_entry",
-                                args: {
-                                    args: args
-                                },
-                            });
+                        })() : 0,
 
-                            await frm.reload_doc();
+                        s_warehouse: warehouse_map[row.item_code],
+                        t_warehouse: frm.doc.wip_warehouse || "Work In Progress - WAIP"
+                    };
 
-                            frappe.dom.unfreeze();
-                            d.hide();
+                })
+                .filter(row => row.available_transfer_qty > 0);
+
+            if (!data.length) return;
+
+            return frappe.call({
+                method: "erpnext.manufacturing.doctype.job_card.job_card.make_stock_entry_new",
+                args: {
+                    source_name: frm.doc.name,
+                    items: data
+                }
+            }).then(() => {
+                return frappe.call({
+                    method: "onegene.onegene.custom.get_raw_materials_for_jobcard_on_mt",
+                    args: { name: frm.doc.name }
+                });
+            });
+
+        });
+    },
+
+    // Process Job Card Entry
+    () => {
+
+        const args = {
+            processed_qty: processed_qty,
+            rejected_qty: rejected_qty,
+            rejection_remarks: rejected_qty > 0 ? values.rejection_remarks : null,
+            rework_qty: rework_qty,
+            rework_remarks: rework_qty > 0 ? values.rework_remarks : null,
+            job_card_id: frm.doc.name,
+            accepted_qty: accepted_qty,
+            employee: values.employee,
+            shift: values.shift,
+            workstation: values.workstation,
+            rejection_category: values.rejection_category,
+            rework_category: values.rework_category,
+            supervisor: values.supervisor,
+            department: values.department,
+        };
+
+        return frappe.call({
+            method: "onegene.onegene.custom.job_card_process_entry",
+            args: {
+                args: args
+            }
+        });
+    },
+
+    () => frm.reload_doc(),
+
+    () => {
+        frappe.dom.unfreeze();
+        d.hide();
+    }
+]);
                         }
                     }
                 });
