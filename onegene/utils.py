@@ -18,15 +18,15 @@ from datetime import date, datetime, timedelta
 
 @frappe.whitelist()
 def update_lr_status(doc, method):
-	if doc.custom_invoice_type=='Export Invoice':
-		try:
-			lr=frappe.get_doc('Logistics Request',{'order_no':doc.name})
-			if lr.status=='LR Approved':
-				lr.status='Ready to Ship'
-				lr.save(ignore_permissions=True)
-				frappe.log_error(f"status update ok {lr.name}")
-		except Exception as e:
-				frappe.log_error(f"status update failed {doc.name}: {str(e)}")
+    if doc.custom_invoice_type=='Export Invoice':
+        try:
+            lr=frappe.get_doc('Logistics Request',{'order_no':doc.name})
+            if lr.status=='LR Approved':
+                lr.status='Ready to Ship'
+                lr.save(ignore_permissions=True)
+                frappe.log_error(f"status update ok {lr.name}")
+        except Exception as e:
+                frappe.log_error(f"status update failed {doc.name}: {str(e)}")
 
 @frappe.whitelist()
 def packing_list(sales_invoice):
@@ -718,14 +718,14 @@ def get_gate_items_geu(entry_document, entry_id):
 
 @frappe.whitelist()
 def create_gate_entry(doc,method):
-	ge=frappe.new_doc('Gate Entry')
-	ge.entry_type='Outward'
-	ge.entry_against='Sales Invoice'
-	ge.ref_no=doc.name
-	ge.save(ignore_permissions=True)
+    ge=frappe.new_doc('Gate Entry')
+    ge.entry_type='Outward'
+    ge.entry_against='Sales Invoice'
+    ge.ref_no=doc.name
+    ge.save(ignore_permissions=True)
 
 @frappe.whitelist()
 def delete_gate_entry(doc,method):
-	if frappe.db.exists('Gate Entry',{'ref_no':doc.name}):
-		ge=frappe.get_doc('Gate Entry',{'ref_no':doc.name})
-		ge.delete()
+    if frappe.db.exists('Gate Entry',{'ref_no':doc.name}):
+        ge=frappe.get_doc('Gate Entry',{'ref_no':doc.name})
+        ge.delete()

@@ -26,8 +26,31 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Rejection Analysis",
+   "link_count": 0,
+   "link_to": "Rejection Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Job Card",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "icon": "rej",
+   "is_query_report": 0,
+   "label": "Rework Analysis",
+   "link_count": 0,
+   "link_to": "Rework Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "Job Card",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Production",
-   "link_count": 7,
+   "link_count": 9,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -101,10 +124,30 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Rejection Analysis",
+   "link_count": 0,
+   "link_to": "Rejection Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Rework Analysis",
+   "link_count": 0,
+   "link_to": "Rework Analysis",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-03-02 15:03:31.671036",
- "modified_by": "amar.p@groupteampro.com",
+ "modified": "2026-03-12 15:25:03.936402",
+ "modified_by": "senthilkumar.r@onegeneindia.in",
  "module": "ONEGENE",
  "name": "Production",
  "number_cards": [],

@@ -3931,15 +3931,43 @@ frappe.ui.form.on("Approval for Credit Note", {
     },
     po_no: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
-        if (d.po_no && d.part_no) {
+        if (d.customer_po && d.part_no) {
             frappe.call({
-                method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_po_price",
+                method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_po_price_from_so",
                 args: {
-                    sales_order: d.po_no,
-                    item_code: d.part_no
+                    // sales_order: d.po_no,
+                    item_code: d.part_no,
+                    po_no:d.customer_po,
+                    customer:frm.doc.customer
                 },
                 callback: function (r) {
                     if (r.message) {
+                        
+                        frappe.model.set_value(cdt, cdn, "po_no", r.message.sales_order);
+                        frappe.model.set_value(cdt, cdn, "po_price", r.message.rate);
+                        frappe.model.set_value(cdt, cdn, "po_price_inr", r.message.base_rate);
+                        calculate_difference_and_cn_value(cdt, cdn);
+                        calculate_total_cn_values(frm)
+                    }
+                }
+            });
+        }
+
+    },
+    customer_po: function (frm, cdt, cdn) {
+        let d = locals[cdt][cdn];
+        if (d.customer_po && d.part_no) {
+            frappe.call({
+                method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.get_po_price_from_so",
+                args: {
+                    // sales_order: d.po_no,
+                    item_code: d.part_no,
+                    po_no:d.customer_po,
+                    customer:frm.doc.customer
+                },
+                callback: function (r) {
+                    if (r.message) {
+                        frappe.model.set_value(cdt, cdn, "po_no", r.message.sales_order);
                         frappe.model.set_value(cdt, cdn, "po_price", r.message.rate);
                         frappe.model.set_value(cdt, cdn, "po_price_inr", r.message.base_rate);
                         calculate_difference_and_cn_value(cdt, cdn);

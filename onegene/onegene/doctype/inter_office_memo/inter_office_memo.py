@@ -1503,8 +1503,25 @@ class InterOfficeMemo(Document):
             if self.has_value_changed("workflow_state") and self.workflow_state == "Approved":
                 self.cmd_approved_on=now_datetime()
                     
-                    
-        if (self.iom_type=="Approval for Price Revision SO" or self.iom_type=="Approval for New Business SO") or (self.iom_type=="Approval for Tools & Dies Invoice" and self.department_from=="M P L & Purchase - WAIP" ):
+        if (self.iom_type=="Approval for Price Revision SO"):
+            if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for ERP Team":
+                self.hod_approved_on=now_datetime()
+            if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for Plant Head":
+                self.erp_team_approved_on=now_datetime()
+                self.erp_team=frappe.session.user
+            if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for GM":
+                self.plant_head_approved_on=now_datetime()
+                self.plant_head="k.selvaraja@onegeneindia.in"
+            if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for Finance":
+                self.gm_approved_on=now_datetime()
+            if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for BMD":
+                self.finance_approved_on=now_datetime()
+                self.finance=frappe.session.user
+            if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for CMD":
+                self.bmd_approved_on=now_datetime()
+            if self.has_value_changed("workflow_state") and self.workflow_state == "Approved":
+                self.cmd_approved_on=now_datetime() 
+        if (self.iom_type=="Approval for New Business SO") or (self.iom_type=="Approval for Tools & Dies Invoice" and self.department_from=="M P L & Purchase - WAIP" ):
             if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for ERP Team":
                 self.hod_approved_on=now_datetime()
             if self.has_value_changed("workflow_state") and self.workflow_state == "Pending for Marketing Manager":
@@ -4867,7 +4884,15 @@ def get_credit_note_html(doc):
 </div>
 <div style="margin-bottom: 4px;">
     <span style="display:inline-block;width:{{ label_width }};font-weight:bold;">PO NO</span>
-    <span>:&nbsp;&nbsp;&nbsp;&nbsp;{{ doc.approval_credit_note[0].po_no if doc.approval_credit_note and doc.approval_credit_note[0].po_no else 'NA' }}</span>
+    <span>:&nbsp;&nbsp;&nbsp;&nbsp;
+        {% if doc.approval_credit_note and doc.approval_credit_note[0].customer_po %}
+            {{ doc.approval_credit_note[0].customer_po }}
+        {% elif doc.approval_credit_note and doc.approval_credit_note[0].po_no %}
+            {{ doc.approval_credit_note[0].po_no }}
+        {% else %}
+            NA
+        {% endif %}
+    </span>
 </div>
 {%if doc.customer_group=="Domestic"%}
 <div style="margin-bottom: 4px;">
@@ -16326,3 +16351,26 @@ def revert_iom_workflow(doc):
     frappe.db.commit()
 
 
+@frappe.whitelist()
+def get_po_price_from_so(item_code,po_no,customer):
+    sales_order=frappe.db.sql("""
+    SELECT so.name
+    FROM `tabSales Order` so
+    WHERE so.po_no=%s and so.customer=%s and so.docstatus=1
+    """,(po_no,customer),as_dict=True)
+    if not sales_order:
+        return {"sales_order": "", "rate": 0, "base_rate": 0}
+    sales_order_name=sales_order[0].name
+    result = frappe.db.get_value(
+        "Sales Order Item",
+        {"parent": sales_order_name, "item_code": item_code},
+        ["rate", "base_rate"],  
+        as_dict=True
+    )
+    if result:
+        return {
+            "sales_order": sales_order_name,
+            "rate": result.rate,
+            "base_rate": result.base_rate
+        }
+    return {"sales_order": "", "rate": 0, "base_rate": 0}

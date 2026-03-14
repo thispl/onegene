@@ -4,7 +4,7 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2026-02-24 12:20:15.388776",
+ "modified": "2026-03-13 14:47:57.255215",
  "modified_by": "Administrator",
  "module": "ONEGENE",
  "name": "live-checkin-count",
@@ -12,7 +12,10 @@
  "page_name": "live-checkin-count",
  "roles": [
   {
-   "role": "Guest"
+   "role": "HR Manager"
+  },
+  {
+   "role": "System Manager"
   }
  ],
  "script": null,

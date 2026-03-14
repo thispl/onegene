@@ -3,36 +3,45 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import getdate, nowtime, now_datetime
+from frappe.utils import now_datetime, getdate, add_days
+from onegene.onegene.custom import get_year_code
+from datetime import datetime, time
 
 
 class MaterialTransfer(Document):
+    def before_insert(self):
+        self.fiscal_year = get_year_code()
+        
     def validate(self):
-        if self.item:
-            all_issued = True
-            rows_to_remove = []
-            # for i in self.item:
-            # 	if i.issued_qty == 0:
-            # 		frappe.throw(f"Issued qty in row {i.idx} cannot be 0")
-            # 	if(i.issued_qty and i.requested_qty):
-            # 		if i.issued_qty < i.requested_qty:
-            # 			all_issued = False
-            for i in self.item:
-                if i.issued_qty == 0:
-                    if i.idx >=2:
-                        rows_to_remove.append(i)
-                    else:
-                        frappe.throw(f"Issued qty in row {i.idx} cannot be 0")
-                if(i.issued_qty and i.requested_qty):
-                    if i.issued_qty < i.requested_qty:
-                        all_issued = False
-            for row in rows_to_remove:
-                self.remove(row)
+        if not self.item:
+            return
 
-            if all_issued:
-                self.status = "Issued"
-            else:
-                self.status = "Partially Issued"
+        zero_count = 0
+        all_issued = True
+        rows_to_remove = []
+
+        for row in self.item:
+            issued_qty = row.issued_qty or 0
+            requested_qty = row.requested_qty or 0
+
+            if issued_qty == 0:
+                zero_count += 1
+                rows_to_remove.append(row)
+
+            if issued_qty < requested_qty:
+                all_issued = False
+
+        # if all rows are zero
+        if zero_count == len(self.item):
+            frappe.throw("Issued Qty cannot be zero for all rows")
+
+        # remove rows where issued qty = 0
+        for row in rows_to_remove:
+            self.remove(row)
+
+
+        # set status
+        self.status = "Issued" if all_issued else "Partially Issued"
 
         user_roles = frappe.get_roles(frappe.session.user)
         material_request_owner = frappe.db.get_value("Material Request", self.material_request, "owner")
@@ -211,14 +220,52 @@ def check_material_request_status(material_request):
 
 @frappe.whitelist()
 def get_mt_table(name, source_warehouse):
-    items = frappe.get_all(
-        "Material Request Item",
-        filters={"parent": name},
-        fields=["name", "item_code", "item_name", "qty", "stock_uom", "parent", "custom_parent_bom"]
-    )
-    for item in items:
-        stock_qty = frappe.db.get_value("Bin", {"warehouse": source_warehouse, "item_code": item.item_code}, "actual_qty")
-        item["stock_qty"] = stock_qty
-    return {"items": items}
+    # Validate material request
+    now = now_datetime()
+    today = getdate()
 
+    # Define 8:30 AM cutoff
+    today_830 = datetime.combine(today, time(8, 30, 0))
+
+    current_time = now
+    cutoff_time = today_830
+
+    if current_time > cutoff_time:
+        # Current time is AFTER today's 8:30 AM
+        start_datetime = f"{today} 08:31:00"
+        end_datetime = f"{add_days(today, 1)} 08:30:00"
+    else:
+        # Current time is BEFORE today's 8:30 AM
+        start_datetime = f"{add_days(today, -1)} 08:31:00"
+        end_datetime = f"{today} 08:30:00"
+        
+    if frappe.db.exists("Material Request", 
+        {
+            "docstatus": 1,
+            "material_request_type": "Material Transfer",
+            "status": ["not in", ["Transferred", "Issued", "Cancelled", "Stopped"]],
+            "creation": ["between", [start_datetime, end_datetime]],
+            "name": name
+        }):
+        
+
+        items = frappe.get_all(
+            "Material Request Item",
+            filters={"parent": name},
+            fields=["name", "item_code", "item_name", "qty", "stock_uom", "parent", "custom_parent_bom", "ordered_qty"]
+        )
+        for item in items:
+            stock_qty = frappe.db.get_value("Bin", {"warehouse": source_warehouse, "item_code": item.item_code}, "actual_qty")
+            item["stock_qty"] = stock_qty
+        return {"items": items}
+
+def test_check():
+    items = frappe.db.get_all("Item", {"custom_warehouse": "PPS Store - WAIP", "is_stock_item": 1}, "name")
+    count = 0
+    for item in items:
+        stock = frappe.db.get_value("Bin", {"item_code": item.name, "warehouse": "PPS Store - WAIP"}, "actual_qty")
+        if not stock:
+            frappe.errprint(item.name)
+            count += 1
+    frappe.errprint(count)
 

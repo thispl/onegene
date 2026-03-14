@@ -1,0 +1,54 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-03-11 17:35:57.007708",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "attach",
+  "result",
+  "test"
+ ],
+ "fields": [
+  {
+   "fieldname": "result",
+   "fieldtype": "HTML",
+   "label": "Result"
+  },
+  {
+   "fieldname": "attach",
+   "fieldtype": "Attach"
+  },
+  {
+   "fieldname": "test",
+   "fieldtype": "Data",
+   "label": "Test"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-03-11 18:19:04.276381",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "Finder",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -65,12 +65,12 @@ frappe.query_reports["Rework Analysis"] = {
 
 	"onload": function(report) {
 		report.get_filter("report_for").on_change(report);
-			report.page.add_inner_button(
-				"Rejection Analysis",
-				function() {
-					frappe.set_route("query-report", "Rejection Analysis")
-				},
-			);
+			// report.page.add_inner_button(
+			// 	"Rejection Analysis",
+			// 	function() {
+			// 		frappe.set_route("query-report", "Rejection Analysis")
+			// 	},
+			// );
 		},
 	
 	"formatter": function(value, row, column, data, default_formatter) {

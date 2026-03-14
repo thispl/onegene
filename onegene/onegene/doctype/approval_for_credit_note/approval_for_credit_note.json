@@ -9,6 +9,7 @@
  "field_order": [
   "part_no",
   "part_name",
+  "customer_po",
   "po_no",
   "po_price",
   "po_price_inr",
@@ -52,13 +53,11 @@
   },
   {
    "allow_on_submit": 1,
-   "columns": 2,
    "fieldname": "po_no",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "hidden": 1,
    "label": "PO No",
-   "options": "Sales Order",
-   "reqd": 1
+   "options": "Sales Order"
   },
   {
    "allow_on_submit": 1,
@@ -194,17 +193,26 @@
    "label": "GST",
    "options": "Item Tax Template",
    "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "customer_po",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "PO No",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-12-01 18:51:23.044049",
- "modified_by": "Administrator",
+ "modified": "2026-03-12 11:04:18.590975",
+ "modified_by": "senthilkumar.r@onegeneindia.in",
  "module": "ONEGENE",
  "name": "Approval for Credit Note",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

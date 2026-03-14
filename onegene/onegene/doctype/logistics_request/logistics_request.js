@@ -1157,7 +1157,7 @@ frappe.ui.form.on('Logistics Request', {
 			
 		
 		}
-		if (frm.doc.status != "Draft" && frm.doc.status != "Approved by SMD" && frm.doc.status != "Closed" && frm.doc.owner == frappe.session.user) {
+		if (frm.doc.status != "Draft" && frm.doc.status != "Approved by SMD" && frm.doc.status != "Closed" && frm.doc.status != "Dispatched" && (frm.doc.owner == frappe.session.user || frappe.user.has_role('System Manager') || frappe.user.has_role('Logistics User'))) {
 			frm.add_custom_button(__('Revise ETD / ETA'), function() {
 		let d = new frappe.ui.Dialog({
 			title: 'ETD / ETA Revision',

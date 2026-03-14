@@ -16,7 +16,6 @@ frappe.ui.form.on('Material Transfer', {
                     source_warehouse: frm.doc.default_source_warehouse,
                 },
                 callback: function(r) {
-                    
                     if (r.message) {
                         let dc_items = r.message.items || [];
 
@@ -28,7 +27,7 @@ frappe.ui.form.on('Material Transfer', {
                         row.item_name = dc_item.item_name;
                         row.material_request = dc_item.parent;
                         row.material_request_item = dc_item.name;
-                        row.requested_qty = dc_item.qty;
+                        row.requested_qty = dc_item.qty - dc_item.ordered_qty;
                         row.parent_bom = dc_item.custom_parent_bom;
                         row.stock_qty = dc_item.stock_qty;
                         row.uom = dc_item.stock_uom;
@@ -41,6 +40,15 @@ frappe.ui.form.on('Material Transfer', {
 
                     
                     frm.refresh_field('item');
+                    }
+                    else {
+                        frm.set_value("material_request", "")
+                        frm.set_value("requested_by", "")
+                        frm.set_value("requester_name", "")
+                        frm.set_value("status", "")
+                        frm.set_value("requested_department", "")
+                        frm.set_value("default_source_warehouse", "")
+                        frm.set_value("default_target_warehouse", "")
                     }
                 }
             });

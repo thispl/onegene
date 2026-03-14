@@ -146,10 +146,9 @@
   },
   {
    "fieldname": "security_name_1",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "label": "Security Name",
-   "options": "User",
-   "read_only": 1
+   "options": "\nS0388 - B KAVITHA\nSB0020 - GUNASEKARAN MR\nSB0005 - SUNDARESAN A"
   },
   {
    "fetch_from": "general_dc.vehicle_number",
@@ -219,10 +218,10 @@
   },
   {
    "fieldname": "security_name",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "label": "Security Name",
    "mandatory_depends_on": "eval:doc.workflow_state ==\"In Transit\"",
-   "options": "User"
+   "options": "\nS0388 - B KAVITHA\nSB0020 - GUNASEKARAN MR\nSB0005 - SUNDARESAN A"
   },
   {
    "fieldname": "vehicle_no",
@@ -353,8 +352,8 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-04 14:16:22.589011",
- "modified_by": "bhuvaneswari.a@groupteampro.com",
+ "modified": "2026-03-13 13:47:24.342558",
+ "modified_by": "pavithra.s@groupteampro.com",
  "module": "ONEGENE",
  "name": "Stock Receipt",
  "naming_rule": "By \"Naming Series\" field",
