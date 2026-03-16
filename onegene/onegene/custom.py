@@ -4461,7 +4461,7 @@ def job_card_process_entry(args):
         frappe.throw(data, title = "Invalid Quantity")
         frappe.throw(data, title=_("தவறான அளவு"))
 
-    # create_stock_entry(job_card, args)
+    create_stock_entry(job_card, args)
     update_tool_and_log(args.processed_qty, job_card)
 
     job_card.custom_processed_qty += args.processed_qty
