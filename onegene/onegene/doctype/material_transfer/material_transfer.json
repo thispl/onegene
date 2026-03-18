@@ -146,6 +146,7 @@
    "fieldname": "item",
    "fieldtype": "Table",
    "label": "Item",
+   "no_copy": 1,
    "options": "Material Transfer Items",
    "reqd": 1
   },
@@ -156,6 +157,7 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "hidden": 1,
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
@@ -181,6 +183,7 @@
    "read_only": 1
   },
   {
+   "fetch_from": "material_request.company",
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
@@ -204,7 +207,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-06 20:03:41.740602",
+ "modified": "2026-03-18 16:05:02.163465",
  "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Material Transfer",

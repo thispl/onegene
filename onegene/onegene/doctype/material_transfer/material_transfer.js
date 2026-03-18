@@ -112,6 +112,20 @@ frappe.ui.form.on('Material Transfer', {
             }
         }
 
+        // Filter the item's dropdown
+        setTimeout(() => {
+            frm.fields_dict.item.grid.get_field('item_code').get_query = function(doc, cdt, cdn) {
+                const row = locals[cdt][cdn];
+                return {
+                    query: "onegene.onegene.doctype.material_transfer.material_transfer.get_items_from_material_request",
+                    filters: {
+                        material_request_name: frm.doc.material_request,
+                        source_warehouse: frm.doc.default_source_warehouse,
+                    }
+                };
+            };
+        }, 300);
+
        
     },
     setup(frm){
@@ -232,6 +246,69 @@ frappe.ui.form.on("Material Transfer Items", {
         row.target_warehouse = frm.doc.default_target_warehouse;
 
         frm.refresh_field("item");
+    },
+    item_code: function(frm, cdt, cdn) {
+        let child = locals[cdt][cdn]
+        if (child.item_code) {
+        // Duplicate Items Valdiation
+            setTimeout(() => {
+                let duplicate_found = frm.doc.item.some(
+                    item => item.item_code === child.item_code && item.name !== child.name
+                );
+        
+                if (duplicate_found) {
+                    let d = frappe.msgprint({
+                        title: __("Removing Duplicate Entry"),
+                        message: __("Item Code <b>{0}</b> is already added.", [child.item_code]),
+                        indicator: 'red'
+                    });
+        
+                    frm.get_field('item').grid.grid_rows_by_docname[cdn].remove();
+                    frm.refresh_field('item');
+        
+                    setTimeout(() => {
+                        if (d && d.hide) d.hide();
+                    }, 1000);
+                }
+                else {
+                    // Update items details
+                    if (!child.auto_added) {
+                        frappe.call({
+                            method: "onegene.onegene.doctype.material_transfer.material_transfer.get_item_details",
+                            args: {
+                                item_code: child.item_code,
+                                source_warehouse: frm.doc.default_source_warehouse,
+                                material_request_name: frm.doc.material_request,
+                            },
+                            freeze: true,
+                            callback(r) {
+                                if (r.message) {
+                                    let data = r.message;
+                                    frappe.model.set_value(cdt, cdn, "stock_qty", data.stock_qty);
+                                    frappe.model.set_value(cdt, cdn, "requested_qty", data.requested_qty);
+                                    frappe.model.set_value(cdt, cdn, "uom", data.uom);
+                                    frappe.model.set_value(cdt, cdn, "material_request_item", data.material_request_item);
+                                    frappe.model.set_value(cdt, cdn, "material_request", data.material_request);
+                                }
+                            },
+                            error(err) {
+                                    // 💀 Backend threw error → remove row
+                                    frm.get_field('item').grid.grid_rows_by_docname[cdn].remove();
+                                    frm.refresh_field('item');
+                                }
+                        })
+                    }
+                }
+            }, 500);
+        }
+        else {
+            child.stock_qty = 0;
+            child.requested_qty = 0;
+            child.uom = null;
+            child.material_request_item = null;
+            child.material_request = null;
+
+        } 
     },
     issued_qty: function(frm, cdt, cdn) {
         let row = frappe.get_doc(cdt,cdn);

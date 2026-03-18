@@ -6,6 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import now_datetime, getdate, add_days
 from onegene.onegene.custom import get_year_code
 from datetime import datetime, time
+import json
 
 
 class MaterialTransfer(Document):
@@ -91,7 +92,8 @@ class MaterialTransfer(Document):
                 WHEN status = 'Transferred' THEN 'Received'
                 ELSE 'Material Pending'
                 END
-            """)
+            WHERE name = %s
+            """, (self.material_request))
 
     def on_cancel(self):
         stock_entry = frappe.db.get_value(
@@ -110,7 +112,8 @@ class MaterialTransfer(Document):
                 WHEN status = 'Transferred' THEN 'Received'
                 ELSE 'Material Pending'
                 END
-            """)
+            WHERE name = %s
+            """, (self.material_request))
   
 
         
@@ -218,6 +221,7 @@ def check_material_request_status(material_request):
     return issued_qty >= total_requested_qty
 
 
+
 @frappe.whitelist()
 def get_mt_table(name, source_warehouse):
     # Validate material request
@@ -254,18 +258,107 @@ def get_mt_table(name, source_warehouse):
             filters={"parent": name},
             fields=["name", "item_code", "item_name", "qty", "stock_uom", "parent", "custom_parent_bom", "ordered_qty"]
         )
+        
+        # Remove fully issued qty
+        items = [d for d in items if d.ordered_qty != d.qty]
+        item_codes = [d.item_code for d in items]
+        bins = frappe.get_all(
+            "Bin",
+            filters={
+                "warehouse": source_warehouse,
+                "item_code": ["in", item_codes]
+            },
+            fields=["item_code", "actual_qty"]
+        )
+        stock_map = {b.item_code: b.actual_qty for b in bins} # stock_qty_map
         for item in items:
-            stock_qty = frappe.db.get_value("Bin", {"warehouse": source_warehouse, "item_code": item.item_code}, "actual_qty")
-            item["stock_qty"] = stock_qty
+            item["stock_qty"] = stock_map.get(item.item_code, 0)
         return {"items": items}
 
-def test_check():
-    items = frappe.db.get_all("Item", {"custom_warehouse": "PPS Store - WAIP", "is_stock_item": 1}, "name")
-    count = 0
-    for item in items:
-        stock = frappe.db.get_value("Bin", {"item_code": item.name, "warehouse": "PPS Store - WAIP"}, "actual_qty")
-        if not stock:
-            frappe.errprint(item.name)
-            count += 1
-    frappe.errprint(count)
+@frappe.whitelist()
+def get_items_from_material_request(doctype, txt, searchfield, start, page_len, filters):
+    """
+        Returns the item from the given Material Request
+    """
+    
+    if isinstance(filters, str):
+        filters = json.loads(filters)
+
+    material_request_name = filters.get("material_request_name")
+    source_warehouse = filters.get("source_warehouse")
+    missing_fields = []
+    
+    if not material_request_name:
+        missing_fields.append("Material Request")
+    if not source_warehouse:
+        missing_fields.append("Source Warehouse")
+
+    if missing_fields:
+        fields_html = "".join(f"<li>{field}</li>" for field in missing_fields)
+        frappe.throw(
+            title="Missing Fields",
+            msg=f"""
+                <p style="margin-bottom: 8px;">
+                    Mandatory fields required in Material Transfer:
+                </p>
+                <ul style="padding-left: 18px;">
+                    {fields_html}
+                </ul>
+            """
+        )
+     
+    
+    return frappe.db.sql("""
+        SELECT item_code, item_name, from_warehouse
+        FROM `tabMaterial Request Item`
+        WHERE parent = %(material_request_name)s
+        AND qty != ordered_qty
+        AND (
+            item_code LIKE %(txt)s
+            OR item_name LIKE %(txt)s
+        )
+        LIMIT %(start)s, %(page_len)s
+    """, {
+        "material_request_name": material_request_name,
+        "txt": f"%{txt}%",
+        "start": start,
+        "page_len": page_len
+    })
+    
+@frappe.whitelist()
+def get_item_details(item_code, source_warehouse, material_request_name):
+    
+    stock_qty = frappe.db.get_value(
+        "Bin",
+        {"warehouse": source_warehouse, "item_code": item_code},
+        "actual_qty"
+    ) or 0
+
+    mr_details = frappe.db.get_value(
+        "Material Request Item",
+        {"item_code": item_code, "parent": material_request_name},
+        ["name", "qty", "ordered_qty", "uom", "parent"],
+        as_dict=1
+    )
+
+    if not mr_details:
+        frappe.throw(
+            title="Invalid Item",
+            msg=f"Item {item_code} not found in Material Request {material_request_name}"
+        )
+    if mr_details.ordered_qty == mr_details.qty:
+        frappe.throw(
+            title="Limit Exceeded",
+            msg=f"Item {item_code} has already been completely issued"
+        )
+    items = {
+        "stock_qty": stock_qty,
+        "requested_qty": (mr_details.qty or 0) - (mr_details.ordered_qty or 0),
+        "uom": mr_details.uom,
+        "material_request_item": mr_details.name,
+        "material_request": mr_details.parent
+    }
+    
+    return items
+
 
