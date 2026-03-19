@@ -11,6 +11,11 @@ def revise_schedule(docname):
     update_count = 0
     skipped_count = 0
     
+    current_year = datetime.now().year
+    schedule_month = iom.schedule_month
+    schedule_year = iom.schedule_year
+    schedule_date = datetime.strptime(f"01-{schedule_month}-{current_year}", "%d-%b-%Y")
+    
     # SALES ORDER SCHEDULE
     if iom.approval_schdule_increase:
         sales_orders = frappe.db.sql(
@@ -20,7 +25,7 @@ def revise_schedule(docname):
             (docname,),
             as_dict=True
         )
-
+        
         for so in sales_orders:
             sales_order = so["sales_order"]  # extract string from dict
             if frappe.db.exists("Open Order", {"sales_order_number": sales_order}):
@@ -33,8 +38,12 @@ def revise_schedule(docname):
                                 total_qty = frappe.db.sql("""
                                     SELECT SUM(qty)
                                     FROM `tabSales Order Schedule`
-                                    WHERE sales_order_number = %s AND item_code = %s AND schedule_month != %s AND schedule_year = %s AND docstatus = 1
-                                """, (sales_order, iom_row.part_no, iom.schedule_month, iom.schedule_year), as_dict=False)[0][0] or 0
+                                    WHERE 
+                                        sales_order_number = %s 
+                                        AND item_code = %s 
+                                        AND schedule_date != %s
+                                        AND docstatus = 1
+                                """, (sales_order, iom_row.part_no, schedule_date), as_dict=False)[0][0] or 0
                                 total_qty += iom_row.revised_schedule_value
                                 op_row.qty = total_qty if total_qty > 0 else 1
                                 if not frappe.db.exists("Sales Order Schedule", {
@@ -84,10 +93,6 @@ def revise_schedule(docname):
                                         frappe.db.set_value("Sales Order Schedule", sos.name, update_vals)
                                         update_count += 1
                                     else:
-                                        current_year = datetime.now().year
-                                        schedule_month = iom.schedule_month
-                                        schedule_year = iom.schedule_year
-                                        schedule_date = datetime.strptime(f"01-{schedule_month}-{current_year}", "%d-%b-%Y")
                                         
                                         order_rate = frappe.db.get_value("Sales Order Item", {"parent":sales_order, "item_code":iom_row.part_no}, "rate")
                                         order_rate_inr = frappe.db.get_value("Sales Order Item", {"parent":sales_order, "item_code":iom_row.part_no}, "base_rate")
@@ -200,8 +205,8 @@ def revise_schedule(docname):
                                 total_qty = frappe.db.sql("""
                                     SELECT SUM(qty)
                                     FROM `tabPurchase Order Schedule`
-                                    WHERE purchase_order_number = %s AND item_code = %s AND schedule_month != %s AND schedule_year = %s AND docstatus = 1
-                                """, (purchase_order, iom_row.part_no, iom.schedule_month, iom.schedule_year), as_dict=False)[0][0] or 0
+                                    WHERE purchase_order_number = %s AND item_code = %s AND schedule_date != %s AND docstatus = 1
+                                """, (purchase_order, iom_row.part_no, schedule_date), as_dict=False)[0][0] or 0
                                 total_qty += iom_row.revised_schedule_value
                                 op_row.qty = total_qty if total_qty > 0 else 1
                                 if not frappe.db.exists("Purchase Order Schedule", {
@@ -218,7 +223,7 @@ def revise_schedule(docname):
                                         ["name", "qty", "received_qty", "order_rate", "order_rate_inr"],
                                         as_dict=True
                                     )
-
+                
                                     if pos:
                                         pending_qty = qty - pos.received_qty
                                         schedule_amount = qty * pos.order_rate
@@ -251,10 +256,6 @@ def revise_schedule(docname):
                                         frappe.db.set_value("Purchase Order Schedule", pos.name, update_vals)
                                         update_count += 1
                                     else:
-                                        current_year = datetime.now().year
-                                        schedule_month = iom.schedule_month
-                                        schedule_year = iom.schedule_year
-                                        schedule_date = datetime.strptime(f"01-{schedule_month}-{current_year}", "%d-%b-%Y")
                                         
                                         order_rate = frappe.db.get_value("Purchase Order Item", {"parent":purchase_order, "item_code":iom_row.part_no}, "rate")
                                         order_rate_inr = frappe.db.get_value("Purchase Order Item", {"parent":purchase_order, "item_code":iom_row.part_no}, "base_rate")
