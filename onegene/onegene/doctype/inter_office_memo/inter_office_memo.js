@@ -5697,61 +5697,7 @@ function calculate_po_price1(frm) {
 }
 
 function calculate_po_tax_and_total(frm) {
-    // if (frm.doc.iom_type === "Approval for New Business PO" 
-    //     && frm.doc.approval_business_po 
-    //     && frm.doc.department_from === "Marketing - WAIP") {
-
-    //   let total = 0;
-    // let total_inr=0;
-    // (frm.doc.approval_business_po || []).forEach(row => {
-    //     if (row.value) total += row.value;
-    //     if (row.value_inr) total_inr += row.value_inr;
-
-    // });
-
-    // frm.set_value("total_po_value", total);
-    //     frm.set_value("total_po_value_inr", total_inr);
-
-
-
-    //     // Step 2: If no taxes exist, auto-fetch and apply them
-    //     if (!frm.doc.taxes || frm.doc.taxes.length === 0) {
-    //         frappe.call({
-    //             method: "onegene.onegene.doctype.inter_office_memo.inter_office_memo.apply_domestic_taxes",
-    //             args: { doc: frm.doc },
-    //             callback: function(r) {
-    //                 if (r.message) {
-    //                     frm.clear_table("taxes");
-    //                     (r.message.taxes || []).forEach(tax => {
-    //                         let row = frm.add_child("taxes");
-    //                         row.charge_type = tax.charge_type;
-    //                         row.account_head = tax.account_head;
-    //                         row.description = tax.description;
-    //                         row.rate = tax.rate;
-    //                         row.tax_amount = tax.tax_amount;
-    //                     });
-    //                     frm.refresh_field("taxes");
-    //                     calculate_po_tax_and_total(frm); // ✅ re-run calculation after adding taxes
-    //                 }
-    //             }
-    //         });
-    //         return; // wait for callback to recalc
-    //     }
-
-    //     // Step 3: Calculate taxes
-    //     let total_tax = 0;
-    //     let previous_row_total = total || 0;
-
-    //     (frm.doc.taxes || []).forEach(row => {
-    //         let tax_amount = (total || 0) * (row.rate || 0) / 100;
-    //         frappe.model.set_value(row.doctype, row.name, "tax_amount", tax_amount);
-    //         frappe.model.set_value(row.doctype, row.name, "total", previous_row_total + tax_amount);
-    //         total_tax += tax_amount;
-    //         previous_row_total += tax_amount;
-    //     });
-
-    //     frm.refresh_field("taxes");
-    // }
+   
     if (frm.doc.iom_type === "Approval for New Business SO") {
         let total = 0;
         let total_inr = 0;
@@ -5775,6 +5721,7 @@ function calculate_po_tax_and_total(frm) {
                 },
                 callback: function (r) {
                     if (r.message) {
+                        console.log(r.message.taxes)
                         frm.clear_table("taxes");
                         (r.message.taxes || []).forEach(tax => {
                             let row = frm.add_child("taxes");
@@ -5785,7 +5732,7 @@ function calculate_po_tax_and_total(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_po_tax_and_total(frm); // ✅ re-run calculation after adding taxes
+                        // calculate_po_tax_and_total(frm); 
                     }
                 }
             });
@@ -8778,7 +8725,6 @@ frappe.ui.form.on('Proto Sample SO IOM', {
         }
     },
     part_no: function (frm, cdt, cdn) {
-        console.log("hi")
         let row = locals[cdt][cdn];
         let duplicate_found = false;
 
@@ -8973,7 +8919,6 @@ frappe.ui.form.on('Proto Sample SO IOM', {
     qty_new: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         frappe.model.set_value(cdt, cdn, "value", d.qty_new * d.po_price_new)
-        console.log("inside")
         if (frm.doc.currency !== "INR" && frm.doc.exchange_rate == 0) {
             frappe.call({
                 method: "frappe.client.get_list",
