@@ -3659,7 +3659,7 @@ function calculate_tooling_tax_and_total(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_tooling_tax_and_total(frm); // ✅ re-run calculation after adding taxes
+                        // calculate_tooling_tax_and_total(frm); // ✅ re-run calculation after adding taxes
                     }
                 }
             });
@@ -3719,7 +3719,7 @@ function calculate_tad_tooling_tax_and_total(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_tad_tooling_tax_and_total(frm); // ✅ re-run calculation after adding taxes
+                        // calculate_tad_tooling_tax_and_total(frm); // ✅ re-run calculation after adding taxes
                     }
                 }
             });
@@ -4024,7 +4024,7 @@ function calculate_tax_and_total(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_tax_and_total(frm); // ✅ re-run calculation after adding taxes
+                        // calculate_tax_and_total(frm); // ✅ re-run calculation after adding taxes
                     }
                 }
             });
@@ -4352,7 +4352,7 @@ function calculate_dn_tax_and_total(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_dn_tax_and_total(frm); // ✅ re-run calculation after adding taxes
+                        // calculate_dn_tax_and_total(frm); // ✅ re-run calculation after adding taxes
                     }
                 }
             });
@@ -5253,7 +5253,7 @@ function calculate_proto_tax_and_total(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_proto_tax_and_total(frm); // ✅ re-run calculation after adding taxes
+                        // calculate_proto_tax_and_total(frm); // ✅ re-run calculation after adding taxes
                     }
                 }
             });
@@ -5794,7 +5794,7 @@ function calculate_proto_tax_and_total_material_all1(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_proto_tax_and_total_material_all1(frm); // rerun after tax insert
+                        // calculate_proto_tax_and_total_material_all1(frm); // rerun after tax insert
                     }
                 }
             });
@@ -5850,7 +5850,7 @@ function calculate_proto_tax_and_total_material_all_price(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_proto_tax_and_total_material_all_price(frm); // rerun after tax insert
+                        // calculate_proto_tax_and_total_material_all_price(frm); // rerun after tax insert
                     }
                 }
             });
@@ -7705,7 +7705,7 @@ function calculate_proto_tax_and_total_material(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_proto_tax_and_total_material(frm); // ✅ re-run calculation after adding taxes
+                        // calculate_proto_tax_and_total_material(frm); // ✅ re-run calculation after adding taxes
                     }
                 }
             });
@@ -8016,7 +8016,7 @@ function calculate_po_tax_and_total_material(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_po_tax_and_total_material(frm); // ✅ re-run calculation after adding taxes
+                        // calculate_po_tax_and_total_material(frm); // ✅ re-run calculation after adding taxes
                     }
                 }
             });
@@ -8339,7 +8339,7 @@ function calculate_proto_tax_and_total_material_all(frm) {
                             row.tax_amount = tax.tax_amount;
                         });
                         frm.refresh_field("taxes");
-                        calculate_proto_tax_and_total_material_all(frm); // rerun after tax insert
+                        // calculate_proto_tax_and_total_material_all(frm); // rerun after tax insert
                     }
                 }
             });
