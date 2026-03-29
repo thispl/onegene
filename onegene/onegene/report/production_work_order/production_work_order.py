@@ -5,7 +5,6 @@ import calendar
 import datetime
 from math import ceil
 from functools import lru_cache
-
 import frappe
 from frappe import _
 from frappe.utils import flt, add_days
@@ -983,7 +982,6 @@ def enqueue_upload(month,to_date,file):
 import frappe, json, re, datetime
 from frappe import _
 from frappe.utils import flt
-from frappe import publish_progress
 
 @frappe.whitelist()
 def create_production_plan(month, posting_date, data, exploded=None):
@@ -1099,7 +1097,7 @@ def enqueue_creation_of_production_plan(month, posting_date, data, exploded=None
 			
 			if total > 0:
 				percent = int((processed / total) * 100)
-				publish_progress(
+				frappe.publish_progress(
 					percent,
 					title=f"Processing Production Plan",
 				)
@@ -1140,7 +1138,7 @@ def enqueue_creation_of_production_plan(month, posting_date, data, exploded=None
 				# Update UI progress
 				if total > 0:
 					percent = int((processed / total) * 100)
-					publish_progress(
+					frappe.publish_progress(
 						percent,
 						title="Creating Work Order",
 						description=f"{wo.name} - {percent}%"

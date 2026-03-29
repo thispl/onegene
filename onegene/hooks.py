@@ -38,6 +38,7 @@ doctype_js = {
     "Item" : "public/js/item.js",
 	"Job Card" : "public/js/job_card.js",
 	"Quality Inspection": "public/js/quality_inspection.js",
+	"Work Order": "public/js/work_order.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 doctype_tree_js = {"BOM" : "public/js/bom_tree.js"}
@@ -467,7 +468,10 @@ doc_events = {
 	
 	"Purchase Receipt": {
 		"after_insert": "onegene.onegene.custom.update_pr_in_sdn",
-		"validate": "onegene.onegene.custom.validate_item_rate",
+		"validate": [
+    				"onegene.onegene.custom.validate_item_rate",
+					# "onegene.onegene.event.purchase_receipt.update_received_qty_to_asn",
+               ],
 		"on_submit": ["onegene.onegene.custom.update_received_stock_in_order_schedule",
                 "onegene.onegene.custom.create_quality_pending_documents"
                 ],

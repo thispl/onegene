@@ -63,14 +63,45 @@ frappe.query_reports["Rejection Analysis"] = {
 		},
 	],
 
-	"onload": function(report) {
-		report.get_filter("report_for").on_change(report);
-		// report.page.add_inner_button(
-		// 	"Rework Analysis",
-		// 	function() {
-		// 		frappe.set_route("query-report", "Rework Analysis")
-		// 	},
-		// );
+	onload: function(report) {
+		// Only for this user
+		if(frappe.session.user === 'pavithra.s@groupteampro.com'){
+			
+			// Add a Print button
+			let btn = report.page.add_inner_button(__("Print"), () => {
+
+				
+				let filters = report.get_filter_values();
+				console.log(filters)
+
+				frappe.call({
+					method: "frappe.client.insert",
+					args: {
+						doc: {
+							doctype: "Rejection Report Log",
+							filters: JSON.stringify(filters),
+							
+						}
+					},
+					callback: function(r) {
+						if(r.message) {
+							let doc_name = r.message.name;
+							frappe.call({
+								method: "onegene.onegene.report.rejection_analysis.rejection_analysis.execute",
+								args: {
+									filters:JSON.stringify(filters),
+								},
+								callback: function(r) {
+									
+								}
+							});
+							
+						}
+					}
+				});
+
+			});
+		}
 	},
 	
 	"formatter": function(value, row, column, data, default_formatter) {

@@ -216,6 +216,7 @@ def get_qid_for_quality_inspection_html(quality_inspection):
 
 def remove_quality_inspection_from_job_card(doc, method):
 	frappe.db.set_value("Job Card", {"quality_inspection": doc.name}, "quality_inspection", "")
+	frappe.db.set_value("Purchase Receipt Item", {"quality_inspection": doc.name}, "quality_inspection", "")
 	
 def get_possible_inspection_qty_pr(doc, method):
 	"""Get possible inspection qty for Incoming QC from Purchase Receipt"""
@@ -230,15 +231,21 @@ def get_possible_inspection_qty_pr(doc, method):
 		doc.custom_pending_qty = pr_qty
 
 @frappe.whitelist()
-def get_quality_pending(job_card):
+def get_quality_pending(reference_name, reference_type):
 	"""
 	Return available Job Card Time Logs (custom_docname) for a given Job Card,
 	excluding the ones already linked in Quality Inspection.
 	"""
-	quality_pending = frappe.db.get_value("Job Card", job_card, "custom_quality_pending") or ""
-	if quality_pending:
-		qty = frappe.db.get_value("Quality Pending", quality_pending, "inspection_pending_qty") or 0
+	if reference_type == "Job Card":
+		quality_pending = frappe.db.get_value("Job Card", reference_name, "custom_quality_pending") or ""
+		if quality_pending:
+			qty = frappe.db.get_value("Quality Pending", quality_pending, "inspection_pending_qty") or 0
 
+	if reference_type == "Purchase Receipt":
+		quality_pending = frappe.db.get_value("Quality Pending", {"reference_name": reference_name, "reference_type": reference_type}, "name")
+
+		if quality_pending:
+			qty = frappe.db.get_value("Quality Pending", quality_pending, "inspection_pending_qty") or 0
 	return quality_pending, qty
 
 

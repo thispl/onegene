@@ -100,7 +100,7 @@ def get_price_history_html(item_code):
 		idx += 1
 		html += f"""
 				<td class="pt-2 pb-2 pr-4 text-right">{idx}</td>
-				<td class="pt-2 pb-2 pr-2 pl-5">{pos.revised_on}</td>
+				<td class="pt-2 pb-2 pr-2 pl-5">{format_datetime(pos.revised_on, "dd-MM-yyyy HH:mm:ss")}</td>
 				<td class="pt-2 pb-2 pl-5">{pos.revised_by}</td>
 				<td class="pt-2 pb-2 pl-5">{pos.supplier_code}</td>
 				<td class="pt-2 pb-2 pl-5">{pos.old_value}</td>
@@ -161,7 +161,7 @@ def get_price_history_html(item_code):
 		html += f"""<tr class="schedule-row" data-schedule="{sos.name}" style="cursor:pointer;{ 'background-color:#e5e8eb;' if idx%2==0 else ''}">"""
 		html += f"""
 				<td class="pt-2 pb-2 pr-4 text-right">{idx}</td>
-				<td class="pt-2 pb-2 pr-2 pl-5">{sos.revised_on}</td>
+				<td class="pt-2 pb-2 pr-2 pl-5">{format_datetime(sos.revised_on, "dd-MM-yyyy HH:mm:ss")}</td>
 				<td class="pt-2 pb-2 pl-5">{sos.revised_by}</td>
 				<td class="pt-2 pb-2 pl-5">{sos.customer_code}</td>
 				<td class="pt-2 pb-2 pl-5">{sos.old_value}</td>

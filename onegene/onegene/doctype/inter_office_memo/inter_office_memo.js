@@ -1646,7 +1646,7 @@ frappe.ui.form.on("Inter Office Memo", {
 
 
 
-        if (frappe.session.user === frm.doc.owner || frappe.session.user == "divya.p@groupteampro.com" || frappe.session.user == "jothi.m@gruoupteampro.com" || frappe.user.has_role("ERP Team")) {
+        if (frappe.session.user === frm.doc.owner || frappe.session.user == "divya.p@groupteampro.com" || frappe.session.user == "jothi.m@gruoupteampro.com" || frappe.session.user == "pavithra.s@groupteampro.com"|| frappe.user.has_role("ERP Team")) {
             $.each(frm.fields_dict, function (fieldname, field) {
                 if (frm.doc.iom_type === "Approval for Schedule Revised") {
                     frm.set_df_property(fieldname, 'read_only', 0);

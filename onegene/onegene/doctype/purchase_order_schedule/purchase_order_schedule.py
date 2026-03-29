@@ -203,7 +203,7 @@ class PurchaseOrderSchedule(Document):
 				title="Revision Not Allowed"
 			)
 
-		if self.order_type == "Open":
+		if self.order_type:
 			if frappe.db.exists("Purchase Order",self.purchase_order_number):
 				po = frappe.get_doc("Purchase Order",self.purchase_order_number)
 				po.custom_schedule_table = [
@@ -216,8 +216,12 @@ class PurchaseOrderSchedule(Document):
 					if row.item_code == self.item_code:
 						if row.qty - self.qty > 0:
 							row.qty = row.qty - self.qty
+							if self.order_type!='Open':
+								row.open_qty = row.qty - self.qty
 						else:
 							row.qty = 1
+							if self.order_type!='Open':
+								row.open_qty = 1
 				poo.save(ignore_permissions=True)
 
 	def on_submit(self):

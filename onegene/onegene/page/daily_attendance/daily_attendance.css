@@ -1,0 +1,23 @@
+/* Custom Loader Animation */
+.custom-loader {
+  width: 120px;
+  height: 20px;
+  border-radius: 20px;
+  background:
+    linear-gradient(orange 0 0) 0/0% no-repeat
+    lightblue;
+  animation: l2 2s infinite steps(10);
+}
+
+@keyframes l2 {
+    100% {background-size:110%}
+}
+
+#freeze {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    z-index: 2000;
+}
+.freeze-message-container {
+    background: transparent !important;
+    border: none !important;
+}

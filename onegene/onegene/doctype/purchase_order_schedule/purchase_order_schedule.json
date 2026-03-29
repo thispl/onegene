@@ -112,7 +112,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Supplier Order Type",
-   "options": "\nFixed\nOpen"
+   "options": "\nFixed\nOpen\nProto"
   },
   {
    "fieldname": "schedule_month",
@@ -440,7 +440,7 @@
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Order Type",
-   "options": "\nPurchase Order\nJob Order\nService Order",
+   "options": "\nPurchase Order\nJob Order\nService Order\nProto Order",
    "read_only": 1
   },
   {
@@ -454,7 +454,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-07 10:53:54.695641",
+ "modified": "2026-03-16 09:53:01.590106",
  "modified_by": "senthilkumar.r@onegeneindia.in",
  "module": "ONEGENE",
  "name": "Purchase Order Schedule",

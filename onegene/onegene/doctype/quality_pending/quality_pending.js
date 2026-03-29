@@ -18,8 +18,7 @@ frappe.ui.form.on("Quality Pending", {
             }
         }, 300);
 
-
-
+        // Quality Inspection Button
         if (frm.doc.status != "Completed") {
             if (frappe.user.has_role("System Manager") || frappe.user.has_role("Quality User") || frappe.session.user.has_role("Quality Manager") || frappe.session.user.has_role("Quality Engineer"))
             frm.add_custom_button("Quality Inspection", function() {
@@ -38,6 +37,7 @@ frappe.ui.form.on("Quality Pending", {
                         reference_name = frm.doc.job_card
                     }
                     let qi = frappe.model.get_new_doc("Quality Inspection");
+                    qi.company = frm.doc.company;
                     qi.custom_inspection_type = inspection_type;
                     qi.reference_type = reference_type;
                     qi.reference_name = reference_name;
@@ -50,6 +50,25 @@ frappe.ui.form.on("Quality Pending", {
 
                     frappe.set_route("Form", "Quality Inspection", qi.name);
                 });
+            });
+        }
+
+        // Not new doc
+        if (!frm.doc.__islocal) {
+            // Quality Pending breakdown
+            frm.fields_dict.summary.$wrapper.empty();
+            frappe.call({
+                method: "onegene.onegene.doctype.quality_pending.quality_pending.get_summary_html",
+                args: {
+                    quality_pending_name: frm.doc.name,
+                    reference_type: frm.doc.reference_type,
+                    reference_name: frm.doc.reference_name,
+                },
+                callback(r) {
+                    if (r.message) {
+                        frm.fields_dict.summary.$wrapper.html(r.message)
+                    }
+                }
             });
         }
     }

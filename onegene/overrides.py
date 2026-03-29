@@ -503,7 +503,7 @@ class CustomJobCard(JobCard):
 							"to_time": get_datetime(args.get("complete_time")),
 							"operation": args.get("sub_operation"),
 							"completed_qty": args.get("completed_qty") or 0.0,
-                            
+							
 						}
 					)
 		elif args.get("start_time"):
@@ -512,7 +512,7 @@ class CustomJobCard(JobCard):
 					"from_time": get_datetime(args.get("start_time")),
 					"operation": args.get("sub_operation"),
 					"completed_qty": 0.0,
-                    
+					
 				}
 			)
 
@@ -689,26 +689,51 @@ class CustomProductionPlan(ProductionPlan):
 	
 			
 def parse_datetime_safe(value):
-    if isinstance(value, datetime.datetime):
-        return value
-    if isinstance(value, str):
-        # Try ISO/MySQL format first
-        for fmt in ("%Y-%m-%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"):
-            try:
-                return datetime.datetime.strptime(value, fmt)
-            except ValueError:
-                continue
-    raise ValueError(f"Unrecognized datetime format: {value}")
+	if isinstance(value, datetime.datetime):
+		return value
+	if isinstance(value, str):
+		# Try ISO/MySQL format first
+		for fmt in ("%Y-%m-%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"):
+			try:
+				return datetime.datetime.strptime(value, fmt)
+			except ValueError:
+				continue
+	raise ValueError(f"Unrecognized datetime format: {value}")
 		
 def set_default_warehouses(row, default_warehouses):
 	for field in ["wip_warehouse", "fg_warehouse"]:
 		if not row.get(field):
 			row[field] = default_warehouses.get(field)
 
+
+from erpnext.stock.doctype.quality_inspection.quality_inspection import get_template_details
 class CustomQualityInspection(QualityInspection):
+    
+	def validate(self):
+		if not self.readings and self.item_code:
+			self.get_item_specification_details()
+
+		if self.inspection_type == "In Process" and self.reference_type == "Job Card":
+			item_qi_template = frappe.db.get_value("Item", self.item_code, "quality_inspection_template")
+			parameters = get_template_details(item_qi_template)
+			for reading in self.readings:
+				for d in parameters:
+					if reading.specification == d.specification:
+						reading.update(d)
+						reading.status = "Accepted"
+
+		# Removed ----------------------
+		
+		# if self.readings:
+		# 	self.inspect_and_set_status()
+
+		# self.validate_inspection_required()
+  
+		self.set_child_row_reference()
+		self.set_company()
+  
 	@frappe.whitelist()
 	def get_item_specification_details(self):
-		from erpnext.stock.doctype.quality_inspection.quality_inspection import get_template_details
 		if not self.quality_inspection_template:
 			self.quality_inspection_template = frappe.db.get_value(
 				"Item", self.item_code, "quality_inspection_template"
@@ -727,16 +752,16 @@ class CustomQualityInspection(QualityInspection):
 				"Quality Inspection Parameter", d.specification, "parameter_group"
 			)
 			child.custom_instrument = frappe.db.get_value(
-       			"Item Quality Inspection Parameter", 
-          		{
-                	"parent": self.quality_inspection_template, "specification": d.specification
-            	},
+	   			"Item Quality Inspection Parameter", 
+		  		{
+					"parent": self.quality_inspection_template, "specification": d.specification
+				},
 				"instrument"
-        	)
+			)
 			child.custom_condition = frappe.db.get_value(
-       			"Item Quality Inspection Parameter", 
-          		{
-                	"parent": self.quality_inspection_template, "specification": d.specification
-            	},
+	   			"Item Quality Inspection Parameter", 
+		  		{
+					"parent": self.quality_inspection_template, "specification": d.specification
+				},
 				"custom_condition"
-        	)
+			)

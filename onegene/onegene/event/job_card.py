@@ -1,5 +1,6 @@
 import frappe
 from frappe import _
+from frappe.utils import format_datetime
 
 @frappe.whitelist()
 def delete_job_card_entries(parent, child_doctype, child_name):
@@ -185,10 +186,11 @@ def get_material_consumption_html(job_card_name):
 			html += """
 				<div style="display: flex;">
 					<p style="font-weight: 700; width: 10%;">S#</p>
+					<p style="font-weight: 700; width: 30%;">Datetime</p>
 					<p style="font-weight: 700; width: 30%;">Entry</p>
-					<p style="font-weight: 700; width: 20%;">Entry Type</p>
-					<p style="font-weight: 700; width: 20%; text-align: right;">Required</p>
-					<p style="font-weight: 700; width: 20%; text-align: right;">Consumption</p>
+					<p style="font-weight: 700; width: 16%;">Entry Type</p>
+					<p style="font-weight: 700; width: 18%; text-align: right;">Required</p>
+					<p style="font-weight: 700; width: 23%; text-align: right;">Consumption</p>
 					<p style="font-weight: 700; width: 20%; text-align: right;">Balance</p>
 					<p style="font-weight: 700; width: 20%; text-align: right;">Transferred</p>
 				</div>
@@ -207,10 +209,11 @@ def get_material_consumption_html(job_card_name):
 				html += f"""
 				<div style="display: flex;">
 					<p style="width: 10%; padding-left: 10px;">{log.idx}</p>
+					<p style="width: 30%;">{format_datetime(log.custom_entry_time, "dd-MM-yyyy HH:mm:ss")}</p>
 					<p style="width: 30%;">{log.custom_docname}</p>
-					<p style="width: 20%;">{log.custom_entry_type}</p>
-					<p style="width: 20%; text-align: right;">{required_qty}</p>
-					<p style="width: 20%; text-align: right;">{consumption}</p>
+					<p style="width: 16%;">{log.custom_entry_type}</p>
+					<p style="width: 18%; text-align: right;">{required_qty}</p>
+					<p style="width: 23%; text-align: right;">{consumption}</p>
 					<p style="width: 20%; text-align: right;">{(balance)}</p>
 					<p style="width: 20%; text-align: right;">{transferred}</p>
 				</div>

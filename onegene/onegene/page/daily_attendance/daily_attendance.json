@@ -1,0 +1,22 @@
+{
+ "content": null,
+ "creation": "2026-03-19 16:48:48.904916",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-03-19 16:48:48.904916",
+ "modified_by": "Administrator",
+ "module": "ONEGENE",
+ "name": "daily-attendance",
+ "owner": "Administrator",
+ "page_name": "daily-attendance",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0
+}

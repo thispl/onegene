@@ -729,3 +729,87 @@ def delete_gate_entry(doc,method):
     if frappe.db.exists('Gate Entry',{'ref_no':doc.name}):
         ge=frappe.get_doc('Gate Entry',{'ref_no':doc.name})
         ge.delete()
+
+
+@frappe.whitelist()
+def get_att_data():
+    nowtime = datetime.now()
+    nowdate=getdate(today())
+    # Logic to handle shift rolls at 07:30 AM
+    max_out = datetime.strptime('07:30', '%H:%M').time()
+    
+    if nowtime.time() < max_out:
+        date1 = (nowtime - timedelta(days=1)).date()
+    else:
+        date1 = nowtime.date()
+
+    start = datetime.combine(date1, datetime.min.time())
+    end = datetime.combine(date1 + timedelta(days=1), datetime.min.time())
+
+   
+    query = """
+        SELECT 
+            emp.gender,
+            emp.department,
+            emp.employee_category,
+            COUNT(DISTINCT e.employee) as count
+        FROM `tabEmployee Checkin` e
+        JOIN `tabEmployee` emp ON e.employee = emp.name
+        WHERE e.time >= %s 
+            AND e.time < %s
+            AND e.log_type = 'IN'
+            AND NOT EXISTS (
+                SELECT 1
+                FROM `tabEmployee Checkin` e2
+                WHERE e2.employee = e.employee
+                    AND e2.log_type = 'OUT'
+                    AND e2.time > e.time
+                    AND e2.time >= %s
+                    AND e2.time < %s
+            )
+        GROUP BY emp.gender, emp.department, emp.employee_category
+    """
+    ot_hrs = frappe.db.sql("""
+        SELECT SUM(ot_hours) as ot_hrs
+        FROM `tabOT Request`
+        WHERE ot_requested_date = %s
+        AND docstatus != 2
+    """, (nowdate,), as_dict=True)
+    ot_by_dept = frappe.db.sql("""
+        SELECT department, SUM(ot_hours) AS total_ot
+        FROM `tabOT Request`
+        WHERE ot_requested_date = %s
+        AND docstatus != 2
+        GROUP BY department
+    """, (nowdate,), as_dict=True)
+    raw_data = frappe.db.sql(query, (start, end, start, end), as_dict=True)
+
+    total_count = 0
+    gender_wise = {"Male": 0, "Female": 0, "Other": 0}
+    dept_wise = {}
+    category_wise = {}
+
+    for row in raw_data:
+        c = row.count
+        total_count += c
+
+        # 1. Gender Wise
+        gen = row.gender or "Unknown"
+        gender_wise[gen] = gender_wise.get(gen, 0) + c
+
+        # 2. Department Wise
+        dept = row.department or "No Department"
+        dept_wise[dept] = dept_wise.get(dept, 0) + c
+
+        # 3. Category Wise
+        cat = row.employee_category or "Uncategorized"
+        category_wise[cat] = category_wise.get(cat, 0) + c
+
+    return {
+        "total": total_count,
+        "gender": gender_wise,
+        "department": dept_wise,
+        "category": category_wise,
+        "ot_hrs": ot_hrs,
+        "ot_by_dept": ot_by_dept
+    }

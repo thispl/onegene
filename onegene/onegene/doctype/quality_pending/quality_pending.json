@@ -35,7 +35,9 @@
   "workstation",
   "operation",
   "supervisor",
-  "department"
+  "department",
+  "summary_tab",
+  "summary"
  ],
  "fields": [
   {
@@ -171,6 +173,7 @@
   {
    "fieldname": "inspection_pending_type",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Inspection Pending Type",
    "options": "Inspection Pending Type",
    "read_only": 1
@@ -237,6 +240,17 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company"
+  },
+  {
+   "depends_on": "eval: doc.reference_type == \"Job Card\"",
+   "fieldname": "summary_tab",
+   "fieldtype": "Tab Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "summary",
+   "fieldtype": "HTML",
+   "label": "Summary"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -246,8 +260,8 @@
    "link_fieldname": "custom_quality_pending"
   }
  ],
- "modified": "2026-03-04 17:29:32.518173",
- "modified_by": "bhuvaneswari.a@groupteampro.com",
+ "modified": "2026-03-29 12:18:43.927119",
+ "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Quality Pending",
  "naming_rule": "Expression (old style)",

@@ -2914,22 +2914,22 @@ def issue_closing_mail(name,subject, message, recipients, sender):
     
 @frappe.whitelist()
 def create_purchase_open_order(doc, method):
-    if doc.custom_order_type == "Open":
-        new_doc = frappe.new_doc('Purchase Open Order')
-        new_doc.purchase_order = doc.name
-        new_doc.set('open_order_table', [])
-        for po in doc.items:
-            new_doc.append("open_order_table", {
-                "item_code": po.item_code,
-                "delivery_date": po.schedule_date,
-                "item_name": po.item_name,
-                "qty": po.qty,
-                "rate": po.rate,
-                "warehouse": po.warehouse,
-                "amount": po.amount,
-                "docname": po.name,
-            })
-        new_doc.save(ignore_permissions=True)
+    # if doc.custom_order_type == "Open":
+    new_doc = frappe.new_doc('Purchase Open Order')
+    new_doc.purchase_order = doc.name
+    new_doc.set('open_order_table', [])
+    for po in doc.items:
+        new_doc.append("open_order_table", {
+            "item_code": po.item_code,
+            "delivery_date": po.schedule_date,
+            "item_name": po.item_name,
+            "qty": po.qty,
+            "rate": po.rate,
+            "warehouse": po.warehouse,
+            "amount": po.amount,
+            "docname": po.name,
+        })
+    new_doc.save(ignore_permissions=True)
 
 @frappe.whitelist()
 def create_purchase_order_schedule_from_po(doc,method):
@@ -2996,10 +2996,12 @@ def delete_purchase_order_schedule(doc, method):
             if schedule.order_type == "Open":
                 schedule.cancel()
                 doc.save(ignore_permissions=True)
-
+def test_check():
+    doc = frappe.get_doc("Sales Order", "SAL-ORD-2026-00016")
+    create_sales_open_order(doc, "wqklmqdl")
 @frappe.whitelist()
 def create_sales_open_order(doc,method):
-    if doc.customer_order_type != "Proto":
+    # if doc.customer_order_type != "Proto":
         new_doc = frappe.new_doc('Open Order')
         new_doc.sales_order_number = doc.name
         new_doc.set('open_order_table', [])
@@ -4187,6 +4189,7 @@ def job_card_rework_entry(args):
         "custom_rejection_category": args.rejection_category,
         "custom_rejection_reason": args.rejection_remarks,
         "employee": args.employee,
+        "custom_item_group":args.item_group,
         "custom_created_by": frappe.session.user,
         "custom_entry_type": "Rework",
         "custom_shift_type": args.shift,
@@ -4240,9 +4243,9 @@ def create_stock_entry_for_rework(doc, args):
             UPDATE `tabWork Order Operation`
             SET completed_qty = completed_qty + %s,
                 process_loss_qty = process_loss_qty + %s,
-                custom_waiting_qty = %s - completed_qty - %s
+                custom_waiting_qty = %s - completed_qty - process_loss_qty
             WHERE name = %s
-        """, (flt(args.accepted_qty), flt(doc.process_loss_qty), flt(doc.for_quantity), flt(doc.process_loss_qty), doc.operation_id))
+        """, (flt(args.accepted_qty), flt(doc.process_loss_qty), flt(doc.for_quantity), doc.operation_id))
     if doc.sequence_id == last_sequence:
         source_warehouse = "Rework - WAIP"
         target_warehouse = frappe.db.get_value("Item", doc.production_item, "custom_warehouse")
@@ -4560,6 +4563,7 @@ def job_card_process_entry(args):
         "from_time": jc_from_time,
         "to_time": jc_to_time,
         "time_in_mins": 3,
+        "custom_item_group":args.item_group,
         "completed_qty": args.accepted_qty,
         "custom_rejected_qty": args.rejected_qty,
         "custom_rework_qty": args.rework_qty,
@@ -4672,7 +4676,7 @@ def create_stock_entry(doc, args):
             UPDATE `tabWork Order Operation`
             SET completed_qty = completed_qty + %s,
                 process_loss_qty = process_loss_qty + %s,
-                custom_waiting_qty = %s - completed_qty
+                custom_waiting_qty = %s - completed_qty - process_loss_qty
             WHERE name = %s
         """, (flt(args.accepted_qty), flt(doc.process_loss_qty), flt(doc.for_quantity), doc.operation_id))
     if doc.sequence_id == last_sequence:
@@ -9844,6 +9848,7 @@ def create_so_iom(name):
 def create_quality_pending_documents(doc, method):
     for row in doc.items:
         qp_doc = frappe.new_doc('Quality Pending')
+        qp_doc.company = doc.company
         qp_doc.inspection_pending_type = 'Incoming'
         qp_doc.status = 'Inspection Pending'
         qp_doc.reference_type = 'Purchase Receipt'
@@ -12356,7 +12361,11 @@ def update_status_inactive():
 
         if include_employee:
             inactive_list.append(emp)
-
+    for i in inactive_list:
+        try:
+            frappe.db.set_value('Employee', i, 'status', 'Inactive')
+        except Exception as e:
+            frappe.log_error(f"Failed for {i}: {str(e)}")
     return inactive_list
 
 
@@ -12557,3 +12566,146 @@ def trigger_mail_for_inactive():
             message=message
         )
         
+@frappe.whitelist()
+def clear_all_revision_logs():
+    items = frappe.db.get_all("Job Card", {'docstatus':('!=',2)},['name'])
+    
+    for item in items:
+        d = frappe.get_doc("Job Card", item.name)
+        if d.custom_item_group:
+            if d.time_logs:
+                for i in d.time_logs:
+                    i.custom_item_group=d.custom_item_group
+        d.save(ignore_permissions=True)
+            
+    frappe.db.commit()
+    
+import pandas as pd
+
+@frappe.whitelist()
+def update_existing_bom():
+    file_url = "/files/28f32a6443BOM - Updated Existing - 23-06-2026 (1).xlsx"
+
+    file_doc = frappe.get_doc("File", {"file_url": file_url})
+    file_path = file_doc.get_full_path()
+
+    df = pd.read_excel(file_path)
+
+    current_bom = None
+    current_fg_item = None
+
+    bom_data = {}
+
+    # 🔹 Step 1: Parse Excel properly
+    for _, row in df.iterrows():
+        if pd.notna(row[0]):
+            current_bom = row[0]
+
+        if pd.notna(row[1]):
+            current_fg_item = row[1]
+
+        raw_item = row[2]
+        uom = row[3]
+        qty = row[4]
+
+        if current_bom not in bom_data:
+            bom_data[current_bom] = {
+                "fg_item": current_fg_item,
+                "items": []
+            }
+
+        if pd.notna(raw_item):
+            bom_data[current_bom]["items"].append({
+                "item_code": raw_item,
+                "uom": uom,
+                "qty": qty
+            })
+
+    # 🔹 Reports
+    missing_boms = []
+    missing_items = []
+    skipped_boms = []
+    not_eligible=[]
+    # 🔹 Step 2: Process each BOM
+    for bom_name, data in bom_data.items():
+
+        # ✅ Check BOM exists
+        if not frappe.db.exists("BOM", bom_name):
+            missing_boms.append(bom_name)
+            continue
+        if not frappe.db.exists("BOM", {'name':bom_name,'is_active':1,'is_default':1,'docstatus':('!=',2)}):
+            not_eligible.append(bom_name)
+            continue
+        # ✅ Check all items exist BEFORE updating
+        invalid_items = []
+        for item in data["items"]:
+            if not frappe.db.exists("Item", item["item_code"]):
+                invalid_items.append(item["item_code"])
+
+        if invalid_items:
+            missing_items.extend(invalid_items)
+            skipped_boms.append(bom_name)
+            continue  # ❌ DO NOT UPDATE
+
+        try:
+            bom_doc = frappe.get_doc("BOM", bom_name)
+
+            existing_items_map = {d.item_code: d for d in bom_doc.items}
+            file_items_map = {d["item_code"]: d for d in data["items"]}
+
+            updated = False
+
+            
+            for item_code, file_item in file_items_map.items():
+                if item_code in existing_items_map:
+                    row = existing_items_map[item_code]
+
+                    if (row.qty != file_item["qty"] or
+                        row.uom != file_item["uom"]):
+
+                        row.qty = file_item["qty"]
+                        row.uom = file_item["uom"]
+                        updated = True
+
+                else:
+                    bom_doc.append("items", {
+                        "item_code": item_code,
+                        "qty": file_item["qty"],
+                        "uom": file_item["uom"]
+                    })
+                    updated = True
+
+            for row in list(bom_doc.items):
+                if row.item_code not in file_items_map:
+                    bom_doc.remove(row)
+                    updated = True
+
+            if updated:
+                bom_doc.save(ignore_permissions=True)
+                if bom_doc.docstatus==0:
+                    bom_doc.submit()
+            else:
+                if bom_doc.docstatus==0:
+                    bom_doc.submit()
+
+        except Exception:
+            frappe.log_error(frappe.get_traceback(), f"BOM Update Failed: {bom_name}")
+
+    frappe.db.commit()
+
+    
+    return {
+        "missing_boms": list(set(missing_boms)),
+        "missing_items": list(set(missing_items)),
+        "skipped_boms_due_to_missing_items": list(set(skipped_boms)),
+        "message": "BOM update completed",
+        "not_eligible":list(set(not_eligible))
+    }
+
+
+@frappe.whitelist()
+def update_att_req():
+    att=frappe.db.get_all('Attendance',{'docstatus':1,'attendance_request':"HR-ARQ-26-03-00202"},['name'])
+    for a in att:
+        att_doc=frappe.get_doc('Attendance',a.name)
+        att_doc.cancel()

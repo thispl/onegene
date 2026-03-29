@@ -330,6 +330,7 @@ frappe.ui.form.on('Job Card', {
                         rework_remarks: null,
                         job_card_id: frm.doc.name,
                         accepted_qty: accepted_qty,
+                        item_group: frm.doc.custom_item_group,
                         employee: values.employee,
                         shift: values.shift,
                         workstation: values.workstation,
@@ -614,15 +615,20 @@ frappe.ui.form.on('Job Card', {
                 logsrows += `
                 
                 <tr > 
-                <td style="text-align:center; border:1px solid #dbd2d9; border-bottom:0; border-left:0; ">${r.idx}</td>
-                <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0;">${r.custom_docname}</td>
-                <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0;">${r.custom_entry_type}</td>
-                <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0;">${r.custom_shift_type}</td>
-                <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0;">${r.employee}</td>
-                <td style="text-align:right; border:1px solid #dbd2d9; border-bottom:0;">${r.completed_qty}</td>
-                <td style="text-align:right; border:1px solid #dbd2d9; border-bottom:0;">${r.custom_rejected_qty}</td>
-                <td style="text-align:right; border:1px solid #dbd2d9; border-bottom:0;">${r.custom_rework_qty}</td>
-                <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0; border-right:0;"><button class="generate-qr-btn" data-cdt="${r.doctype}" data-cdn="${r.name}" style="border-radius:5px; border: 1px solid #80bec1; background-color:white;">Generate QR</button></td>
+                    <td style="text-align:center; border:1px solid #dbd2d9; border-bottom:0; border-left:0; ">${r.idx}</td>
+                    <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0;">
+                        ${r.custom_entry_time 
+                        ? frappe.datetime.str_to_user(r.custom_entry_time) 
+                        : ""}
+                    </td>
+                    <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0;">${r.custom_docname}</td>
+                    <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0;">${r.custom_entry_type}</td>
+                    <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0;">${r.custom_shift_type}</td>
+                    <td style="text-align:left; border:1px solid #dbd2d9; border-bottom:0;">${r.employee}</td>
+                    <td style="text-align:right; border:1px solid #dbd2d9; border-bottom:0; color: green;">${r.completed_qty}</td>
+                    <td style="text-align:right; border:1px solid #dbd2d9; border-bottom:0; color: red;">${r.custom_rejected_qty}</td>
+                    <td style="text-align:right; border:1px solid #dbd2d9; border-bottom:0; color: orange;">${r.custom_rework_qty}</td>
+                    <td style="text-align:center; border:1px solid #dbd2d9; border-bottom:0; border-right:0;"><button class="generate-qr-btn" data-cdt="${r.doctype}" data-cdn="${r.name}" style="border-radius:5px; border: 1px solid #80bec1; background-color:white;">Generate QR</button></td>
                 </tr>
                 
                 
@@ -644,25 +650,26 @@ frappe.ui.form.on('Job Card', {
                 border-radius:8px;
                 overflow:hidden;
             ">
-            
-            <table class="table table-bordered" style="margin:0;">
+            <div style="overflow-x:auto; width:100%;">
+            <table class="table table-bordered" style="margin:0; min-width:1200px;">
             <thead>
             <tr >
-            <th style="text-align:center; background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c;  border:1px solid #dbd2d9; border-left: 0; border-top:0;">No.</th>
-            <th style="text-align:center; background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0;">Docname</th>
-            <th style="text-align:center; background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0;">Entry Type</th>
-            <th style="text-align:center; background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0;">Shift Type</th>
-            <th style="text-align:center; background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0;">Employee</th>
-            <th style="text-align:center; background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0;">Completed Qty</th>
-            <th style="text-align:center; background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0;">Rejected Qty</th>
-            <th style="text-align:center; background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0;">Rework Qty</th>
-            <th style="text-align:center; background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; border-right:0;">Generate QR</th>
-            </tr>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c;  border:1px solid #dbd2d9; border-left: 0; border-top:0; text-align: right;">No.</th>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; text-align: left;">Datetime</th>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; text-align: left;">Docname</th>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; text-align: left;">Entry Type</th>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; text-align: left;">Shift Type</th>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; text-align: left;">Employee</th>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; text-align: right;">Completed</th>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; text-align: right;">Rejected</th>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; text-align: right;">Rework</th>
+            <th style="background-color:#f3f3f3; font-weight:normal; line-height:1; color:#7c7c7c; border:1px solid #dbd2d9; border-top:0; text-align: center; border-right:0;">Generate QR</th></tr>
             </thead>
             <tbody>
             ${logsrows}
             </tbody>
             </table>
+            </div>
             </div>`;
 
             rework_html = `
@@ -1159,6 +1166,7 @@ frappe.ui.form.on('Job Card', {
             rework_remarks: rework_qty > 0 ? values.rework_remarks : null,
             job_card_id: frm.doc.name,
             accepted_qty: accepted_qty,
+            item_group: frm.doc.custom_item_group,
             employee: values.employee,
             shift: values.shift,
             workstation: values.workstation,

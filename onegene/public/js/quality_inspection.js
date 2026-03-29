@@ -1,6 +1,5 @@
 frappe.ui.form.on('Quality Inspection', {
-    // Events ---------------------------------------------------------
-
+    // Events
     setup(frm) {
         frm.set_indicator_formatter('specification', function(doc) {
             let readings = [
@@ -80,52 +79,11 @@ frappe.ui.form.on('Quality Inspection', {
                 }));
             }
         }
-
-    },
-    onload(frm) {
-        $(`[data-fieldname="custom_accepted_qty"] .control-label`).css({
-            "color": "green",
-            "font-weight": "bold"
-        });
-        $(`[data-fieldname="custom_inspected_qty"] .control-label`).css({
-            "font-weight": "bold"
-        });
-
-
-        if (frappe.user.has_role("Quality User")) {
-
-            if (!(frappe.user.has_role("Administrator") || frappe.user.has_role("System Manager") || frappe.user.has_role("Quality Manager") || frappe.user.has_role("Quality Engineer"))) {
-
-                let allowed = ["custom_inspection_type", "reference_type", "reference_name", "readings"];
-
-                frm.fields.forEach(field => {
-                    if (!allowed.includes(field.df.fieldname)) {
-                        frm.set_df_property(field.df.fieldname, "read_only", 1);
-                    }
-                });
-
-
-            }
-        }
-
-
     },
     refresh(frm) {
-        $(`[data-fieldname="custom_accepted_qty"] .control-label`).css({
-            "color": "green",
-            "font-weight": "bold"
-        });
-        $(`[data-fieldname="custom_inspected_qty"] .control-label`).css({
-            "font-weight": "bold"
-        });
-
-
         if (frappe.user.has_role("Quality User")) {
-
             if (!(frappe.user.has_role("Administrator") || frappe.user.has_role("System Manager") || frappe.user.has_role("Quality Manager") || frappe.user.has_role("Quality Engineer"))) {
-
                 let allowed = ["reference_name", "readings"];
-
                 frm.fields.forEach(field => {
                     if (!allowed.includes(field.df.fieldname)) {
                         frm.set_df_property(field.df.fieldname, "read_only", 1);
@@ -134,56 +92,29 @@ frappe.ui.form.on('Quality Inspection', {
 
                 const grid = frm.get_field("readings").grid;
                 grid.cannot_add_rows = true;
-
-
                 frm.fields_dict["readings"].$wrapper.find('.grid-add-row').hide();
-
-
                 frm.fields_dict["readings"].$wrapper.find('.grid-remove-rows').hide();
-
-
                 frm.fields_dict["readings"].$wrapper.find('.grid-row-check').hide();
-
-
                 frm.fields_dict["readings"].$wrapper.find('input[type="checkbox"]').prop("disabled", true);
-
-
                 frm.fields_dict["readings"].$wrapper.find('.grid-header .grid-row-check').hide();
-
-
-
             }
         }
-
 
         frm.set_query("reference_name", function() {
             let filters = {};
             if (frm.doc.reference_type != 'Job Card') {
-
-
-
                 filters = {
                     "docstatus": ["!=", 2],
                 };
-
             } else if (frm.doc.reference_type == 'Job Card') {
-
                 return {
-
                     query: "onegene.onegene.quality_inspection.ref_name_job_card",
-
                 }
             }
-
-
-
             return {
                 filters: filters
             };
         });
-
-
-
 
         frm.set_query("reference_type", function() {
             return {
@@ -192,6 +123,17 @@ frappe.ui.form.on('Quality Inspection', {
                 }
             }
         })
+
+        if (frm.doc.item_code) {
+            frm.set_query("quality_inspection_template", function() {
+                return {
+                    filters: {
+                        custom_quality_inspection_template_type: frm.doc.custom_inspection_type,
+                        custom_item_code: frm.doc.item_code,
+                    }
+                }
+            });
+        }
 
         frm.trigger('set_reading_list_view');
         frm.fields_dict["readings"].grid.update_docfield_property('custom_send_for_approval', 'hidden', 1);
@@ -309,7 +251,7 @@ frappe.ui.form.on('Quality Inspection', {
                             label: 'No. of Bins',
                             fieldname: 'no_of_bins',
                             fieldtype: 'Int',
-                            default: flt(frm.doc.custom_no_of_bins) || 1,
+                            default: flt(frm.doc.custom_no_of_bins) || 0,
                             read_only: 1
                         },
 
@@ -400,6 +342,7 @@ frappe.ui.form.on('Quality Inspection', {
                         let inspected_qty = values.inspected_qty || 0;
                         let accepted_qty = values.accepted_qty || 0;
                         let pending_qty = values.pending_qty || 0;
+
                         // Manual mandatory validation for rejection
                         if (rejected_qty > 0) {
                             if (!values.rejection_category) {
@@ -410,7 +353,6 @@ frappe.ui.form.on('Quality Inspection', {
                                 });
                                 return;
                             }
-
                             if (!values.rejection_reason) {
                                 frappe.msgprint({
                                     title: __('Mandatory'),
@@ -431,7 +373,6 @@ frappe.ui.form.on('Quality Inspection', {
                                 });
                                 return;
                             }
-
                             if (!values.rework_reason) {
                                 frappe.msgprint({
                                     title: __('Mandatory'),
@@ -441,6 +382,7 @@ frappe.ui.form.on('Quality Inspection', {
                                 return;
                             }
                         }
+
                         if (rejected_qty === 0 && rework_qty === 0 && inspected_qty !== accepted_qty) {
                             frappe.msgprint({
                                 message: `<span style="color: red;">Rejected Qty and Rework Qty are not Present. Please adjust your Inspected Qty</span>`
@@ -448,7 +390,6 @@ frappe.ui.form.on('Quality Inspection', {
 
                             return;
                         }
-
                         if ((rejected_qty > 0 || rework_qty > 0) && (rejected_qty + rework_qty + accepted_qty !== inspected_qty)) {
                             frappe.msgprint({
                                 message: `<span style="color: red;">Sum of Rejected, Rework and Accepted Qty should match Inspected Qty</span>`,
@@ -457,34 +398,27 @@ frappe.ui.form.on('Quality Inspection', {
 
                             return;
                         }
-
-
                         if (frm.__confirmed) {
-
                             return;
                         }
-
                         if (frm.doc.readings && frm.doc.readings.length > 0) {
                             for (let row of frm.doc.readings) {
                                 for (let i = 1; i <= 10; i++) {
+                                    const reading_value = row[`reading_${i}`];
                                     if (row.status == "Rejected") {
                                         frm.set_value("status", "Rejected");
                                         frappe.confirm(
                                             '<p style="color:red;">Some readings are mismatched. Do you still want to save?</p>',
                                             () => {
-
-
                                                 if ((rejected_qty + rework_qty + accepted_qty) == inspected_qty) {
                                                     let rejection_reason = values.rejection_reason;
                                                     let rejection_category = values.rejection_category;
                                                     let rework_reason = values.rework_reason;
                                                     let rework_category = values.rework_category;
-
                                                     if (rejected_qty === 0) {
                                                         rejection_reason = "";
                                                         rejection_category = ""; // optional if you want to reset category too
                                                     }
-
                                                     if (rework_qty === 0) {
                                                         rework_reason = "";
                                                         rework_category = ""; // optional if you want to reset category too
@@ -516,17 +450,12 @@ frappe.ui.form.on('Quality Inspection', {
                                                             }
                                                         });
                                                     });
-
                                                     d.hide();
                                                 }
-
-
                                                 frm.__confirmed = true;
                                                 frm.save();
                                             },
-                                            () => {
-
-                                            }
+                                            () => {}
                                         );
                                         throw "Waiting for user confirmation...";
                                     }
@@ -534,24 +463,19 @@ frappe.ui.form.on('Quality Inspection', {
                             }
                         }
 
-
-
                         if ((rejected_qty + rework_qty + accepted_qty) == inspected_qty) {
                             let rejection_reason = values.rejection_reason;
                             let rejection_category = values.rejection_category;
                             let rework_reason = values.rework_reason;
                             let rework_category = values.rework_category;
-
                             if (rejected_qty === 0) {
                                 rejection_reason = "";
                                 rejection_category = ""; // optional if you want to reset category too
                             }
-
                             if (rework_qty === 0) {
                                 rework_reason = "";
                                 rework_category = ""; // optional if you want to reset category too
                             }
-
                             frm.set_value('custom_employee', values.employee);
                             frm.set_value('custom_accepted_qty', accepted_qty);
                             frm.set_value('custom_pending_qty', values.pending_qty);
@@ -579,12 +503,10 @@ frappe.ui.form.on('Quality Inspection', {
                                     }
                                 });
                             });
-
                             d.hide();
                         }
                     }
                 });
-                // set query for employee
                 d.fields_dict.employee.get_query = function() {
                     return {
                         filters: [
@@ -592,6 +514,7 @@ frappe.ui.form.on('Quality Inspection', {
                         ]
                     };
                 };
+
                 // --- Helpers ---
                 function getEmployeeName() {
                     frappe.db.get_value("Employee", {
@@ -601,7 +524,6 @@ frappe.ui.form.on('Quality Inspection', {
                             d.set_value("employee_name", r.message ? r.message.employee_name : '');
                         });
                 }
-
                 function getUserId() {
                     frappe.db.get_value("Employee", {
                             "name": d.get_value("employee")
@@ -610,7 +532,6 @@ frappe.ui.form.on('Quality Inspection', {
                             d.set_value("inspected_by", r.message ? r.message.user_id : '');
                         });
                 }
-
                 function validateInspectedQty() {
                     const possible = flt(d.get_value("possible_inspection_qty")) || 0;
                     const inspected = flt(d.get_value("inspected_qty")) || 0;
@@ -619,7 +540,6 @@ frappe.ui.form.on('Quality Inspection', {
                         d.set_value('inspected_qty', 0);
                     }
                 }
-
                 function validateAcceptedQty() {
                     const inspected = flt(d.get_value("inspected_qty")) || 0;
                     const accepted = flt(d.get_value("accepted_qty")) || 0;
@@ -632,7 +552,6 @@ frappe.ui.form.on('Quality Inspection', {
                         d.set_value('no_of_bins', 0);
                     }
                 }
-
                 function recalculatePendingQty() {
                     const possible = flt(d.get_value("possible_inspection_qty")) || 0;
                     const inspected = flt(d.get_value("inspected_qty")) || 0;
@@ -640,7 +559,6 @@ frappe.ui.form.on('Quality Inspection', {
                     d.set_value("pending_qty", pending >= 0 ? pending : 0);
                     // d.set_value("accepted_qty", inspected >= 0 ? inspected : 0);
                 }
-
                 function recalculateBinCount() {
                     const accepted = flt(d.get_value("accepted_qty")) || 0;
                     let pack_size = flt(d.get_value("pack_size")) || 0;
@@ -659,7 +577,6 @@ frappe.ui.form.on('Quality Inspection', {
                     }
                     d.set_value("no_of_bins", bin_count)
                 }
-
                 function recalculateRejectedQty() {
                     const inspected = flt(d.get_value("inspected_qty")) || 0;
                     const accepted = flt(d.get_value("accepted_qty")) || 0;
@@ -668,7 +585,6 @@ frappe.ui.form.on('Quality Inspection', {
                     if (rejected < 0) rejected = 0;
                     d.set_value("rejected_qty", rejected);
                 }
-
                 function recalculateReworkQty() {
                     const inspected = flt(d.get_value("inspected_qty")) || 0;
                     const accepted = flt(d.get_value("accepted_qty")) || 0;
@@ -677,7 +593,6 @@ frappe.ui.form.on('Quality Inspection', {
                     if (rework < 0) rework = 0;
                     d.set_value("rework_qty", rework);
                 }
-
                 function validateShift() {
                     let shift = d.get_value("shift_type");
                     if (shift) {
@@ -697,25 +612,21 @@ frappe.ui.form.on('Quality Inspection', {
                     }
                 }
 
-
                 // --- Bind Changes ---
                 d.fields_dict.inspected_qty.df.onchange = () => {
                     validateInspectedQty();
                     recalculatePendingQty();
                     recalculateBinCount();
                 };
-
                 d.fields_dict.accepted_qty.df.onchange = () => {
                     validateAcceptedQty();
                     recalculateBinCount();
                 };
-
                 d.fields_dict.shift_type.get_query = () => {
                     return {
                         query: "onegene.onegene.custom.get_shift_for_current_time",
                     };
                 };
-
                 d.fields_dict.rejection_reason.get_query = () => {
                     return {
                         query: "onegene.onegene.custom.get_rejection_reason",
@@ -732,17 +643,15 @@ frappe.ui.form.on('Quality Inspection', {
                         }
                     };
                 };
-
                 d.show();
             }).css({
                 'color': 'white',
                 'background-color': "#000000"
             });
-        } else {
+        } 
+        else {
             if (frm.doc.docstatus == 1 && frm.doc.status == "Accepted") {
-
                 frm.add_custom_button(__("Generate QR"), function() {
-
                     frappe.call({
                         method: "onegene.onegene.quality_inspection.get_qid_for_quality_inspection",
                         args: {
@@ -763,9 +672,21 @@ frappe.ui.form.on('Quality Inspection', {
             }
         }
     },
+    onload(frm) {
+        if (frappe.user.has_role("Quality User")) {
+            if (!(frappe.user.has_role("Administrator") || frappe.user.has_role("System Manager") || frappe.user.has_role("Quality Manager") || frappe.user.has_role("Quality Engineer"))) {
+                let allowed = ["custom_inspection_type", "reference_type", "reference_name", "readings"];
+                frm.fields.forEach(field => {
+                    if (!allowed.includes(field.df.fieldname)) {
+                        frm.set_df_property(field.df.fieldname, "read_only", 1);
+                    }
+                });
+            }
+        }
+    },
     before_workflow_action: async (frm) => {
         if (frm.doc.workflow_state == "Pending For HOD") {
-            if (frm.selected_workflow_action == "Approve") {
+            if (frm.selected_workflow_action == "Approve") {  
                 await frappe.call({
                     method: "erpnext.stock.doctype.quality_inspection.quality_inspection.inspect_and_set_status_new",
                     args: {
@@ -776,8 +697,7 @@ frappe.ui.form.on('Quality Inspection', {
         }
     },
 
-    // Fields ---------------------------------------------------------
-
+    // Fields
     custom_inspection_type: function(frm) {
         if (frm.doc.custom_inspection_type === "Incoming") {
             frm.set_df_property("reference_type", "options", [
@@ -846,7 +766,21 @@ frappe.ui.form.on('Quality Inspection', {
                     }
                     frm.set_value("quality_inspection_template", inspection_template);
                 }
+                if (frm.doc.reference_type == "Purchase Receipt") {
+                    inspection_template = frm.doc.item_code + "-Incoming";
+                    frm.set_value("quality_inspection_template", inspection_template);
+                }
             }, 500);
+        }
+        if (frm.doc.item_code) {
+            frm.set_query("quality_inspection_template", function() {
+                return {
+                    filters: {
+                        custom_quality_inspection_template_type: frm.doc.custom_inspection_type,
+                        custom_item_code: frm.doc.item_code,
+                    }
+                }
+            });
         }
     },
     custom_quality_pending(frm) {
@@ -861,10 +795,13 @@ frappe.ui.form.on('Quality Inspection', {
                     }
                     frm.set_value("quality_inspection_template", inspection_template);
                 }
+                if (frm.doc.reference_type == "Purchase Receipt") {
+                    inspection_template = frm.doc.item_code + "-Incoming";
+                    frm.set_value("quality_inspection_template", inspection_template);
+                }
             }, 500);
         }
     },
-
     inspection_type: function(frm) {
         if (!frm.doc.inspection_type) {
             frm.set_value("reference_type", "");
@@ -967,13 +904,37 @@ frappe.ui.form.on('Quality Inspection', {
                 frm.set_value("custom_item_group", "")
             }
         } else {
-            // reset / default
             frm.set_df_property("reference_type", "options", [""]);
         }
     },
-
     reference_name(frm) {
 
+        if (frm.doc.reference_type && frm.doc.reference_name) {
+            frappe.call({
+                method: "onegene.onegene.quality_inspection.get_quality_pending",
+                args: {
+                    reference_name: frm.doc.reference_name,
+                    reference_type: frm.doc.reference_type
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        frm.set_value("custom_quality_pending", r.message[0]);
+                        frm.set_value("custom_pending_qty", r.message[1]);
+                        frm.set_value("custom_possible_inspection_qty", r.message[1]);
+                        frm.refresh_field("custom_quality_pending");
+                    } else {
+                        frm.set_value("custom_quality_pending", "");
+                        frm.set_value("custom_pending_qty", 0);
+                        frm.set_value("custom_possible_inspection_qty", 0);
+                        frappe.msgprint({
+                            message: `<span style="color:red;">${__("No Quality Pending available for this Reference Type ${frm.doc.reference_type}.")}</span>`,
+                            indicator: "red"
+                        });
+
+                    }
+                }
+            });
+        }
         if (frm.doc.reference_type && frm.doc.reference_type == "Job Card") {
             if (frm.doc.reference_name) {
                 frappe.db.get_value("Job Card", {
@@ -987,50 +948,25 @@ frappe.ui.form.on('Quality Inspection', {
                     }
                 })
 
-                if (frm.doc.reference_type == "Job Card" && frm.doc.reference_name) {
-                    frappe.call({
-                        method: "onegene.onegene.quality_inspection.get_quality_pending",
-                        args: {
-                            job_card: frm.doc.reference_name
-                        },
-                        callback: function(r) {
-                            if (r.message) {
-                                frm.set_value("custom_quality_pending", r.message[0]);
-                                frm.set_value("custom_pending_qty", r.message[1]);
-                                frm.set_value("custom_possible_inspection_qty", r.message[1]);
-                                frm.refresh_field("custom_quality_pending");
-                            } else {
-                                frm.set_value("custom_quality_pending", "");
-                                frm.set_value("custom_pending_qty", 0);
-                                frm.set_value("custom_possible_inspection_qty", 0);
-                                frappe.msgprint({
-                                    message: `<span style="color:red;">${__("No Quality Pending available for this Job Card.")}</span>`,
-                                    indicator: "red"
-                                });
-
-                            }
-                        }
-                    });
-                }
             } else {
                 frm.set_value("item_code", "")
             }
         }
     },
-
-    // Trigger Functions ---------------------------------------------------------
-
+    
+    // Calculations
     show_approval_btn(frm) {
         frm.fields_dict["readings"].grid.update_docfield_property('dis_qty', 'hidden', 0);
     },
     hide_approval_btn(frm) {
         frm.fields_dict["readings"].grid.update_docfield_property('dis_qty', 'hidden', 1);
     },
+    
 });
 
 
 frappe.ui.form.on('Quality Inspection Reading', {
-
+    // Fields
     reading_1: function(frm, cdt, cdn) {
         check_readings(frm, cdt, cdn, "1");
     },
@@ -1061,8 +997,10 @@ frappe.ui.form.on('Quality Inspection Reading', {
     reading_10: function(frm, cdt, cdn) {
         check_readings(frm, cdt, cdn, "10");
     },
+
 });
 
+// Functions
 function trigger_inspect_status(frm) {
     if (!frm.doc.readings || frm.doc.readings.length === 0) return;
     if (!frm.doc.__islocal) {
