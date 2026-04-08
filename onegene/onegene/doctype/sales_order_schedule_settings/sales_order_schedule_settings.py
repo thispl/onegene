@@ -100,7 +100,7 @@ def _process_upload(file, records):
 
 			if not customer_purchase_order:
 				continue
-			so_number = frappe.db.get_value("Sales Order", {"po_no": customer_purchase_order, "docstatus": 1, "custom_customer_code": cust_no}, "name")
+			so_number = frappe.db.get_value("Sales Order", {"po_no": customer_purchase_order, "docstatus": 1, "custom_customer_code": cust_no, "status": ["!=", "Closed"]}, "name")
 			if not so_number:
 				continue
 			sales = frappe.get_doc("Sales Order", so_number)
@@ -288,7 +288,9 @@ def precheck_records(file,records,job_id):
 	
 	docs_to_submit = []
 	grouped_docs = defaultdict(list)
-	distinct_so_numbers = list({r[1] for r in records if r[1]})
+	distinct_so_numbers = list({
+		(r[0], r[1]) for r in records if r[0] and r[1]
+	})
 	total_records = len(records)
 	error_logs = []
 	valid_records = []
@@ -342,7 +344,6 @@ def precheck_records(file,records,job_id):
 
 	
 	
-
 	# Second pass: submit docs
 	total_to_submit = len(docs_to_submit)
 	docs_to_process = []
@@ -350,7 +351,6 @@ def precheck_records(file,records,job_id):
 	for idx, name in enumerate(docs_to_submit, start=1):
 		try:
 			doc = frappe.get_doc("Sales Order Schedule", name)
-
 			if doc.docstatus == 1:
 				if doc.order_type == "Open" and frappe.db.exists("Sales Order", {'name': doc.sales_order_number, 'docstatus': 1}):
 					open_order = frappe.get_doc("Open Order", {"sales_order_number": doc.sales_order_number})
@@ -377,8 +377,9 @@ def precheck_records(file,records,job_id):
 	error_logs = []
 	orders_to_update = []
 
-	for idx, sales_order_number in enumerate(distinct_so_numbers, start=1):
+	for idx, (customer_code, customer_po) in enumerate(distinct_so_numbers, start=1):
 		try:
+			sales_order_number = frappe.db.get_value("Sales Order", {"custom_customer_code": customer_code, "po_no": customer_po, "status": ["!=", "Closed"]}, "name")
 			# just pre checking, not actually saving
 			order_open = frappe.get_doc("Open Order", {"sales_order_number": sales_order_number})
 			order_open.disable_update_items = 0  
@@ -418,7 +419,8 @@ def precheck_records_without_enqueue(file,records,job_id):
 	
 	docs_to_submit = []
 	grouped_docs = defaultdict(list)
-	distinct_so_numbers = list({r[1] for r in records if r[1]})
+	unique_so_numbers = set()
+	distinct_so_numbers = []
 	total_records = len(records)
 	error_logs = []
 	valid_records = []
@@ -436,6 +438,10 @@ def precheck_records_without_enqueue(file,records,job_id):
 			so_number = frappe.db.get_value("Sales Order", {"po_no": customer_po_number, "docstatus": 1, "custom_customer_code": cust_no}, "name")
 			if not so_number:
 				continue
+			
+			if so_number not in unique_so_numbers:
+				unique_so_numbers.add(so_number)
+				distinct_so_numbers.append(so_number)
 
 			sales = frappe.get_doc("Sales Order", so_number)
 
@@ -506,7 +512,6 @@ def precheck_records_without_enqueue(file,records,job_id):
 	# Final pass: update sales orders
 	error_logs = []
 	orders_to_update = []
-
 	for idx, sales_order_number in enumerate(distinct_so_numbers, start=1):
 		try:
 			# just pre checking, not actually saving
