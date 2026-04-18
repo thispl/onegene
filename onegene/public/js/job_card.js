@@ -801,6 +801,20 @@ frappe.ui.form.on('Job Card', {
                 }
             };
         });
+        if (frm.doc.custom_processed_qty && frm.doc.docstatus != 2) {
+            frm.add_custom_button(__("Stock Ledger"), () => {
+                
+                let from_date = frm.doc.creation.split(" ")[0];
+                let to_date = frappe.datetime.get_today();
+
+                frappe.set_route("query-report", "Stock Ledger Report", {
+                    "work_order": frm.doc.work_order, 
+                    "company": frm.doc.company, 
+                    "from_date": from_date, 
+                    "to_date": to_date
+                });
+            }, __("View"));
+        }
         if (flt(frm.doc.custom_possible_qty) > 0 && (frm.doc.docstatus == 0) && (frm.doc.custom_cancelled == 0)) {
             frm.add_custom_button(__("Entry"), async () => {
 

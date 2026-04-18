@@ -91,6 +91,12 @@ frappe.query_reports["Stock Ledger Report"] = {
 			"options": "Currency\nFloat",
 			"default": "Currency"
 		},
+		{
+			"fieldname": "work_order",
+			"label": __("Work Order"),
+			"fieldtype": "Link",
+			"options": "Work Order",
+		},
 	],
 	"formatter": function (value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data);

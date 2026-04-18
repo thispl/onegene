@@ -271,38 +271,76 @@ def get_columns(filters):
 
 def get_stock_ledger_entries(filters, items):
 	sle = frappe.qb.DocType("Stock Ledger Entry")
-	query = (
-		frappe.qb.from_(sle)
-		.select(
-			sle.item_code,
-			CombineDatetime(sle.posting_date, sle.posting_time).as_("date"),
-			sle.warehouse,
-			sle.posting_date,
-			sle.posting_time,
-			sle.actual_qty,
-			sle.incoming_rate,
-			sle.valuation_rate,
-			sle.company,
-			sle.voucher_type,
-			sle.qty_after_transaction,
-			sle.stock_value_difference,
-			sle.serial_and_batch_bundle,
-			sle.voucher_no,
-			sle.stock_value,
-			sle.batch_no,
-			sle.serial_no,
-			sle.project,
+ 
+	if filters.get("work_order"):
+		stock_entries = frappe.db.get_all("Stock Entry", {"work_order": filters.get("work_order"), "docstatus": 1} , pluck="name")
+	if stock_entries:
+		query = (
+			frappe.qb.from_(sle)
+			.select(
+				sle.item_code,
+				CombineDatetime(sle.posting_date, sle.posting_time).as_("date"),
+				sle.warehouse,
+				sle.posting_date,
+				sle.posting_time,
+				sle.actual_qty,
+				sle.incoming_rate,
+				sle.valuation_rate,
+				sle.company,
+				sle.voucher_type,
+				sle.qty_after_transaction,
+				sle.stock_value_difference,
+				sle.serial_and_batch_bundle,
+				sle.voucher_no,
+				sle.stock_value,
+				sle.batch_no,
+				sle.serial_no,
+				sle.project,
+			)
+			.where(
+				(sle.docstatus < 2)
+				& (sle.is_cancelled == 0)
+				& (sle.posting_date[filters.from_date : filters.to_date])
+				& (sle.voucher_no.isin(stock_entries))
+				
+	
+			)
+			.orderby(CombineDatetime(sle.posting_date, sle.posting_time))
+			.orderby(sle.creation)
 		)
-		.where(
-			(sle.docstatus < 2)
-			& (sle.is_cancelled == 0)
-			& (sle.posting_date[filters.from_date : filters.to_date])
-			
-   
+	else:
+		query = (
+			frappe.qb.from_(sle)
+			.select(
+				sle.item_code,
+				CombineDatetime(sle.posting_date, sle.posting_time).as_("date"),
+				sle.warehouse,
+				sle.posting_date,
+				sle.posting_time,
+				sle.actual_qty,
+				sle.incoming_rate,
+				sle.valuation_rate,
+				sle.company,
+				sle.voucher_type,
+				sle.qty_after_transaction,
+				sle.stock_value_difference,
+				sle.serial_and_batch_bundle,
+				sle.voucher_no,
+				sle.stock_value,
+				sle.batch_no,
+				sle.serial_no,
+				sle.project,
+			)
+			.where(
+				(sle.docstatus < 2)
+				& (sle.is_cancelled == 0)
+				& (sle.posting_date[filters.from_date : filters.to_date])
+				
+	
+			)
+			.orderby(CombineDatetime(sle.posting_date, sle.posting_time))
+			.orderby(sle.creation)
 		)
-		.orderby(CombineDatetime(sle.posting_date, sle.posting_time))
-		.orderby(sle.creation)
-	)
 
 	inventory_dimension_fields = get_inventory_dimension_fields()
 	if inventory_dimension_fields:
@@ -387,12 +425,13 @@ def get_sle_conditions(filters):
 		warehouse_condition = get_warehouse_condition(filters.get("warehouse"))
 		if warehouse_condition:
 			conditions.append(warehouse_condition)
-	if filters.get("voucher_no"):
-		conditions.append("voucher_no=%(voucher_no)s")
 	if filters.get("batch_no"):
 		conditions.append("batch_no=%(batch_no)s")
 	if filters.get("project"):
 		conditions.append("project=%(project)s")
+  
+	if filters.get("voucher_no"):
+		conditions.append("voucher_no=%(voucher_no)s")
 
 	for dimension in get_inventory_dimensions():
 		if filters.get(dimension.fieldname):
