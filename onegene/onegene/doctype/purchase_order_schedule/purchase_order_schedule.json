@@ -28,6 +28,7 @@
   "item_code",
   "item_group",
   "item_name",
+  "branch",
   "column_break_qstg",
   "order_rate",
   "order_rate_inr",
@@ -449,13 +450,19 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-16 09:53:01.590106",
- "modified_by": "senthilkumar.r@onegeneindia.in",
+ "modified": "2026-05-02 16:13:02.131233",
+ "modified_by": "amar.p@groupteampro.com",
  "module": "ONEGENE",
  "name": "Purchase Order Schedule",
  "naming_rule": "By \"Naming Series\" field",
@@ -479,5 +486,6 @@
  "sort_order": "DESC",
  "states": [],
  "title_field": "item_code",
- "track_changes": 1
+ "track_changes": 1,
+ "track_seen": 1
 }

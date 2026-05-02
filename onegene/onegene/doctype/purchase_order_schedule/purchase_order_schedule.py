@@ -129,7 +129,7 @@ class PurchaseOrderSchedule(Document):
 
 	def validate(self):
 		
-		po_schedule = frappe.db.get_value("Purchase Order Schedule",{"item_code":self.item_code,"purchase_order_number":self.purchase_order_number,"schedule_month":self.schedule_month, "docstatus": 1},["name", "item_code", "schedule_month", "docstatus"],as_dict=True)
+		po_schedule = frappe.db.get_value("Purchase Order Schedule",{"item_code":self.item_code,"purchase_order_number":self.purchase_order_number,"schedule_month":self.schedule_month, "schedule_year": current_year,  "docstatus": 1},["name", "item_code", "schedule_month", "docstatus"],as_dict=True)
 		
 		if po_schedule and po_schedule.docstatus != 2:
 			if (self.is_new() or po_schedule.name != self.name):
@@ -227,7 +227,7 @@ class PurchaseOrderSchedule(Document):
 	def on_submit(self):
 		if not self.purchase_order_number:
 			return
-
+		current_year = datetime.now().year
 		order_type = frappe.db.get_value("Purchase Order", self.purchase_order_number, 'custom_order_type')
 		po = frappe.get_doc("Purchase Order", self.purchase_order_number)
 
@@ -661,7 +661,6 @@ def update_received_qty():
 				ORDER BY asn.datetime
 				""",(pos.supplier_name, pos.item_code, start_date, end_date))[0][0] or 0
 
-		print([pos.name, pos.received_qty, data or 0])
 		pending_qty = pos.qty - pos.received_qty
 		
 		update_vals = {

@@ -114,6 +114,7 @@ def _process_upload(file, records):
 					'sales_order_number': so_number,
 					'customer_code': cust_no,
 					'schedule_month': schedule_month,
+					'schedule_year': current_year,
 					'item_code': item,
 					'docstatus': 1
 				}):
@@ -140,6 +141,7 @@ def _process_upload(file, records):
 							'sales_order_number': so_number,
 							'customer_code': cust_no,
 							'schedule_month': schedule_month,
+							'schedule_year': current_year,
 							'item_code': item,
 							'docstatus': 1,
 							'qty': s_qty
@@ -148,6 +150,7 @@ def _process_upload(file, records):
 							'sales_order_number': so_number,
 							'customer_code': cust_no,
 							'schedule_month': schedule_month,
+							'schedule_year': current_year,
 							'item_code': item,
 							'docstatus': 1
 						})
@@ -321,6 +324,7 @@ def precheck_records(file,records,job_id):
 			existing = frappe.db.exists("Sales Order Schedule", {
 				'sales_order_number': so_number,
 				'schedule_month': schedule_month,
+				'schedule_year': current_year,
 				'item_code': item,
 				'docstatus': 1
 			})
@@ -455,6 +459,7 @@ def precheck_records_without_enqueue(file,records,job_id):
 			existing = frappe.db.exists("Sales Order Schedule", {
 				'sales_order_number': so_number,
 				'schedule_month': schedule_month,
+				'schedule_year': current_year,
 				'item_code': item,
 				'docstatus': 1
 			})

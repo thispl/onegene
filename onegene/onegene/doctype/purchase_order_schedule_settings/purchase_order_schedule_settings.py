@@ -105,10 +105,11 @@ def _process_upload(file, records):
 				current_year = datetime.now().year
 				schedule_month = schedule_month.upper() if schedule_month else ""
 				schedule_date = datetime.strptime(f"01-{schedule_month}-{current_year}", "%d-%b-%Y")
-
+    
 				if not frappe.db.exists("Purchase Order Schedule", {
 					'purchase_order_number': po_number,
 					'schedule_month': schedule_month,
+					'schedule_year': current_year,
 					'item_code': item,
 					'docstatus': 1
 				}):
@@ -132,6 +133,7 @@ def _process_upload(file, records):
 					if not frappe.db.exists("Purchase Order Schedule", {
 							'purchase_order_number': po_number,
 							'schedule_month': schedule_month,
+							'schedule_year': current_year,
 							'item_code': item,
 							'docstatus': 1,
 							'qty': s_qty
@@ -139,6 +141,7 @@ def _process_upload(file, records):
 						doc = frappe.get_doc("Purchase Order Schedule", {
 							'purchase_order_number': po_number,
 							'schedule_month': schedule_month,
+							'schedule_year': current_year,
 							'item_code': item,
 							'docstatus': 1
 						})
@@ -308,6 +311,7 @@ def precheck_records(file,records,job_id):
 			existing = frappe.db.exists("Purchase Order Schedule", {
 				'purchase_order_number': po_number,
 				'schedule_month': schedule_month,
+				'schedule_year': current_year,
 				'item_code': item,
 				'docstatus': 1
 			})
@@ -341,7 +345,7 @@ def precheck_records(file,records,job_id):
 			if doc.docstatus == 1:
 				if doc.order_type == "Open" and frappe.db.exists("Purchase Order", {'name': doc.purchase_order_number, 'docstatus': 1}):
 					purchase_open_order = frappe.get_doc("Purchase Open Order", {"purchase_order": doc.purchase_order_number})
-					schedules = frappe.get_all("Purchase Order Schedule",{"purchase_order_number": doc.purchase_order_number,"item_code": doc.item_code,"docstatus": 1},["qty"])
+					schedules = frappe.get_all("Purchase Order Schedule",{"purchase_order_number": doc.purchase_order_number, "item_code": doc.item_code,"docstatus": 1},["qty"])
 					item_qty = sum(s.qty for s in schedules)
 
 					matching_row = next((row for row in purchase_open_order.open_order_table if row.item_code == doc.item_code), None)
@@ -430,6 +434,7 @@ def precheck_records_without_enqueue(file,records,job_id):
 			existing = frappe.db.exists("Purchase Order Schedule", {
 				'purchase_order_number': po_number,
 				'schedule_month': schedule_month,
+				'schedule_year': current_year,
 				'item_code': item,
 				'docstatus': 1
 			})
@@ -463,7 +468,7 @@ def precheck_records_without_enqueue(file,records,job_id):
 			if doc.docstatus == 1:
 				if doc.order_type == "Open" and frappe.db.exists("Purchase Order", {'name': doc.purchase_order_number, 'docstatus': 1}):
 					purchase_open_order = frappe.get_doc("Purchase Open Order", {"purchase_order": doc.purchase_order_number})
-					schedules = frappe.get_all("Purchase Order Schedule",{"purchase_order_number": doc.purchase_order_number,"item_code": doc.item_code,"docstatus": 1},["qty"])
+					schedules = frappe.get_all("Purchase Order Schedule",{"purchase_order_number": doc.purchase_order_number, "item_code": doc.item_code,"docstatus": 1},["qty"])
 					item_qty = sum(s.qty for s in schedules)
 
 					matching_row = next((row for row in purchase_open_order.open_order_table if row.item_code == doc.item_code), None)
